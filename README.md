@@ -1,5 +1,5 @@
 # SmartBookmark
-Smart Bookmark 是一款基于 AI 的智能书签管理插件，专注于解决书签收藏和搜索的痛点。插件简洁高效，让书签管理变得更加智能和省心！  
+Smart Bookmark 是一款基于 AI 的智能书签管理插件，专注于解决书签收藏和搜索的痛点。插件简洁高效，让书签管理变得更加智能和省心！
 
 ### **Chrome 商店链接**  
 [🔗 Smart Bookmark - 点击体验](https://chromewebstore.google.com/detail/smart-bookmark/nlboajobccgidfcdoedphgfaklelifoa)  
@@ -25,6 +25,9 @@ Smart Bookmark 是一款基于 AI 的智能书签管理插件，专注于解决�
 ### **反馈交流群**  
 ![wechat](pic/wechat-group.jpg)  
 如二维码失效，请添加我的个人微信（zhw-super），并备注 “书签” 加入微信交流群
+
+### **感谢**  
+本项目使用Cursor开发，感谢 [Cursor](https://www.cursor.com/) 提供的强大AI能力！
 
 ### **License**
 本项目基于 [MIT 协议](LICENSE) 开源，请遵守协议内容。
