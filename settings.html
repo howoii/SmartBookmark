@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>设置</title>
+    <link rel="stylesheet" href="css/settings.css">
+</head>
+<body>
+    <!-- 添加侧边栏导航 -->
+    <div class="sidebar">
+        <div class="logo-section">
+            <div class="logo">
+                <img src="icons/saved_128.png" alt="Logo">
+            </div>
+            <div class="app-info">
+                <div class="app-name">Smart Bookmark</div>
+                <div class="app-version">v1.0.0</div>
+            </div>
+        </div>
+        <nav class="nav-menu">
+            <a href="#overview" class="nav-item" data-section="overview">
+                <i class="icon-overview"></i>
+                <span>基本设置</span>
+            </a>
+            <a href="#services" class="nav-item" data-section="services">
+                <i class="icon-api"></i>
+                <span>API 服务</span>
+            </a>
+            <a href="#filters" class="nav-item" data-section="filters">
+                <i class="icon-filters"></i>
+                <span>自定义标签</span>
+            </a>
+            <a href="#privacy" class="nav-item" data-section="privacy">
+                <i class="icon-privacy"></i>
+                <span>隐私</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="#" class="footer-link" id="privacy-policy-link">
+                <i class="icon-policy"></i>
+                <span>隐私政策</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="main-content">
+        <div class="settings-container">
+            <!-- 概述部分 -->
+            <div class="settings-section" id="overview-section">
+                <h2>基本设置</h2>
+                
+                <!-- 添加登录状态卡片 -->
+                <div class="login-status-card">
+                    <div class="status-header">
+                        <h3>账号状态</h3>
+                    </div>
+                    <!-- 登录状态模板 -->
+                    <template id="logged-in-template">
+                        <div class="status-box logged-in">
+                            当前登录用户: <span class="username"></span>
+                        </div>
+                        <div class="status-actions">
+                            <button class="logout-btn">退出登录</button>
+                        </div>
+                    </template>
+                    
+                    <!-- 未登录状态模板 -->
+                    <template id="logged-out-template">
+                        <div class="status-box logged-out">
+                            您尚未登录，请先登录以使用书签同步功能
+                        </div>
+                        <div class="status-actions">
+                            <a class="login-btn" target="_blank">去登录</a>
+                        </div>
+                    </template>
+                    <div id="loginStatus" class="status-content">
+                        <!-- 状态内容将由 JavaScript 动态填充 -->
+                    </div>
+                    <div id="actionButtons" class="status-actions">
+                        <!-- 操作按钮将由 JavaScript 动态填充 -->
+                    </div>
+                </div>
+                
+                <!-- 其他基础设置项... -->
+            </div>
+
+            <!-- 新增 API 设置部分 -->
+            <div class="settings-section" id="services-section">
+                <h2>API 服务</h2>
+                <div class="section-description">
+                    配置 AI 服务所需的 API 密钥以启用智能书签功能
+                </div>
+                <div class="api-security-notice">
+                    <div class="notice-icon">
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path fill="currentColor" d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 2.18l7 3.12v4.7c0 4.67-3.13 8.95-7 10.18-3.87-1.23-7-5.51-7-10.18V6.3l7-3.12z"/>
+                            <path fill="currentColor" d="M11 7h2v6h-2zm0 8h2v2h-2z"/>
+                        </svg>
+                    </div>
+                    <div class="notice-content">
+                        <h4>API 密钥安全说明</h4>
+                        <ul>
+                            <li>您的 API 密钥将使用浏览器的安全存储机制进行本地存储</li>
+                            <li>密钥仅用于与相应 AI 服务进行直接通信</li>
+                            <li>我们不会将您的 API 密钥上传到服务器或分享给第三方</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- API 服务选择器改为独立的选择器组件 -->
+                <div class="service-selector">
+                    <div class="service-selector-header">
+                        <span>当前使用的服务</span>
+                        <select id="active-service-select">
+                            <!-- 通过 JavaScript 动态填充 -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- API 服务列表改为卡片式布局 -->
+                <div class="api-services-grid">
+                    <!-- 服务卡片将通过 JavaScript 动态生成 -->
+                </div>
+
+                <!-- API 使用统计 -->
+                <div class="api-usage-stats">
+                    <div class="stats-header">
+                        <h3>API 使用统计</h3>
+                        <span class="stats-period">本月用量</span>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stats-card">
+                            <div class="stats-title">Chat 调用</div>
+                            <div class="stats-value" id="chat-calls">0</div>
+                            <div class="stats-tokens">
+                                <span>
+                                    <span class="token-label">输入 Token:</span>
+                                    <span class="token-value" id="chat-input-tokens">0</span>
+                                </span>
+                                <span>
+                                    <span class="token-label">输出 Token:</span>
+                                    <span class="token-value" id="chat-output-tokens">0</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="stats-card">
+                            <div class="stats-title">Embedding 调用</div>
+                            <div class="stats-value" id="embedding-calls">0</div>
+                            <div class="stats-tokens">
+                                <span>
+                                    <span class="token-label">Token 数:</span>
+                                    <span class="token-value" id="embedding-tokens">0</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 隐私部分 -->
+            <div class="settings-section" id="privacy-section">
+                <h2>隐私设置</h2>
+                <div id="custom-domains-section" class="setting-item">
+                    <div class="setting-header">
+                        <h3>自定义隐私域名</h3>
+                        <button id="add-domain-btn" class="primary-btn">添加域名</button>
+                    </div>
+                    <p class="setting-description">这些域名下的页面将自动启用隐私保护</p>
+                    <div class="domains-list" id="domains-list">
+                        <!-- 域名列表将通过 JavaScript 动态添加 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 在 settings-container 中添加新的 section -->
+            <div class="settings-section" id="filters-section">
+                <h2>自定义标签</h2>
+                <div class="section-description">
+                    根据自定义的筛选规则自动匹配书签
+                </div>
+                
+                <div class="filters-container">
+                    <div class="filters-header">
+                        <h3>自定义标签列表</h3>
+                        <button id="add-filter-btn" class="primary-btn">
+                            <svg viewBox="0 0 24 24" width="16" height="16">
+                                <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+                            </svg>
+                            添加标签
+                        </button>
+                    </div>
+                    
+                    <div id="filters-list" class="filters-list">
+                        <!-- 标签列表将通过 JavaScript 动态添加 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 添加域名对话框 -->
+        <div id="add-domain-dialog" class="dialog">
+            <div class="dialog-content">
+                <h3>添加隐私域名</h3>
+                <div class="form-group">
+                    <input type="text" id="domain-input" placeholder="输入域名或正则表达式">
+                    <p class="help-text">支持通配符 * 和正则表达式,例如:</p>
+                    <ul class="example-list">
+                        <li>通配符域名: *.example.com</li>
+                        <li>正则表达式: /.*\.example\.com$/</li>
+                        <li>具体域名: www.example.com</li>
+                    </ul>
+                </div>
+                <div class="dialog-buttons">
+                    <button id="cancel-domain-btn" class="secondary-btn">取消</button>
+                    <button id="save-domain-btn" class="primary-btn">保存</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 添加服务配置对话框 -->
+        <div id="service-config-dialog" class="dialog">
+            <div class="dialog-content service-config">
+                <div class="dialog-header">
+                    <h3 class="service-name">服务配置</h3>
+                    <button class="close-dialog-btn">×</button>
+                </div>
+                <div class="service-config-body">
+                    <div class="api-key-section">
+                        <div class="api-key-header">
+                            <div class="api-key-title">
+                                <label>API Key</label>
+                                <svg class="verify-icon" width="16" height="16" viewBox="0 0 16 16">
+                                    <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2" fill="none"/>
+                                    <path class="check" d="M4.5 8L7 10.5L11.5 6" stroke="currentColor" stroke-width="2" fill="none"/>
+                                </svg>
+                            </div>
+                            <a class="get-key-link" target="_blank" title="获取 API Key">
+                                <span>获取 API Key</span>
+                                <svg viewBox="0 0 24 24" width="14" height="14">
+                                    <path fill="currentColor" d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"/>
+                                </svg>
+                            </a>
+                        </div>
+                        <div class="api-key-input">
+                            <input type="password" class="service-api-key" placeholder="输入 API Key">
+                            <button class="icon-btn toggle-visibility">
+                                <svg width="16" height="16" viewBox="0 0 16 16">
+                                    <path d="M8 3C4.5 3 2 6 2 8C2 10 4.5 13 8 13C11.5 13 14 10 14 8C14 6 11.5 3 8 3Z" stroke="currentColor" fill="none"/>
+                                    <circle cx="8" cy="8" r="2" fill="currentColor"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="api-key-actions">
+                            <button class="primary-btn save-key">保存</button>
+                            <div class="verify-container">
+                                <button class="secondary-btn verify-key">验证</button>
+                                <div class="api-service-status"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 添加模型信息显示部分 -->
+                    <div class="models-section">
+                        <div class="models-section-header">
+                            <h3>模型信息</h3>
+                            <a class="model-pricing-link" target="_blank" title="查看模型定价">
+                                <span>查看定价</span>
+                                <svg viewBox="0 0 24 24" width="14" height="14">
+                                    <path fill="currentColor" d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"/>
+                                </svg>
+                            </a>
+                        </div>
+                        <div class="model-info-group">
+                            <div class="model-label">Chat 模型</div>
+                            <div class="model-value chat-model">
+                                <!-- 由 JavaScript 填充，例如: gpt-3.5-turbo -->
+                            </div>
+                        </div>
+
+                        <div class="model-info-group">
+                            <div class="model-label">Embedding 模型</div>
+                            <div class="model-value embedding-model">
+                                <!-- 由 JavaScript 填充，例如: text-embedding-ada-002 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 添加筛选规则对话框 -->
+        <div id="filter-dialog" class="dialog">
+            <div class="dialog-content filter-config">
+                <div class="dialog-header">
+                    <h3>添加自定义标签</h3>
+                    <button class="close-dialog-btn">×</button>
+                </div>
+                
+                <div class="filter-config-body">
+                    <div class="form-group">
+                        <label>标签名称</label>
+                        <input type="text" id="filter-name" placeholder="给这个标签起个名字">
+                    </div>
+                    
+                    <div class="filter-rules-header">
+                        <label>标签条件（多个条件时需要同时满足）</label>
+                        <button id="add-condition-btn">添加条件</button>
+                    </div>
+                    
+                    <div class="filter-rules">
+                        <div id="conditions-list" class="conditions-list">
+                            <!-- 条件列表将通过 JavaScript 动态添加 -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="dialog-footer">
+                    <button class="secondary-btn" id="cancel-filter-btn">取消</button>
+                    <button class="primary-btn" id="save-filter-btn">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="storageManager.js"></script>
+    <script src="util.js"></script>
+    <script src="env.js"></script>
+    <script src="config.js"></script>
+    <script src="settingsManager.js"></script>
+    <script src="statsManager.js"></script>
+    <script src="customFilter.js"></script>
+    <script src="settings.js"></script>
+</body>
+</html> 

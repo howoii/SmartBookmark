@@ -1,0 +1,63 @@
+{
+    "manifest_version": 3,
+    "name": "Smart Bookmark",
+    "version": "1.1.3",
+    "description": "A smart bookmark manager with auto-tagging and natural language search.",
+    "icons": {
+        "32": "icons/saved_32.png",
+        "48": "icons/saved_48.png",
+        "128": "icons/saved_128.png"
+    },
+    "action": {
+        "default_icon": {
+            "32": "icons/saved_32.png",
+            "48": "icons/saved_48.png",
+            "128": "icons/saved_128.png"
+        },
+        "default_title": "Smart Bookmark"
+    },
+    "background": {
+        "service_worker": "background.js"
+    },
+    "side_panel": {
+        "default_path": "popup.html"
+    },
+    "options_page": "settings.html",
+    "permissions": [
+        "tabs",
+        "storage",
+        "activeTab",
+        "scripting",
+        "sidePanel",
+        "bookmarks",
+        "unlimitedStorage",
+        "favicon"
+    ],
+    "host_permissions": [
+        "<all_urls>"
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "icons/*"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
+    ],
+    "commands": {
+        "toggle-search": {
+            "suggested_key": {
+                "default": "Ctrl+K",
+                "mac": "Command+K"
+            },
+            "description": "打开搜索框"
+        }
+    },
+    "externally_connectable": {
+        "matches": [
+            "http://localhost:8080/*"
+        ]
+    }
+}
