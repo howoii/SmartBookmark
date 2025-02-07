@@ -26,7 +26,7 @@ Smart Bookmark 是一款基于 AI 的智能书签管理插件，专注于解决�
 - [ ] 增加多语言支持
 
 ### **反馈交流群**  
-![wechat](pic/wechat-group.jpg)  
+![wechat](pic/wechat.jpg)  
 如二维码失效，请添加我的个人微信（zhw-super），并备注 “书签” 加入微信交流群
 
 ### **感谢**  
