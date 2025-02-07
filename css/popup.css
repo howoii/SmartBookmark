@@ -1,3 +1,13 @@
+/* CSS变量定义 */
+:root {
+    --primary-color: #4CAF50;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --border-color: #eeeeee;
+    --error-color: #f44336;
+    --background-color: #ffffff;
+}
+
 body {
     width: 100%;
     height: 100vh;
@@ -1551,19 +1561,64 @@ input[type="checkbox"] {
     box-shadow: none;
 }
 
+/* 空状态样式优化 */
 .empty-state {
     display: flex;
-    justify-content: center;
     align-items: center;
-    min-height: 200px;
-    list-style: none;
+    justify-content: center;
+    min-height: 300px;
+    padding: 20px;
 }
 
 .empty-message {
     text-align: center;
-    color: #666;
+    color: var(--text-secondary);
+}
+
+.empty-icon {
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-title {
     font-size: 14px;
-    line-height: 1.6;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+}
+
+.empty-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-size: 13px;
+}
+
+.action-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+}
+
+.action-item svg {
+    opacity: 0.7;
+}
+
+.import-action {
+    cursor: pointer;
+}
+
+.import-action:hover {
+    color: var(--primary-color);
+}
+
+.import-action:hover svg {
+    opacity: 1;
+}
+
+.import-link {
+    color: inherit;
+    text-decoration: none;
 }
 
 /* 同步按钮基础样式 */
@@ -1844,25 +1899,44 @@ input[type="checkbox"] {
 
 /* 搜索结果相关度样式 */
 .result-score {
-    font-size: 11px;
-    color: #666;
-    margin-top: 0px;
-    padding: 2px 6px;
-    border-radius: 10px;
     display: flex;
     align-items: center;
-    gap: 4px;
-    width: fit-content;  /* 宽度适应内容 */
-    margin-left: auto;   /* 靠右对齐 */
-    background: #f5f5f5;
+    gap: 2px;
+    margin-top: 6px;
+    margin-bottom: 0;
+    margin-left: auto;
+    position: relative;
 }
 
-/* 高相关度标记样式 */
-.result-item.high-relevance .result-score {
-    background-color: #e8f5e9;
-    color: #2e7d32;
-    font-weight: 500;
-    display: inline-flex;  /* 内联弹性布局 */
+.relevance-text {
+    font-size: 11px;
+    color: #666;
+    opacity: 0;
+    margin-right: 4px;
+    transition: opacity 0.2s ease;
+}
+
+.result-score:hover .relevance-text {
+    opacity: 0.6;
+}
+
+.relevance-bar {
+    width: 18px;
+    height: 6px;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+}
+
+.relevance-bar.high {
+    background-color: #4CAF50; /* 绿色 */
+}
+
+.relevance-bar.medium {
+    background-color: #FFC107; /* 黄色 */
+}
+
+.relevance-bar.low {
+    background-color: #E0E0E0; /* 灰色 */
 }
 
 /* 优化标题样式 */
@@ -2599,4 +2673,47 @@ input[type="checkbox"] {
 
 .danger-button svg {
     opacity: 0.8;
+}
+
+/* 加载状态 */
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-secondary);
+    min-height: 200px; /* 添加最小高度 */
+}
+
+.loading-state .loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border-color);
+    border-top: 3px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 1rem;
+}
+
+.loading-state .loading-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* 错误状态 */
+.error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+    color: var(--error-color);
+}
+
+.error-state .error-message {
+    font-size: 0.9rem;
+    line-height: 1.5;
 }

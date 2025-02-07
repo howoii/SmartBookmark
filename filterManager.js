@@ -325,6 +325,7 @@ class FilterManager {
         this.activeFilter = null;
         this.activeFilterId = null;  // 添加当前激活的筛选器ID
         this.inited = false;
+        this.isDirty = false;
     }
 
     async init() {
@@ -343,7 +344,7 @@ class FilterManager {
         const customTagFilter = new CustomTagFilter();
         
         // 等待所有筛选器初始化完成
-        const bookmarks = await getAllBookmarks();
+        const bookmarks = await getDisplayedBookmarks();
         const bookmarksList = Object.values(bookmarks);
         await Promise.all([
             tagFilter.init(bookmarksList),
@@ -442,12 +443,19 @@ class FilterManager {
     toggleFilterDropdown() {
         const dropdown = document.getElementById('filter-dropdown');
         dropdown.classList.toggle('show');
+        this.updateFilterCounts();
     }
 
     async onBookmarksChange() {
-        logger.debug('onBookmarksChange');
+        logger.debug('filterManager onBookmarksChange');
+        this.isDirty = true;
+    }
 
-        const bookmarks = await getAllBookmarks();
+    async updateFilterCounts() {
+        if (!this.isDirty) return;
+        this.isDirty = false;
+
+        const bookmarks = await getDisplayedBookmarks();
         const bookmarksList = Object.values(bookmarks);
         
         // 更新所有筛选器的计数
@@ -460,12 +468,12 @@ class FilterManager {
     }
 
     async onCustomFilterChange() {
-        logger.debug('onCustomFilterChange');
+        logger.debug('filterManager onCustomFilterChange');
         
         for (const filter of this.filters.values()) {
             if (filter instanceof CustomTagFilter) {
                 await filter.updateRules();
-                const bookmarks = await getAllBookmarks();
+                const bookmarks = await getDisplayedBookmarks();
                 const bookmarksList = Object.values(bookmarks);
                 await filter.updateFilterCounts(bookmarksList);
 
@@ -560,7 +568,7 @@ class FilterManager {
 
     async getFilteredBookmarks() {
         // 获取所有书签
-        const bookmarks = await getAllBookmarks();
+        const bookmarks = await getDisplayedBookmarks();
         // 应用筛选
         let filteredBookmarks = Object.values(bookmarks);
         if (this.activeFilter) {

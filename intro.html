@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>欢迎使用 Smart Bookmark</title>
+    <link rel="stylesheet" href="css/intro.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="icons/saved_128.png" alt="Smart Bookmark Logo" class="logo">
+            <h1>欢迎使用 Smart Bookmark</h1>
+            <p class="subtitle">学习如何使用Smart Bookmark</p>
+        </header>
+
+        <main class="steps-container">
+            <div class="step">
+                <div class="step-header">
+                    <div class="step-number">1</div>
+                    <h2>打开侧边栏</h2>
+                </div>
+                <div class="video-container">
+                    <video class="tutorial-video" autoplay muted playsinline>
+                        <source src="videos/open-sidebar.mp4" type="video/mp4">
+                        您的浏览器不支持视频播放。
+                    </video>
+                </div>
+                <p>打开侧边栏并将扩展程序固定在工具栏，方便快速访问。</p>
+            </div>
+
+            <div class="step">
+                <div class="step-header">
+                    <div class="step-number">2</div>
+                    <h2>配置API服务</h2>
+                </div>
+                <div class="video-container">
+                    <video class="tutorial-video" autoplay muted playsinline>
+                        <source src="videos/config-api.mp4" type="video/mp4">
+                        您的浏览器不支持视频播放。
+                    </video>
+                </div>
+                <p>设置API服务以启用智能标签和语义化搜索功能。</p>
+            </div>
+
+            <div class="step">
+                <div class="step-header">
+                    <div class="step-number">3</div>
+                    <h2>收藏网页书签</h2>
+                </div>
+                <div class="video-container">
+                    <video class="tutorial-video" autoplay muted playsinline>
+                        <source src="videos/save-bookmark.mp4" type="video/mp4">
+                        您的浏览器不支持视频播放。
+                    </video>
+                </div>
+                <p>了解如何快速保存和管理您的网页书签。</p>
+            </div>
+
+            <div class="step">
+                <div class="step-header">
+                    <div class="step-number">4</div>
+                    <h2>导入浏览器书签</h2>
+                </div>
+                <div class="video-container">
+                    <video class="tutorial-video" autoplay muted playsinline>
+                        <source src="videos/import-bookmarks.mp4" type="video/mp4">
+                        您的浏览器不支持视频播放。
+                    </video>
+                </div>
+                <p>轻松导入现有的Chrome书签到Smart Bookmark。</p>
+            </div>
+
+            <div class="step">
+                <div class="step-header">
+                    <div class="step-number">5</div>
+                    <h2>快捷搜索</h2>
+                </div>
+                <div class="video-container">
+                    <video class="tutorial-video" autoplay muted playsinline>
+                        <source src="videos/quick-search.mp4" type="video/mp4">
+                        您的浏览器不支持视频播放。
+                    </video>
+                </div>
+                <p>在地址栏输入"sb"关键字，快速搜索您的书签。</p>
+            </div>
+
+            <div class="step">
+                <div class="step-header">
+                    <div class="step-number">6</div>
+                    <h2>同步书签</h2>
+                </div>
+                <div class="video-container">
+                    <video class="tutorial-video" autoplay muted playsinline>
+                        <source src="videos/sync-bookmarks.mp4" type="video/mp4">
+                        您的浏览器不支持视频播放。
+                    </video>
+                </div>
+                <p>在多个设备间同步您的书签数据。</p>
+            </div>
+        </main>
+
+        <footer>
+            <button id="start-using" class="primary-button">开始使用</button>
+        </footer>
+    </div>
+
+    <!-- 添加视频全屏模态框 -->
+    <div id="video-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <video id="modal-video" controls>
+                <source src="" type="video/mp4">
+            </video>
+        </div>
+    </div>
+
+    <!-- 在body结束标签前添加script标签 -->
+    <script src="common.js"></script>
+    <script src="logger.js"></script>
+    <script src="env.js"></script>
+    <script src="storageManager.js"></script>
+    <script src="intro.js"></script>
+</body>
+</html> 

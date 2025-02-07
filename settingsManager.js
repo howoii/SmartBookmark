@@ -19,6 +19,10 @@ class SettingsManager {
             enabled: false,     // 默认关闭手动隐私模式
             customDomains: []   // 新增:用户自定义的隐私域名列表
         },
+        search: {
+            maxResults: 50,
+            omniboxSearchLimit: 9
+        }
     };
 
     // 设置键前缀，用于区分不同类型的存储数据

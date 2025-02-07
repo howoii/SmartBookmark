@@ -1,672 +1,4 @@
-// 添加书签数据源枚举
-const BookmarkSource = {
-    EXTENSION: 'extension',
-    CHROME: 'chrome'
-};
-
-// 统一的书签数据结构
-class UnifiedBookmark {
-    constructor(data, source) {
-        this.url = data.url;
-        this.title = data.title;
-        this.source = source;
-        
-        if (source === BookmarkSource.EXTENSION) {
-            this.tags = data.tags;
-            this.excerpt = data.excerpt;
-            this.embedding = data.embedding;
-            // 这里需要确保日期格式的一致性
-            this.savedAt = data.savedAt ? new Date(data.savedAt).toISOString() : new Date().toISOString();
-            this.useCount = data.useCount;
-            this.lastUsed = data.lastUsed ? new Date(data.lastUsed).toISOString() : null;
-            this.apiService = data.apiService;
-        } else {
-            this.tags = [...data.folderTags || []];
-            this.excerpt = '';
-            this.embedding = null;
-            // Chrome书签的日期是时间戳（毫秒）
-            this.savedAt = new Date(data.dateAdded).toISOString();
-            this.useCount = 0;
-            this.lastUsed = data.dateLastUsed ? new Date(data.dateLastUsed).toISOString() : null;
-            this.chromeId = data.id;
-        }
-    }
-}
-
-// 获取所有书签的统一接口
-async function getAllBookmarks() {
-    try {
-        // 获取扩展书签
-        const extensionBookmarks = await LocalStorageMgr.getBookmarks();
-        const extensionBookmarksMap = Object.entries(extensionBookmarks)
-            .reduce((map, [_, data]) => {
-                const bookmark = new UnifiedBookmark(data, BookmarkSource.EXTENSION);
-                map[bookmark.url] = bookmark;
-                return map;
-            }, {});
-
-            // 获取显示设置
-        const showChromeBookmarks = await SettingsManager.get('display.showChromeBookmarks');
-        let chromeBookmarksMap = {};
-        // 获取Chrome书签
-        if (showChromeBookmarks) {
-            const chromeBookmarks = await getChromeBookmarks();
-            chromeBookmarksMap = chromeBookmarks
-            .reduce((map, bookmark) => {
-                // 如果URL已经存在于扩展书签中,则跳过
-                if (extensionBookmarksMap[bookmark.url]) {
-                    return map;
-                }
-                const unifiedBookmark = new UnifiedBookmark(bookmark, BookmarkSource.CHROME);
-                map[bookmark.url] = unifiedBookmark;
-                return map;
-            }, {});
-        }
-
-        // 合并并过滤扩展程序页面
-        const allBookmarks = { ...extensionBookmarksMap, ...chromeBookmarksMap };
-        return Object.entries(allBookmarks).reduce((map, [url, bookmark]) => {
-            if (!isNonMarkableUrl(bookmark.url)) {
-                map[url] = bookmark;
-            }
-            return map;
-        }, {});
-    } catch (error) {
-        logger.error('获取书签失败:', error);
-        return {};
-    }
-}
-
-// 获取Chrome书签的辅助函数
-async function getChromeBookmarks() {
-    try {
-        const bookmarkTree = await chrome.bookmarks.getTree();
-        return flattenBookmarkTree(bookmarkTree);
-    } catch (error) {
-        logger.error('获取Chrome书签失败:', error);
-        return [];
-    }
-}
-
-// 展平书签树的辅助函数
-function flattenBookmarkTree(nodes, parentFolders = []) {
-    const bookmarks = [];
-    
-    function traverse(node, folders, level = 0) {
-        // 如果是文件夹，添加到路径中
-        if (!node.url) {
-            const currentFolders = [...folders];
-            if (node.title && level > 1) { // 排除根文件夹
-                currentFolders.push(node.title);
-            }
-            
-            if (node.children) {
-                node.children.forEach(child => traverse(child, currentFolders, level + 1));
-            }
-        } else {
-            // 如果是书签，添加文件夹路径作为标签
-            bookmarks.push({
-                ...node,
-                folderTags: folders.filter(folder => folder.trim() !== '')
-            });
-        }
-    }
-    
-    nodes.forEach(node => traverse(node, parentFolders));
-    return bookmarks;
-}
-
-// 检查URL是否包含隐私内容
-async function containsPrivateContent(url) {
-    try {
-        const urlObj = new URL(url);
-        
-        // 1. 定义隐私相关路径模式
-        const patterns = {
-            // 认证相关页面
-            auth: {
-                pattern: /^.*\/(?:login|signin|signup|register|password|auth|oauth|sso)(?:\/|$)/i,
-                scope: 'pathname',
-                description: '认证页面'
-            },
-            
-            // 验证和确认页面
-            verification: {
-                pattern: /^.*\/(?:verify|confirmation|activate|reset)(?:\/|$)/i,
-                scope: 'pathname',
-                description: '验证确认页面'
-            },
-            
-            // 邮箱和消息页面
-            mail: {
-                pattern: /^.*\/(?:mail|inbox|compose|message|chat|conversation)(?:\/|$)/i,
-                scope: 'pathname',
-                description: '邮件消息页面'
-            },
-            
-            // 个人账户和设置页面
-            account: {
-                pattern: /^.*\/(?:profile|account|settings|preferences|dashboard|admin)(?:\/|$)/i,
-                scope: 'pathname',
-                description: '账户设置页面'
-            },
-            
-            // 支付和财务页面
-            payment: {
-                pattern: /^.*\/(?:payment|billing|invoice|subscription|wallet)(?:\/|$)/i,
-                scope: 'pathname',
-                description: '支付财务页面'
-            },
-            
-            // 敏感查询参数
-            sensitiveParams: {
-                pattern: /[?&](?:token|auth|key|password|secret|access_token|refresh_token|session|code)=/i,
-                scope: 'search',
-                description: '包含敏感参数'
-            }
-        };
-        
-        // 2. 定义敏感域名列表
-        const privateDomains = {
-            // 邮箱服务
-            mail: [
-                'mail.google.com',
-                'outlook.office.com',
-                'mail.qq.com',
-                'mail.163.com',
-                'mail.126.com',
-                'mail.sina.com',
-                'mail.yahoo.com'
-            ],
-            // 网盘服务
-            storage: [
-                'drive.google.com',
-                'onedrive.live.com',
-                'dropbox.com',
-                'pan.baidu.com'
-            ],
-            // 社交和通讯平台的私密页面
-            social: [
-                'messages.google.com',
-                'web.whatsapp.com',
-                'web.telegram.org',
-                'discord.com/channels'
-            ],
-            // 在线办公和协作平台的私密页面
-            workspace: [
-                'docs.google.com',
-                'sheets.googleapis.com',
-                'notion.so'
-            ]
-        };
-
-        // 3. 检查域名
-        for (const [category, domains] of Object.entries(privateDomains)) {
-            if (domains.some(domain => urlObj.hostname === domain || urlObj.hostname.endsWith('.' + domain))) {
-                logger.debug('URL包含隐私内容:', {
-                    url: url,
-                    reason: `属于隐私域名类别: ${category}`,
-                    domain: urlObj.hostname
-                });
-                
-                // 检查是否有例外情况
-                if (shouldAllowPrivateException(url, 'domain', category)) {
-                    continue;
-                }
-                
-                return true;
-            }
-        }
-
-        // 4. 检查路径和查询参数
-        for (const [key, rule] of Object.entries(patterns)) {
-            let testString;
-            
-            switch (rule.scope) {
-                case 'pathname':
-                    testString = urlObj.pathname;
-                    break;
-                case 'search':
-                    testString = urlObj.search;
-                    break;
-                case 'full':
-                    testString = url;
-                    break;
-                default:
-                    continue;
-            }
-
-            if (rule.pattern.test(testString)) {
-                const match = testString.match(rule.pattern);
-                logger.debug('URL包含隐私内容:', {
-                    url: url,
-                    reason: rule.description,
-                    pattern: rule.pattern.toString(),
-                    matchedPart: match[0],
-                    matchLocation: rule.scope
-                });
-                
-                // 检查是否有例外情况
-                if (shouldAllowPrivateException(url, key, match)) {
-                    continue;
-                }
-                
-                return true;
-            }
-        }
-
-        // 5. 检查自定义隐私域名
-        const settings = await SettingsManager.getAll();
-        const customDomains = settings.privacy.customDomains || [];
-        
-        for (const pattern of customDomains) {
-            let isMatch = false;
-            
-            // 处理正则表达式模式
-            if (pattern.startsWith('/') && pattern.endsWith('/')) {
-                const regex = new RegExp(pattern.slice(1, -1));
-                isMatch = regex.test(urlObj.hostname);
-            } 
-            // 处理通配符模式
-            else if (pattern.startsWith('*.')) {
-                const domain = pattern.slice(2);
-                isMatch = urlObj.hostname.endsWith(domain);
-            }
-            // 处理普通域名
-            else {
-                isMatch = urlObj.hostname === pattern;
-            }
-            
-            if (isMatch) {
-                logger.debug('URL匹配自定义隐私域名:', {
-                    url: url,
-                    pattern: pattern
-                });
-                return true;
-            }
-        }
-
-        return false;
-        
-    } catch (error) {
-        logger.error('隐私内容检查失败:', error);
-        return true; // 出错时从安全角度返回true
-    }
-}
-
-// 处理隐私检测的例外情况
-function shouldAllowPrivateException(url, ruleKey, context) {
-    try {
-        const urlObj = new URL(url);
-        
-        // 1. 允许公开的文档页面
-        if (context === 'workspace') {
-            const publicDocPatterns = [
-                /\/public\//i,
-                /[?&]sharing=public/i,
-                /[?&]view=public/i
-            ];
-            if (publicDocPatterns.some(pattern => pattern.test(url))) {
-                return true;
-            }
-        }
-        
-        // 2. 允许公开的个人主页
-        if (ruleKey === 'account') {
-            const publicProfilePatterns = [
-                /\/public\/profile\//i,
-                /\/users\/[^\/]+$/i,
-                /\/@[^\/]+$/i
-            ];
-            if (publicProfilePatterns.some(pattern => pattern.test(urlObj.pathname))) {
-                return true;
-            }
-        }
-        
-        // 3. 允许特定域名的登录页面（如开发文档）
-        if (ruleKey === 'auth') {
-            const allowedAuthDomains = [
-                'developer.mozilla.org',
-                'docs.github.com',
-                'learn.microsoft.com'
-            ];
-            if (allowedAuthDomains.some(domain => urlObj.hostname.endsWith(domain))) {
-                return true;
-            }
-        }
-        
-        // 4. 允许公开的支付文档或API文档
-        if (ruleKey === 'payment') {
-            const publicPaymentDocs = [
-                /\/docs\/payment/i,
-                /\/api\/payment/i,
-                /\/guides\/billing/i
-            ];
-            if (publicPaymentDocs.some(pattern => pattern.test(urlObj.pathname))) {
-                return true;
-            }
-        }
-
-        return false;
-    } catch (error) {
-        logger.error('处理隐私例外情况时出错:', error);
-        return false;
-    }
-}
-
-function isValidUrl(url) {
-    try {
-        const urlObj = new URL(url);
-        
-        // 1. 定义更精确的匹配规则
-        const patterns = {
-            // 错误页面 - 仅匹配路径部分
-            errors: {
-                pattern: /^.*\/(404|403|500|error|not[-\s]?found)(?:\.html?)?$/i,
-                scope: 'pathname',
-                description: '错误页面'
-            },
-            // 维护页面 - 仅匹配路径部分
-            maintenance: {
-                pattern: /^.*\/(maintenance|unavailable|blocked)(?:\.html?)?$/i,
-                scope: 'pathname',
-                description: '维护页面'
-            },
-            // 预览页面 - 需要考虑查询参数
-            preview: {
-                pattern: /^.*\/preview\/|[?&](?:preview|mode)=(?:preview|temp)/i,
-                scope: 'full',
-                description: '预览页面'
-            },
-            // 下载/上传页面 - 仅匹配路径结尾
-            fileTransfer: {
-                pattern: /\/(download|upload)(?:\/|$)/i,
-                scope: 'pathname',
-                description: '下载上传页面'
-            },
-            // 支付和订单页面 - 需要更精确的匹配
-            payment: {
-                pattern: /\/(?:cart|checkout|payment|order)(?:\/|$)|[?&](?:order_id|transaction_id)=/i,
-                scope: 'full',
-                description: '支付订单页面'
-            },
-            // 登出页面 - 仅匹配路径部分
-            logout: {
-                pattern: /\/(?:logout|signout)(?:\/|$)/i,
-                scope: 'pathname',
-                description: '登出页面'
-            },
-            // 打印页面 - 需要考虑查询参数
-            print: {
-                pattern: /\/print\/|[?&](?:print|format)=pdf/i,
-                scope: 'full',
-                description: '打印页面'
-            },
-            // 搜索结果页面 - 需要更精确的匹配
-            search: {
-                pattern: /\/search\/|\/(results|findings)(?:\/|$)|[?&](?:q|query|search|keyword)=/i,
-                scope: 'full',
-                description: '搜索结果页面'
-            },
-            // 回调和重定向页面 - 需要更精确的匹配
-            redirect: {
-                pattern: /\/(?:callback|redirect)(?:\/|$)|[?&](?:callback|redirect_uri|return_url)=/i,
-                scope: 'full',
-                description: '回调重定向页面'
-            }
-        };
-
-        // 2. 检查每个规则
-        for (const [key, rule] of Object.entries(patterns)) {
-            let testString;
-            
-            switch (rule.scope) {
-                case 'pathname':
-                    // 仅检查路径部分
-                    testString = urlObj.pathname;
-                    break;
-                case 'full':
-                    // 检查完整URL（包括查询参数）
-                    testString = url;
-                    break;
-                default:
-                    continue;
-            }
-
-            if (rule.pattern.test(testString)) {
-                // 记录详细的匹配信息
-                const match = testString.match(rule.pattern);
-                logger.debug('URL被过滤:', {
-                    url: url,
-                    reason: rule.description,
-                    pattern: rule.pattern.toString(),
-                    matchedPart: match[0],
-                    matchLocation: rule.scope,
-                    fullPath: urlObj.pathname,
-                    hasQuery: urlObj.search.length > 0
-                });
-                
-                // 3. 特殊情况处理
-                if (shouldAllowException(url, key, match)) {
-                    logger.debug('URL虽然匹配过滤规则，但属于例外情况，允许保存');
-                    continue;
-                }
-                
-                return false;
-            }
-        }
-
-        return true;
-
-    } catch (error) {
-        logger.error('URL验证失败:', error);
-        return false;
-    }
-}
-
-// 处理特殊例外情况
-function shouldAllowException(url, ruleKey, match) {
-    try {
-        const urlObj = new URL(url);
-        
-        // 1. 允许特定域名的搜索结果页面
-        if (ruleKey === 'search') {
-            const allowedSearchDomains = [
-                'github.com',
-                'stackoverflow.com',
-                'developer.mozilla.org'
-            ];
-            if (allowedSearchDomains.some(domain => urlObj.hostname.endsWith(domain))) {
-                return true;
-            }
-        }
-        
-        // 2. 允许包含有价值内容的错误页面
-        if (ruleKey === 'errors') {
-            const valuableErrorPages = [
-                /\/guides\/errors\//i,
-                /\/docs\/errors\//i,
-                /\/error-reference\//i
-            ];
-            if (valuableErrorPages.some(pattern => pattern.test(urlObj.pathname))) {
-                return true;
-            }
-        }
-        
-        // 3. 允许特定的下载页面（如软件发布页）
-        if (ruleKey === 'fileTransfer') {
-            const allowedDownloadPatterns = [
-                /\/releases\/download\//i,
-                /\/downloads\/release\//i,
-                /\/software\/[^\/]+\/download\/?$/i
-            ];
-            if (allowedDownloadPatterns.some(pattern => pattern.test(urlObj.pathname))) {
-                return true;
-            }
-        }
-
-        return false;
-    } catch (error) {
-        logger.error('处理URL例外情况时出错:', error);
-        return false;
-    }
-}
-
-// 检查URL是否不可标记
-function isNonMarkableUrl(url) {
-    try {
-        // 1. 基本URL格式检查
-        if (!url || typeof url !== 'string') {
-            logger.debug('无效URL格式');
-            return true;
-        }
-
-        // 2. 解析URL
-        const urlObj = new URL(url);
-
-        // 3. 定义不可标记的URL模式
-        const nonMarkablePatterns = {
-            // Chrome特殊页面
-            chromeInternal: {
-                pattern: /^chrome(?:-extension|-search|-devtools|-component)?:\/\//i,
-                description: 'Chrome内部页面',
-                example: 'chrome://, chrome-extension://'
-            },
-
-            // 浏览器设置和内部页面
-            browserInternal: {
-                pattern: /^(?:about|edge|browser|file|view-source):/i,
-                description: '浏览器内部页面',
-                example: 'about:blank, file:///'
-            },
-
-            // 扩展和应用页面
-            extensionPages: {
-                pattern: /^(?:chrome-extension|moz-extension|extension):\/\//i,
-                description: '浏览器扩展页面',
-                example: 'chrome-extension://'
-            },
-
-            // 本地开发服务器
-            localDevelopment: {
-                pattern: /^https?:\/\/(?:localhost|127\.0\.0\.1|0\.0\.0\.0|::1)(?::[0-9]+)?(?:\/|$)/i,
-                description: '本地开发服务器',
-                example: 'http://localhost:3000/'
-            },
-
-            // Web Socket连接
-            webSocket: {
-                pattern: /^wss?:/i,
-                description: 'WebSocket连接',
-                example: 'ws://, wss://'
-            },
-
-            // 数据URL
-            dataUrl: {
-                pattern: /^data:/i,
-                description: '数据URL',
-                example: 'data:text/plain'
-            },
-
-            // 空白页和无效页面
-            emptyPages: {
-                pattern: /^(?:about:blank|about:newtab|about:home)$/i,
-                description: '空白页面',
-                example: 'about:blank'
-            }
-        };
-
-        // 4. 检查是否匹配任何不可标记模式
-        for (const [key, rule] of Object.entries(nonMarkablePatterns)) {
-            if (rule.pattern.test(url)) {
-                logger.debug('URL不可标记:', {
-                    url: url,
-                    reason: rule.description,
-                    pattern: rule.pattern.toString(),
-                    example: rule.example,
-                    protocol: urlObj.protocol
-                });
-
-                // 5. 检查是否有例外情况
-                if (shouldAllowNonMarkableException(url, key)) {
-                    logger.debug('URL虽然匹配不可标记规则，但属于例外情况');
-                    continue;
-                }
-
-                return true;
-            }
-        }
-
-        // 6. 检查URL长度限制
-        const MAX_URL_LENGTH = 2048; // 常见浏览器的URL长度限制
-        if (url.length > MAX_URL_LENGTH) {
-            logger.debug('URL长度超出限制:', {
-                url: url.substring(0, 100) + '...',
-                length: url.length,
-                maxLength: MAX_URL_LENGTH
-            });
-            return true;
-        }
-
-        // 7. 检查协议安全性
-        if (!urlObj.protocol.match(/^https?:$/i)) {
-            logger.debug('不支持的URL协议:', {
-                url: url,
-                protocol: urlObj.protocol
-            });
-            return true;
-        }
-
-        return false;
-
-    } catch (error) {
-        logger.error('URL检查失败:', error);
-        return true; // 出错时默认为不可标记
-    }
-}
-
-// 处理特殊例外情况
-function shouldAllowNonMarkableException(url, ruleKey) {
-    try {
-        const urlObj = new URL(url);
-
-        // 1. 允许特定的本地开发环境
-        if (ruleKey === 'localDevelopment') {
-            const allowedLocalPaths = [
-                /^\/docs\//i,
-                /^\/api\//i,
-                /^\/swagger\//i
-            ];
-            if (allowedLocalPaths.some(pattern => pattern.test(urlObj.pathname))) {
-                return true;
-            }
-        }
-
-        // 2. 允许特定的Chrome扩展页面
-        if (ruleKey === 'extensionPages') {
-            const allowedExtensionPages = [
-                /\/documentation\.html$/i,
-                /\/help\.html$/i
-            ];
-            if (allowedExtensionPages.some(pattern => pattern.test(urlObj.pathname))) {
-                return true;
-            }
-        }
-
-        return false;
-    } catch (error) {
-        logger.error('处理URL例外情况时出错:', error);
-        return false;
-    }
-}
-
-// 处理标签格式的辅助函数
-function cleanTags(tags) {
-    return tags.map(tag => {
-        // 移除序号、星号和多余空格
-        return tag.replace(/^\d+\.\s*\*+|\*+/g, '').trim();
-    });
-}
+const EnvIdentifier = 'popup';
 
 // 更新保存按钮和图标状态
 async function updateTabState() {
@@ -744,7 +76,7 @@ async function handlePrivacyIconClick(isPrivate) {
 
                 // 更新域名列表
                 sendMessageSafely({
-                    type: 'UPDATE_DOMAINS_LIST',
+                    type: MessageType.UPDATE_DOMAINS_LIST,
                     data: newDomains
                 });
             }
@@ -1079,7 +411,9 @@ class BookmarkManager {
         } = this.elements.optional;
 
         // 基本的对话框关闭功能（必需）
-        const closeDialog = () => {
+        const closeDialog = (e) => {
+            e.stopPropagation();
+            e.preventDefault();
             dialog.classList.remove('show');
             updateStatus('已取消保存');
             this.resetEditMode();
@@ -1088,7 +422,7 @@ class BookmarkManager {
         // 必需的事件监听器
         dialog.addEventListener('click', (e) => {
             if (e.target === dialog) {
-                closeDialog();
+                closeDialog(e);
             }
         });
 
@@ -1096,6 +430,7 @@ class BookmarkManager {
         if (dialogContent) {
             dialogContent.addEventListener('click', (e) => {
                 e.stopPropagation();
+                e.preventDefault();
             });
         }
 
@@ -1125,7 +460,9 @@ class BookmarkManager {
         }
 
         if (saveTagsBtn) {
-            saveTagsBtn.addEventListener('click', async () => {
+            saveTagsBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                e.preventDefault();
                 dialog.classList.remove('show');
                 const finalTags = this.getCurrentTags();
                 const title = this.getEditedTitle();
@@ -1138,7 +475,9 @@ class BookmarkManager {
         }
 
         if (deleteBookmarkBtn) {
-            deleteBookmarkBtn.addEventListener('click', async () => {
+            deleteBookmarkBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                e.preventDefault();
                 const confirmation = confirm('确定要删除此收藏吗？');
                 if (confirmation) {
                     dialog.classList.remove('show');
@@ -1188,7 +527,7 @@ class BookmarkManager {
     }
 
     async checkApiKeyConfig(isInit = false) {
-        const apiKey = await ConfigManager.getAPIKey();
+        const apiKey = await ConfigManager.getActiveAPIKey();
         const skipApiKeyNotice = await SettingsManager.get('display.skipApiKeyNotice');
         
         if (!apiKey) {
@@ -1221,16 +560,15 @@ class BookmarkManager {
 
     async checkEmbeddingStatus() {
         try {
-            const apiKey = await ConfigManager.getAPIKey();
-            if (!apiKey) {
+            const activeService = await ConfigManager.getActiveService();
+            if (!activeService.apiKey) {
                 this.elements.required.regenerateEmbeddings.style.display = 'none';
                 return;
             }
 
-            const activeService = await ConfigManager.getActiveService();
             const bookmarks = await LocalStorageMgr.getBookmarks();
             const needsUpdate = Object.values(bookmarks).some(bookmark => 
-                !bookmark.embedding || bookmark.apiService !== activeService.id
+                ConfigManager.isNeedUpdateEmbedding(bookmark, activeService)
             );
 
             const regenerateButton = this.elements.required.regenerateEmbeddings;
@@ -1238,9 +576,9 @@ class BookmarkManager {
             
             if (needsUpdate) {
                 const count = Object.values(bookmarks).filter(bookmark => 
-                    !bookmark.embedding || bookmark.apiService !== activeService.id
+                    ConfigManager.isNeedUpdateEmbedding(bookmark, activeService)
                 ).length;
-                regenerateButton.title = `有 ${count} 个书签需要更新`;
+                regenerateButton.title = `检测到API模型发生改变，需要更新 ${count} 个书签的向量`;
             }
         } catch (error) {
             logger.error('检查embedding状态时出错:', error);
@@ -1261,19 +599,24 @@ class BookmarkManager {
 
     async regenerateEmbeddings() {
         const regenerateButton = this.elements.required.regenerateEmbeddings;
-        const updatedBookmarks = [];
         try {
             regenerateButton.classList.add('processing');
 
             const activeService = await ConfigManager.getActiveService();
             const bookmarks = await LocalStorageMgr.getBookmarks();
+            const needUpdateCount = Object.values(bookmarks).filter(bookmark => 
+                ConfigManager.isNeedUpdateEmbedding(bookmark, activeService)
+            ).length;
             let updatedCount = 0;
             
+            const BATCH_SIZE = 10; // 每批处理的书签数量
+            let batchBookmarks = [];
+            
             for (const [key, bookmark] of Object.entries(bookmarks)) {
-                if (!bookmark.embedding || bookmark.apiService !== activeService.id) {
-                    StatusManager.startOperation(`正在更新 ${++updatedCount} 个书签...`);
+                if (ConfigManager.isNeedUpdateEmbedding(bookmark, activeService)) {
+                    StatusManager.startOperation(`正在更新 ${++updatedCount}/${needUpdateCount} 个书签...`);
                     
-                    const text = preprocessText({
+                    const text = makeEmbeddingText({
                         excerpt: bookmark.excerpt,
                         title: bookmark.title,
                         url: bookmark.url
@@ -1283,13 +626,27 @@ class BookmarkManager {
                     if (!newEmbedding) {
                         throw new Error('向量生成失败');
                     }
+                    
                     const updatedBookmark = {
                         ...bookmark,
                         embedding: newEmbedding,
-                        apiService: activeService.id
+                        apiService: activeService.id,
+                        embedModel: activeService.embedModel
                     };
-                    updatedBookmarks.push(updatedBookmark);
-                    await LocalStorageMgr.setBookmark(bookmark.url, updatedBookmark);
+                    
+                    // 将更新后的书签添加到批次中
+                    batchBookmarks.push(updatedBookmark);
+                    
+                    // 当达到批次大小或是最后一个书签时,执行批量更新
+                    if (batchBookmarks.length >= BATCH_SIZE || updatedCount === needUpdateCount) {
+                        // 批量更新storage
+                        LocalStorageMgr.setBookmarks(batchBookmarks);
+                        // 批量记录变更
+                        const isLast = updatedCount === needUpdateCount;
+                        recordBookmarkChange(batchBookmarks, false, isLast, onSyncError);
+                        // 清空当前批次
+                        batchBookmarks = [];
+                    }
                 }
             }
 
@@ -1300,10 +657,6 @@ class BookmarkManager {
             StatusManager.endOperation('更新向量失败', true);
         } finally {
             regenerateButton.classList.remove('processing');
-            // 批量记录变更
-            if (updatedBookmarks.length > 0) {
-                await recordBookmarkChange(updatedBookmarks);
-            }
         }
     }
 
@@ -1311,12 +664,17 @@ class BookmarkManager {
         chrome.storage.onChanged.addListener(async (changes, areaName) => {
             if (areaName === 'sync') {  // 确保是监听sync storage
                 // 监听API Keys的变化
-                if (changes[ConfigManager.STORAGE_KEYS.API_KEYS] || changes[ConfigManager.STORAGE_KEYS.ACTIVE_SERVICE]) {
+                if (changes[ConfigManager.STORAGE_KEYS.ACTIVE_SERVICE]) {
                     logger.debug('API Keys发生变化:', changes[ConfigManager.STORAGE_KEYS.API_KEYS], changes[ConfigManager.STORAGE_KEYS.ACTIVE_SERVICE]);
                     this.checkApiKeyConfig(false);
                     this.checkEmbeddingStatus();
-                    // 清除向量缓存
-                    await searchHistoryManager.clearVectorCache();
+                }
+                if (changes[ConfigManager.STORAGE_KEYS.API_KEYS]) {
+                    this.checkApiKeyConfig(false);
+                }
+                if (changes[ConfigManager.STORAGE_KEYS.CUSTOM_SERVICES]) {
+                    this.checkApiKeyConfig(false);
+                    this.checkEmbeddingStatus();
                 }
             } else if (areaName === 'local') {
                 if (changes['token']) {
@@ -1391,7 +749,7 @@ class BookmarkManager {
         const bookmark = await LocalStorageMgr.getBookmark(tab.url);
         if (bookmark) {
             await LocalStorageMgr.removeBookmark(tab.url);
-            await recordBookmarkChange(bookmark, true);
+            await recordBookmarkChange(bookmark, true, true, onSyncError);
             updateStatus('已取消收藏');
             await Promise.all([
                 renderBookmarksList(),
@@ -1413,7 +771,6 @@ class BookmarkManager {
             // 没有缓存或URL不匹配，重新生成标签
             StatusManager.startOperation('正在生成标签');
             this.generatedTags = await generateTags(this.pageContent, tab);
-            this.generatedTags = cleanTags(this.generatedTags);
             StatusManager.endOperation('标签生成完成: ' + this.generatedTags.join(', '));
         }   
 
@@ -1567,7 +924,7 @@ class BookmarkManager {
             StatusManager.startOperation(this.isEditMode ? '正在更新书签' : '正在保存书签');
             
             // 如果是编辑现有书签,保留原有的 embedding 和其他信息
-            const embedding = this.isEditMode ? this.editingBookmark.embedding : await getEmbedding(preprocessText(this.pageContent, this.currentTab, tags));
+            const embedding = this.isEditMode ? this.editingBookmark.embedding : await getEmbedding(makeEmbeddingText(this.pageContent, this.currentTab, tags));
             const apiService = await ConfigManager.getActiveService();
             
             const pageInfo = {
@@ -1580,6 +937,7 @@ class BookmarkManager {
                 useCount: this.isEditMode ? this.editingBookmark.useCount : 1,
                 lastUsed: this.isEditMode ? this.editingBookmark.lastUsed : new Date().toISOString(),
                 apiService: this.isEditMode ? this.editingBookmark.apiService : apiService.id,
+                embedModel: this.isEditMode ? this.editingBookmark.embedModel : apiService.embedModel,
             };
 
             // 打印书签编辑信息
@@ -1590,7 +948,7 @@ class BookmarkManager {
             });
             
             await LocalStorageMgr.setBookmark(this.currentTab.url, pageInfo);
-            await recordBookmarkChange(pageInfo);
+            await recordBookmarkChange(pageInfo, false, true, onSyncError);
 
             await Promise.all([
                 renderBookmarksList(),
@@ -1611,8 +969,8 @@ class BookmarkManager {
 async function getPageContent(tab) {
     try {
         const isPrivate = await determinePrivacyMode(tab);
-        if (isPrivate || !isValidUrl(tab.url)) {
-            logger.info('页面为隐私模式或URL无效');
+        if (isPrivate || !isContentFulUrl(tab.url)) {
+            logger.info('页面为隐私模式或URL无内容');
             return {};
         }
         // 首先注 content script
@@ -1647,400 +1005,6 @@ async function getPageContent(tab) {
         logger.error('获取页面内容时出错:', error);
         return {};
     }
-}
-
-// 添加辅助函数计算字符串的视觉长度
-function getStringVisualLength(str) {
-    let length = 0;
-    for (let i = 0; i < str.length; i++) {
-        // 中日韩文字计为2个单位长度
-        if (/[\u4e00-\u9fa5\u3040-\u30ff\u3400-\u4dbf]/.test(str[i])) {
-            length += 2;
-        } 
-        // 其他字符计为1个单位长度
-        else {
-            length += 1;
-        }
-    }
-    return length;
-}
-
-// 用 ChatGPT API 生成标签
-async function generateTags(pageContent, tab) {
-    const { title, content, excerpt, metadata } = pageContent;
-    try {
-        const cleanUrl = tab.url.replace(/\?.+$/, '').replace(/[#&].*$/, '').replace(/\/+$/, '');
-        
-        // 构建更丰富的 prompt
-        const prompt = `请根据以下网页内容提取2-5个简短、具有区分度的关键词，用于分类和查找。
-
-网页信息：
-标题：${title ? title : tab.title}
-URL：${cleanUrl}
-${excerpt ? `摘要：${smartTruncate(excerpt, 500)}` : ''}
-${metadata?.keywords ? `关键词：${metadata.keywords.slice(0, 500)}` : ''}
-${metadata?.author ? `作者：${metadata.author}` : ''}
-${content ? `页面正文开头：${smartTruncate(content, 500)}` : ''}
-
-关键词应符合以下要求：
-1. 关键词长度：中文关键词2-5字，英文关键词不超过2个单词。
-2. 准确性：关键词需精准反映文章核心主题。
-3. 多样性：必须涵盖以下四类信息（如有）：
-   - 网站名称或品牌信息。
-   - 网站标题核心内容。
-   - 网站涉及的领域（如科技、教育、金融等）。
-   - 页面具体内容的关键词（如技术名词、专业术语）。
-4. 去重性：避免标题、正文等重复关键词。
-5. 输出格式：直接返回关键词列表，关键词不能包含标点符号，各关键词之间用"|"分隔，无需其他说明。
-
-例如：小红书|AI生成|内容分析|关键词优化|提示词设计`;
-
-        logger.debug('生成标签的prompt:', prompt);
-
-        const apiService = await ConfigManager.getActiveService();
-        const apiKey = await ConfigManager.getAPIKey(apiService.id);
-        if (!apiKey) {
-            throw new Error('API密钥不存在');
-        }   
-        // 调用 API 生成标签
-        const response = await fetch(apiService.baseUrl + 'chat/completions', {
-            method: 'POST',
-            headers: apiService.headers(apiKey),
-            body: JSON.stringify({
-                model: apiService.chatModel,
-                messages: [{
-                    role: "system",
-                    content: "你是一个专业的网页内容分析专家，擅长提取文章的核心主题并生成准确的标签。"
-                }, {
-                    role: "user",
-                    content: prompt
-                }],
-                temperature: 0.3, // 降低温度以获得更稳定的输出
-                max_tokens: 100,
-            })
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            const errorMessage = errorData.error?.message || response.statusText;
-            const errorType = errorData.error?.type || 'unknown';
-            const errorCode = errorData.error?.code || 'unknown';
-            throw new Error(`API 请求失败: ${errorMessage} (类型: ${errorType}, 代码: ${errorCode})`);
-        }
-
-        const data = await response.json();
-        logger.debug('completion response:', data);
-        const tagsText = data.choices[0].message.content.trim();
-
-        // 记录使用统计
-        await statsManager.recordChatUsage(
-            data.usage?.prompt_tokens || 0,
-            data.usage?.completion_tokens || 0
-        );
-        
-        // 处理返回的标签
-        let tags = tagsText
-            .split('|')
-            .map(tag => tag.trim())
-            .filter(tag => {
-                if (!tag) return false;
-                const tagLength = getStringVisualLength(tag);
-                logger.debug('标签长度:', {
-                    tag: tag,
-                    length: tagLength
-                });
-                if (tagLength < 2 || tagLength > 20) {
-                    return false;
-                }
-                return /^[^\.,\/#!$%\^&\*;:{}=\-_`~()]+$/.test(tag);
-            })
-            // 添加去重逻辑
-            .filter((tag, index, self) => self.indexOf(tag) === index)
-            // 限制最多5个标签
-            .slice(0, 5);
-        
-
-        logger.debug('AI生成的标签:', tags);
-        
-        // 如果没有生成有效标签，使用备选方案
-        if (tags.length === 0) {
-            tags = getFallbackTags(title, metadata);
-        }
-
-        return tags.length > 0 ? tags : ['未分类'];
-
-    } catch (error) {
-        logger.error('生成标签时出错:', error);
-        const fallbackTags = getFallbackTags(tab.title, metadata);
-        return fallbackTags.length > 0 ? fallbackTags : ['未分类'];
-    }
-}
-
-// 获取备选标签的辅助函数
-function getFallbackTags(title, metadata) {
-    const maxTags = 5;
-    const tags = new Set();
-    
-    // 1. 首先尝试使用 metadata 中的关键词
-    if (metadata?.keywords) {
-        const metaKeywords = metadata.keywords
-            .split(/[,，;；]/) // 分割关键词
-            .map(tag => tag.trim())
-            .filter(tag => {
-                return tag.length >= 1 && 
-                       tag.length <= 20;
-            });
-            
-        metaKeywords.forEach(tag => tags.add(tag));
-    }
-    
-    const stopWords = new Set([
-        // 中文停用词
-        '的', '了', '和', '与', '或', '在', '是', '到', '等', '把',
-        // 英文停用词
-        'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for',
-        'from', 'has', 'he', 'in', 'is', 'it', 'its', 'of', 'on',
-        'that', 'the', 'to', 'was', 'were', 'will', 'with', 'the',
-        // 常见连接词和介词
-        'about', 'after', 'before', 'but', 'how', 'into', 'over',
-        'under', 'what', 'when', 'where', 'which', 'who', 'why',
-        // 常见动词
-        'can', 'could', 'did', 'do', 'does', 'had', 'have', 'may',
-        'might', 'must', 'should', 'would',
-        // 其他常见词
-        'this', 'these', 'those', 'they', 'you', 'your'
-    ]);
-
-    // 2. 如果 metadata 中没有足够的关键词，使用标题关键词
-    if (tags.size < 2 && title) {
-        // 移除常见的无意义词
-        const titleWords = title
-            .split(/[\s\-\_\,\.\。\，]/) // 分割标题
-            .map(word => word.trim())
-            .filter(word => {
-                return word.length >= 2 && 
-                       word.length <= 20 &&
-                       !stopWords.has(word) &&
-                       !/[^\u4e00-\u9fa5a-zA-Z0-9]/.test(word);
-            });
-            
-        titleWords.forEach(word => {
-            if (tags.size < maxTags) { // 最多添加5个标签
-                tags.add(word);
-            }
-        });
-    }
-    
-    // 3. 如果还是没有足够的标签，尝试使用 metadata 的其他信息
-    if (tags.size < 2) {
-        // 尝试使用文章分类信息
-        if (metadata?.category && metadata.category.length <= 20) {
-            tags.add(metadata.category);
-        }
-        
-        // 尝试使用文章题信息
-        if (metadata?.subject && metadata.subject.length <= 20) {
-            tags.add(metadata.subject);
-        }
-        
-        // 尝试从描述中提取关键词
-        if (metadata?.description) {
-            const descWords = metadata.description
-                .split(/[\s\,\.\。\，]/)
-                .map(word => word.trim())
-                .filter(word => {
-                    return word.length >= 2 && 
-                           word.length <= 20 &&
-                           !stopWords.has(word) &&
-                           !/[^\u4e00-\u9fa5a-zA-Z0-9]/.test(word);
-                })
-                .slice(0, 2); // 最多取2个关键词
-                
-            descWords.forEach(word => {
-                if (tags.size < maxTags) {
-                    tags.add(word);
-                }
-            });
-        }
-    }
-
-    logger.debug('备选标签生成过程:', {
-        fromMetaKeywords: metadata?.keywords ? true : false,
-        fromTitle: title ? true : false,
-        finalTags: Array.from(tags)
-    });
-
-    return Array.from(tags).slice(0, maxTags);
-}
-
-function smartTruncate(text, maxLength = 500) {
-    if (!text) return text;
-    if (text.length <= maxLength) return text;
-    
-    // 检测文本类型的辅助函数
-    const detectTextType = (text) => {
-        // 统计前100个字符的语言特征
-        const sample = text.slice(0, 100);
-        
-        // 统计不同类型字符的数量
-        const stats = {
-            latin: 0,      // 拉丁字母 (英文等)
-            cjk: 0,       // 中日韩文字
-            cyrillic: 0,  // 西里尔字母 (俄文等)
-            arabic: 0,    // 阿拉伯文
-            other: 0      // 其他字符
-        };
-        
-        // 遍历样本文本的每个字符
-        for (const char of sample) {
-            const code = char.codePointAt(0);
-            
-            if (/[\p{Script=Latin}]/u.test(char)) {
-                stats.latin++;
-            } else if (/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u.test(char)) {
-                stats.cjk++;
-            } else if (/[\p{Script=Cyrillic}]/u.test(char)) {
-                stats.cyrillic++;
-            } else if (/[\p{Script=Arabic}]/u.test(char)) {
-                stats.arabic++;
-            } else if (!/[\s\p{P}]/u.test(char)) { // 排除空格和标点
-                stats.other++;
-            }
-        }
-        
-        // 计算主要字符类型的占比
-        const total = Object.values(stats).reduce((a, b) => a + b, 0);
-        const threshold = 0.6; // 60%的阈值
-        
-        // 返回主要语言类型
-        if (stats.latin / total > threshold) return 'latin';
-        if (stats.cjk / total > threshold) return 'cjk';
-        if (stats.cyrillic / total > threshold) return 'cyrillic';
-        if (stats.arabic / total > threshold) return 'arabic';
-        
-        // 如果没有明显主导的语言类型，返回混合类型
-        return 'mixed';
-    };
-    
-    const textType = detectTextType(text);
-    logger.debug('文本类型:', textType);
-    
-    // 根据不同语言类型选择截取策略
-    switch (textType) {
-        case 'latin':
-        case 'cyrillic':
-        case 'arabic':
-            // 按单词数量截取
-            const maxWords = Math.round(maxLength * 0.6);
-            const words = text.split(/\s+/).filter(word => word.length > 0);
-            if (words.length <= maxWords) return text;
-            
-            return words
-                .slice(0, maxWords)
-                .join(' ');
-        case 'cjk':
-            // 中日韩文本按字符截取，在标点处断句
-            const punctuation = /[，。！？；,!?;]/;
-            let truncated = text.slice(0, maxLength);
-            
-            // 尝试在标点符号处截断
-            for (let i = truncated.length - 1; i >= maxLength - 50; i--) {
-                if (punctuation.test(truncated[i])) {
-                    truncated = truncated.slice(0, i + 1);
-                    break;
-                }
-            }
-            return truncated;
-            
-        case 'mixed':
-        default:
-            // 混合文本采用通用策略
-            // 先尝试在空格处截断
-            let mixedTruncated = text.slice(0, maxLength);
-            for (let i = mixedTruncated.length - 1; i >= maxLength - 30; i--) {
-                if (/\s/.test(mixedTruncated[i])) {
-                    mixedTruncated = mixedTruncated.slice(0, i);
-                    break;
-                }
-            }
-            return mixedTruncated;
-    }
-}
-
-function preprocessText(pageContent, tab, tags) {
-    let text = "";
-    if (pageContent) {
-        text += pageContent.title ? `标题: ${pageContent.title};` : '';
-        text += tags.length > 0 ? `标签: ${tags.join(',')};` : '';
-        text += pageContent.excerpt ? `摘要: ${smartTruncate(pageContent.excerpt, 200)};` : '';
-    } else {
-        const cleanUrl = tab.url.replace(/\?.+$/, '').replace(/[#&].*$/, '').replace(/\/+$/, '');
-        text += `标题: ${tab.title};`;
-        text += `URL: ${cleanUrl};`;
-    }
-    
-    // 优化的文本清理
-    text = text
-        .replace(/[\r\n]+/g, ' ')        // 将所有换行符替换为空格
-        .replace(/\s+/g, ' ')            // 将连续空白字符替换为单个空格
-        .replace(/[\t\f\v]+/g, ' ')      // 替换制表符等特殊空白字符
-        .trim();                         // 去除首尾空格
-    
-    // 限制总长度（考虑token限制）
-    const maxLength = 4096;
-    if (text.length > maxLength) {
-        // 尝试在词边界处截断
-        const truncated = text.slice(0, maxLength);
-        // 找到最后一个完整词的位置
-        const lastSpace = truncated.lastIndexOf(' ');
-        if (lastSpace > maxLength * 0.8) { // 如果找到的位置会损失太多内容
-            text = truncated.slice(0, lastSpace);
-        } else {
-            text = truncated;
-        }
-    }
-    
-    return text;
-}
-
-// 优化后的嵌入向量生成函数
-async function getEmbedding(text) {
-    logger.debug('获取嵌入向量:', text);
-    try {
-        const apiService = await ConfigManager.getActiveService();  
-        const apiKey = await ConfigManager.getAPIKey(apiService.id);
-        if (!apiKey) {
-            throw new Error('API密钥不存在');
-        }
-        const response = await fetch(apiService.baseUrl + 'embeddings', {
-            method: 'POST',
-            headers: apiService.headers(apiKey),
-            body: JSON.stringify({
-                model: apiService.embedModel,
-                input: text,
-                dimensions: 1024
-            })
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(`API错误: ${errorData.error?.message || response.statusText}`);
-        }
-
-        const data = await response.json();
-        logger.debug('embedding response:', data);
-        if (!data.data?.[0]?.embedding) {
-            throw new Error('无效的API响应格式');
-        }
-
-        // 记录使用统计
-        await statsManager.recordEmbeddingUsage(data.usage?.total_tokens || 0);
-
-        return data.data[0].embedding;
-    } catch (error) {
-        logger.error(`获取嵌入向量失败:`, error);
-    }
-    return null;
 }
 
 function displaySearchResults(results) {
@@ -2082,14 +1046,43 @@ function displaySearchResults(results) {
         // 使用 getFaviconUrl 函数获取图标
         const faviconUrl = await getFaviconUrl(result.url);
 
-        // 添加相关度显示
-        const scoreDisplay = result.score > 60 ? 
-            `<div class="result-score">
-                ${result.score >= 80 ? '⭐ ' : ''}相关度: ${Math.round(result.score)}%
-            </div>` : '';
+        // 修改相关度显示
+        const getRelevanceIndicator = (score, similarity) => {
+            if (similarity < 0.01) {
+                return '';
+            }
+            let bars;
+            let text = '';
+            if (score >= 85) {
+                // 高相关：三根绿条
+                bars = `
+                    <div class="relevance-bar high"></div>
+                    <div class="relevance-bar high"></div>
+                    <div class="relevance-bar high"></div>
+                `;
+                text = '相关度高';
+            } else if (score >= 65) {
+                // 中等相关
+                bars = `
+                    <div class="relevance-bar medium"></div>
+                    ${score >= 75 ? '<div class="relevance-bar medium"></div>' : '<div class="relevance-bar low"></div>'}
+                    <div class="relevance-bar low"></div>
+                `;
+                text = '相关度中';
+            } else {
+                // 低相关：三根灰条
+                bars = `
+                    <div class="relevance-bar low"></div>
+                    <div class="relevance-bar low"></div>
+                    <div class="relevance-bar low"></div>
+                `;
+                text = '相关度低';
+            }
+            return `<div class="result-score"><span class="relevance-text">${text}</span>${bars}</div>`;
+        };
 
         li.innerHTML = `
-            <a href="${result.url}" class="result-link" target="_self">
+            <a href="${result.url}" class="result-link" target="_blank">
                 <div class="result-header">
                     <div class="result-title-wrapper">
                         <div class="result-favicon">
@@ -2100,7 +1093,7 @@ function displaySearchResults(results) {
                 </div>
                 <div class="result-preview" title="${result.excerpt || ''}">${preview}</div>
                 <div class="result-tags">${tags}</div>
-                ${scoreDisplay}
+                ${getRelevanceIndicator(result.score, result.similarity)}
             </a>
             <button class="delete-btn" title="删除">
                 <svg viewBox="0 0 24 24" width="16" height="16">
@@ -2146,6 +1139,7 @@ function displaySearchResults(results) {
         // 删除按钮事件处理保持不变
         li.querySelector('.delete-btn').onclick = (e) => {
             e.stopPropagation();
+            e.preventDefault();
             deleteBookmark(result);
         };
 
@@ -2165,7 +1159,7 @@ async function deleteBookmark(bookmark) {
             // 先删除书签
             if (bookmark.source === BookmarkSource.EXTENSION) {
                 await LocalStorageMgr.removeBookmark(bookmark.url);
-                await recordBookmarkChange(bookmark, true);
+                await recordBookmarkChange(bookmark, true, true, onSyncError);
             } else {
                 await chrome.bookmarks.remove(bookmark.chromeId);
             }
@@ -2180,8 +1174,12 @@ async function deleteBookmark(bookmark) {
             // 如果在搜索模式，更新搜索结果
             const searchInput = document.getElementById('search-input');
             if (searchInput.value) {
-                const queryEmbedding = await getEmbedding(searchInput.value);
-                const results = await searchSavedPages(queryEmbedding);
+                const includeChromeBookmarks = await SettingsManager.get('display.showChromeBookmarks');
+                const results = await searchManager.search(searchInput.value, {
+                    debounce: false,
+                    includeUrl: false,
+                    includeChromeBookmarks: includeChromeBookmarks
+                });
                 displaySearchResults(results);
             }
             updateStatus('书签已成功删除', false);
@@ -2251,104 +1249,8 @@ function updateStatus(message, isError = false) {
     StatusManager.show(message, isError, duration);
 }
 
-// 修改搜索函数，添加相似度阈值
-async function searchSavedPages(queryEmbedding) {
-    const searchInput = document.getElementById('search-input').value.toLowerCase().trim();
-    const allBookmarks = await getAllBookmarks();
-    
-    // 定义相似度阈值
-    const apiService = await ConfigManager.getActiveService();
-    const SIMILARITY_THRESHOLDS = {
-        MAX: apiService.similarityThreshold?.MAX || 0.85,
-        HIGH: apiService.similarityThreshold?.HIGH || 0.65, // 高相关性，分数 >= 80
-        MEDIUM: apiService.similarityThreshold?.MEDIUM || 0.5, // 有点相关，可以显示， 分数 >= 60
-        LOW: apiService.similarityThreshold?.LOW || 0.4 // 基本无关，如果有关键词可能显示
-    };
-    logger.debug('相似度阈值:', SIMILARITY_THRESHOLDS);
-
-    //  计算单个书签的分数
-    const calculateBookmarkScore = (item, queryEmbedding, searchInput) => {
-        // 1. 计算向量相似度
-        let similarity = 0;
-        if (item.source === BookmarkSource.EXTENSION && item.embedding) {
-            similarity = cosineSimilarity(queryEmbedding, item.embedding);
-        }
-        
-        // 2. 检查关键词匹配
-        const keywordMatch = {
-            title: item.title?.toLowerCase().includes(searchInput) || false,
-            tags: item.tags?.some(tag => tag.toLowerCase().includes(searchInput)) || false,
-            excerpt: item.excerpt?.toLowerCase().includes(searchInput) || false
-        };
-        
-        const hasKeywordMatch = Object.values(keywordMatch).some(match => match);
-        
-        // 3. 计算基础分数
-        let score = 0;
-        if (similarity >= SIMILARITY_THRESHOLDS.HIGH) {
-            score = hasKeywordMatch 
-                ? 90 + 10 * (similarity - SIMILARITY_THRESHOLDS.HIGH) / (SIMILARITY_THRESHOLDS.MAX - SIMILARITY_THRESHOLDS.HIGH)
-                : 80 + 20 * (similarity - SIMILARITY_THRESHOLDS.HIGH) / (SIMILARITY_THRESHOLDS.MAX - SIMILARITY_THRESHOLDS.HIGH);
-        } else if (similarity >= SIMILARITY_THRESHOLDS.MEDIUM) {
-            score = hasKeywordMatch
-                ? 70 + 20 * (similarity - SIMILARITY_THRESHOLDS.MEDIUM) / (SIMILARITY_THRESHOLDS.HIGH - SIMILARITY_THRESHOLDS.MEDIUM)
-                : 60 + 20 * (similarity - SIMILARITY_THRESHOLDS.MEDIUM) / (SIMILARITY_THRESHOLDS.HIGH - SIMILARITY_THRESHOLDS.MEDIUM);
-        } else if (similarity >= SIMILARITY_THRESHOLDS.LOW) {
-            score = hasKeywordMatch
-                ? 30 + 30 * (similarity - SIMILARITY_THRESHOLDS.LOW) / (SIMILARITY_THRESHOLDS.MEDIUM - SIMILARITY_THRESHOLDS.LOW)
-                : 20 + 40 * (similarity - SIMILARITY_THRESHOLDS.LOW) / (SIMILARITY_THRESHOLDS.MEDIUM - SIMILARITY_THRESHOLDS.LOW);
-        }
-        
-        // 4. 根据匹配位置微调分数
-        if (hasKeywordMatch) {
-            score += (keywordMatch.title ? 5 : 0) +
-                    (keywordMatch.tags ? 3 : 0) +
-                    (keywordMatch.excerpt ? 2 : 0);
-        }
-        
-        // 确保分数在0-100范围内
-        score = Math.min(100, Math.max(0, score));
-        
-        return {
-            ...item,
-            score,
-            similarity,
-            keywordMatch
-        };
-    };
-
-    // 重构后的搜索函数部分
-    const results = Object.values(allBookmarks)
-        .map(item => calculateBookmarkScore(item, queryEmbedding, searchInput));
-
-    if (DEBUG) {
-        // 打印详细的匹配信息用于调试
-        results.sort((a, b) => b.score - a.score || b.similarity - a.similarity);
-        logger.debug('搜索结果详情:', results.map(r => ({
-            title: r.title,
-            score: Math.round(r.score),
-            similarity: r.similarity.toFixed(3),
-            keywordMatch: r.keywordMatch
-        })));
-    }
-
-    const filteredResults = results.filter(item => item.score >= 60 || Object.values(item.keywordMatch).some(match => match));
-    // 按分数降序排序, 分数相同按相似度排序
-    filteredResults.sort((a, b) => b.score - a.score || b.similarity - a.similarity);
-    
-    return filteredResults;
-}
-
-// 计算余弦相似度
-function cosineSimilarity(vec1, vec2) {
-    if (!vec1 || !vec2 || vec1.length === 0 || vec2.length === 0) {
-        return 0;
-    }
-
-    const dotProduct = vec1.reduce((sum, val, i) => sum + val * vec2[i], 0);
-    const magnitudeA = Math.sqrt(vec1.reduce((sum, val) => sum + val * val, 0));
-    const magnitudeB = Math.sqrt(vec2.reduce((sum, val) => sum + val * val, 0));
-    return magnitudeA && magnitudeB ? dotProduct / (magnitudeA * magnitudeB) : 0;
+function onSyncError(errorMessage) {
+    updateStatus('同步失败: ' + errorMessage, true);
 }
 
 // 监听来自 background 的消息
@@ -2358,7 +1260,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         sender: sender,
     });
 
-    if (message.type === 'UPDATE_TAB_STATE') {
+    if (message.type === MessageType.UPDATE_TAB_STATE) {
         const [tab] = await chrome.tabs.query({ 
             active: true, 
             currentWindow: true 
@@ -2368,20 +1270,20 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
             updateSaveButtonState(isSaved);
             await updatePrivacyIconState(tab);
         }
-    } else if (message.type === 'TOGGLE_SEARCH') {
+    } else if (message.type === MessageType.TOGGLE_SEARCH) {
         toggleSearching();
-    } else if (message.type === 'BOOKMARKS_UPDATED') {
+    } else if (message.type === MessageType.BOOKMARKS_UPDATED) {
+        await renderBookmarksList();    // 确保更新书签列表
         await Promise.all([
-            renderBookmarksList(),    // 确保更新书签列表
             updateBookmarkCount(),    // 更新计数
             updateTabState(),    // 更新保存按钮状态
         ]);
         const bookmarkMgr = await getBookmarkManager();
         await bookmarkMgr.checkEmbeddingStatus();
-    } else if (message.type === 'START_SYNC') {
+    } else if (message.type === MessageType.START_SYNC) {
         const bookmarkMgr = await getBookmarkManager();
         bookmarkMgr.setSyncingState(true);
-    } else if (message.type === 'FINISH_SYNC') {
+    } else if (message.type === MessageType.FINISH_SYNC) {
         const bookmarkMgr = await getBookmarkManager();
         bookmarkMgr.setSyncingState(false);
     }
@@ -2457,7 +1359,7 @@ function updateSaveButtonState(isSaved) {
 // 更新收藏数量显示
 async function updateBookmarkCount() {
     try {
-        const allBookmarks = await getAllBookmarks();
+        const allBookmarks = await getDisplayedBookmarks();
         const count = Object.keys(allBookmarks).length;
         const bookmarkCount = document.getElementById('bookmark-count');
         bookmarkCount.setAttribute('data-count', count);
@@ -2486,10 +1388,7 @@ let currentRenderer = null;
 
 // 修改渲染书签列表函数
 async function renderBookmarksList() {
-    const settings = await SettingsManager.getAll();
-    const viewMode = settings.display.viewMode;
-    const sortBy = settings.sort.bookmarks;
-
+    logger.debug('renderBookmarksList 开始', Date.now()/1000);
     const bookmarksList = document.getElementById('bookmarks-list');
     if (!bookmarksList) return;
 
@@ -2499,8 +1398,19 @@ async function renderBookmarksList() {
             currentRenderer = null;
         }
 
+        // 显示加载状态
+        bookmarksList.innerHTML = `
+            <li class="loading-state">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">正在加载书签...</div>
+            </li>`;
+
+        const settings = await SettingsManager.getAll();
+        const viewMode = settings.display.viewMode;
+        const sortBy = settings.sort.bookmarks;
+
         const data = viewMode === 'group'
-            ? Object.values(await getAllBookmarks())
+            ? Object.values(await getDisplayedBookmarks())
             : await filterManager.getFilteredBookmarks();
 
         let bookmarks = data.map((item) => ({
@@ -2515,11 +1425,37 @@ async function renderBookmarksList() {
             bookmarksList.innerHTML = `
                 <li class="empty-state">
                     <div class="empty-message">
-                        还没有保存任何书签
-                        <br>
-                        点击左上角的书签图标开始收藏
+                        <div class="empty-icon">
+                            <svg viewBox="0 0 24 24" width="48" height="48">
+                                <path fill="currentColor" d="M17,3H7A2,2 0 0,0 5,5V21L12,18L19,21V5A2,2 0 0,0 17,3M12,7A2,2 0 0,1 14,9A2,2 0 0,1 12,11A2,2 0 0,1 10,9A2,2 0 0,1 12,7Z" />
+                            </svg>
+                        </div>
+                        <div class="empty-title">还没有保存任何书签</div>
+                        <div class="empty-actions">
+                            <div class="action-item">
+                                <svg viewBox="0 0 24 24" width="16" height="16">
+                                    <path fill="currentColor" d="M17,3H7A2,2 0 0,0 5,5V21L12,18L19,21V5A2,2 0 0,0 17,3M12,7A2,2 0 0,1 14,9A2,2 0 0,1 12,11A2,2 0 0,1 10,9A2,2 0 0,1 12,7Z" />
+                                </svg>
+                                点击左上角的书签图标开始收藏
+                            </div>
+                            <div class="action-item import-action">
+                                <svg viewBox="0 0 24 24" width="16" height="16">
+                                    <path fill="currentColor" d="M14,12L10,8V11H2V13H10V16M20,18V6C20,4.89 19.1,4 18,4H6A2,2 0 0,0 4,6V9H6V6H18V18H6V15H4V18A2,2 0 0,0 6,20H18A2,2 0 0,0 20,18Z" />
+                                </svg>
+                                <a href="#" class="import-link">导入浏览器书签</a>
+                            </div>
+                        </div>
                     </div>
                 </li>`;
+
+            // 为导入链接添加点击事件
+            const importLink = bookmarksList.querySelector('.import-link');
+            if (importLink) {
+                importLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    openOptionsPage('import-export');
+                });
+            }
             return;
         }
 
@@ -2562,9 +1498,18 @@ async function renderBookmarksList() {
             currentRenderer = new BookmarkRenderer(bookmarksList, bookmarks);
         }
         await currentRenderer.initialize();
-        
+        logger.debug('renderBookmarksList 完成', Date.now()/1000);
     } catch (error) {
         logger.error('渲染书签列表失败:', error);
+        // 显示错误状态
+        bookmarksList.innerHTML = `
+            <li class="error-state">
+                <div class="error-message">
+                    加载书签失败
+                    <br>
+                    ${error.message}
+                </div>
+            </li>`;
         updateStatus('加载书签失败: ' + error.message, true);
     }
 }
@@ -2604,64 +1549,6 @@ async function initializeViewModeSwitch() {
             // 切换视图模式
             await renderBookmarksList();
         });
-    });
-}
-
-// 添加计算加权使用分数的函数
-function calculateWeightedScore(useCount, lastUsed) {
-    if (!useCount || !lastUsed) return 0;
-    
-    const now = new Date();
-    const lastUsedDate = new Date(lastUsed);
-    const daysDiff = Math.floor((now - lastUsedDate) / (1000 * 60 * 60 * 24)); // 转换为天数并向下取整
-    
-    // 使用指数衰减函数
-    // 半衰期设为30天，即30天前的使用次数权重减半
-    const decayFactor = Math.exp(-Math.log(2) * daysDiff / 30);
-    
-    // 基础分数 = 使用次数 * 时间衰减因子
-    const weightedScore = useCount * decayFactor;
-    
-    // 返回四舍五入后的整数
-    return Math.round(weightedScore);
-}
-
-// 修改更新书签使用频率的函数
-async function updateBookmarkUsage(url) {
-    try {
-        const data = await LocalStorageMgr.getBookmark(url);
-        if (data) {
-            const bookmark = data;
-            
-            // 更新使用次数和最后使用时间
-            bookmark.useCount = calculateWeightedScore(
-                bookmark.useCount, 
-                bookmark.lastUsed
-            ) + 1;
-            bookmark.lastUsed = new Date().toISOString();
-            
-            await LocalStorageMgr.setBookmark(url, bookmark);
-            return bookmark;
-        }
-    } catch (error) {
-        logger.error('更新书签使用频率失败:', error);
-    }
-    return null;
-}
-
-async function recordBookmarkChange(bookmarks, isDeleted) {
-    chrome.runtime.sendMessage({
-        type: 'SYNC_BOOKMARK_CHANGE',
-        data: { bookmarks, isDeleted }
-    }, (response) => {
-        if (chrome.runtime.lastError) {
-            logger.error('同步失败:', chrome.runtime.lastError);
-            return;
-        }
-        logger.debug("recordBookmarkChange response", response);
-        if (!response.success) {
-            updateStatus('同步失败: ' + response.error, true);
-        }
     });
 }
 
@@ -2767,7 +1654,7 @@ class BookmarkRenderer {
             : '';
         
         li.innerHTML = `
-            <a href="${bookmark.url}" class="bookmark-link" target="_self">
+            <a href="${bookmark.url}" class="bookmark-link" target="_blank">
                 <div class="bookmark-info">
                     <div class="bookmark-main">
                         <div class="bookmark-favicon">
@@ -2810,6 +1697,7 @@ class BookmarkRenderer {
         // 删除按钮事件
         li.querySelector('.delete-btn').addEventListener('click', async (e) => {
             e.stopPropagation();
+            e.preventDefault();
             deleteBookmark(bookmark);
         });
 
@@ -2818,6 +1706,7 @@ class BookmarkRenderer {
         if (editBtn) {
             editBtn.addEventListener('click', async (e) => {
                 e.stopPropagation();
+                e.preventDefault();
                 // 获取 BookmarkManager 实例
                 const bookmarkManager = await getBookmarkManager();
                 if (bookmarkManager) {
@@ -2996,7 +1885,8 @@ class SettingsDialog {
             manualPrivacySwitch: document.getElementById('manual-privacy-mode'),
             manualPrivacyContainer: document.getElementById('manual-privacy-container'),
             shortcutsBtn: document.getElementById('keyboard-shortcuts'),
-            openSettingsPageBtn: document.getElementById('open-settings-page')
+            openSettingsPageBtn: document.getElementById('open-settings-page'),
+            feedbackBtn: document.getElementById('feedback-button')
         };
     }
 
@@ -3027,10 +1917,8 @@ class SettingsDialog {
         // 设置变更事件
         this.elements.showChromeBookmarks.addEventListener('change', async (e) => 
             await this.handleSettingChange('display.showChromeBookmarks', e.target.checked, async () => {
-                await Promise.all([
-                    renderBookmarksList(),
-                    updateBookmarkCount()
-                ]);
+                await renderBookmarksList();
+                await updateBookmarkCount();
             }));
 
         this.elements.autoFocusSearch.addEventListener('change', async (e) =>
@@ -3069,6 +1957,14 @@ class SettingsDialog {
 
         this.elements.openSettingsPageBtn.addEventListener('click', () => {
             chrome.runtime.openOptionsPage();
+            this.close();
+        });
+
+        // 添加反馈按钮点击事件
+        this.elements.feedbackBtn.addEventListener('click', () => {
+            chrome.tabs.create({
+                url: `${SERVER_URL}/feedback`
+            });
             this.close();
         });
     }
@@ -3306,14 +2202,9 @@ class SyncButtonManager {
             }
             
             // 发送同步消息
-            chrome.runtime.sendMessage({
-                type: 'FORCE_SYNC_BOOKMARK'
+            sendMessageSafely({
+                type: MessageType.FORCE_SYNC_BOOKMARK
             }, async (response) => {
-                if (chrome.runtime.lastError) {
-                    logger.error('同步失败:', chrome.runtime.lastError);
-                    return;
-                }
-
                 logger.debug("handleSync response", response);
                 // 更新UI状态
                 this.setSyncingState(false);
@@ -3348,72 +2239,6 @@ class SyncButtonManager {
     }   
 }
 
-class SearchHistoryManager {
-    constructor() {
-        this.MAX_HISTORY = 8;
-        this.MAX_CACHE_HISTORY = 10;
-        this.STORAGE_KEY = 'recentSearches';
-        this.VECTOR_CACHE_KEY = 'searchVectorCache';
-    }
-
-    async getHistory() {
-        return await LocalStorageMgr.get(this.STORAGE_KEY) || [];
-    }
-
-    async addSearch(query) {
-        let history = await this.getHistory();
-        // 移除重复项
-        history = history.filter(item => item.query !== query);
-        // 添加到开头
-        history.unshift({
-            query,
-            timestamp: Date.now()
-        });
-        // 保持最大数量
-        history = history.slice(0, this.MAX_HISTORY);
-        await LocalStorageMgr.set(this.STORAGE_KEY, history);
-    }
-
-    async getVectorCache() {
-        return await LocalStorageMgr.get(this.VECTOR_CACHE_KEY) || {};
-    }
-
-    async cacheVector(query, vector, serviceId) {
-        const cache = await this.getVectorCache();
-        cache[query] = {
-            vector,
-            serviceId,
-            timestamp: Date.now()
-        };
-        
-        // 如果缓存项超过10个，删除最旧的
-        const entries = Object.entries(cache);
-        if (entries.length > this.MAX_CACHE_HISTORY) {
-            // 按时间戳排序
-            entries.sort((a, b) => b[1].timestamp - a[1].timestamp);
-            // 只保留最新的10个
-            const newCache = Object.fromEntries(entries.slice(0, this.MAX_CACHE_HISTORY));
-            await LocalStorageMgr.set(this.VECTOR_CACHE_KEY, newCache);
-        } else {
-            await LocalStorageMgr.set(this.VECTOR_CACHE_KEY, cache);
-        }
-    }
-
-    async getVector(query) {
-        const cache = await this.getVectorCache();
-        const activeService = await ConfigManager.getActiveService();
-        if (cache[query] && cache[query].serviceId === activeService.id) {
-            return cache[query].vector;
-        }
-        return null;
-    }
-
-    async clearVectorCache() {
-        await LocalStorageMgr.remove(this.VECTOR_CACHE_KEY);
-    }
-}
-
-const searchHistoryManager = new SearchHistoryManager();
 // 在文件开头添加变量来跟踪搜索记录的显示状态
 let shouldShowRecentSearches = true;
 
@@ -3429,29 +2254,14 @@ async function handleSearch() {
     try {
         StatusManager.startOperation('正在搜索');
         
-        // 尝试从缓存获取向量
-        let queryEmbedding = await searchHistoryManager.getVector(query);
-        logger.debug('从缓存获取向量:', queryEmbedding);
+        const includeChromeBookmarks = await SettingsManager.get('display.showChromeBookmarks');
+        const results = await searchManager.search(query, {
+            debounce: false,
+            includeUrl: false,
+            includeChromeBookmarks: includeChromeBookmarks
+        });
         
-        // 如果缓存中没有,则请求新的向量
-        if (!queryEmbedding) {
-            queryEmbedding = await getEmbedding(query);
-            if (queryEmbedding) {
-                const activeService = await ConfigManager.getActiveService();
-                await searchHistoryManager.cacheVector(query, queryEmbedding, activeService.id);
-                logger.debug('向量缓存成功:', {
-                    query,
-                    vector: queryEmbedding,
-                    serviceId: activeService.id
-                });
-            }
-        }
-
-        const results = await searchSavedPages(queryEmbedding);
         displaySearchResults(results);
-        
-        // 添加到搜索历史
-        await searchHistoryManager.addSearch(query);
         await renderSearchHistory();
         
         StatusManager.endOperation('搜索完成');
@@ -3464,7 +2274,7 @@ async function handleSearch() {
 async function renderSearchHistory() {
     const container = document.getElementById('recent-searches');
     const wrapper = container.querySelector('.recent-searches-wrapper');
-    const history = await searchHistoryManager.getHistory();
+    const history = await searchManager.searchHistoryManager.getHistory();
     
     // 如果历史记录为空或者用户已关闭搜索记录，则不显示
     if (history.length === 0 || !shouldShowRecentSearches) {
@@ -3621,7 +2431,6 @@ async function initializePopup() {
         await Promise.all([
             LocalStorageMgr.init(),
             SettingsManager.init(),
-            statsManager.init(),
         ]);
 
         const settingsDialog = new SettingsDialog();

@@ -20,7 +20,7 @@
                     </div>
                     <button id="save-page" class="icon-button" title="为此页面添加书签">
                         <svg class="save-icon" viewBox="0 0 24 24" width="20" height="20">
-                            <path fill="currentColor" d="M17,3H7A2,2 0 0,0 5,5V21L12,18L19,21V5C19,3.89 18.1,3 17,3Z" />
+                            <path fill="currentColor" d="M12,2L15.09,8.26L22,9.27L17,14.14L18.18,21.02L12,17.77L5.82,21.02L7,14.14L2,9.27L8.91,8.26L12,2" />
                         </svg>
                         <svg class="edit-icon" viewBox="0 0 24 24" width="20" height="20">
                             <path fill="currentColor" d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" />
@@ -136,7 +136,12 @@
             </div>
             <div class="bookmarks-container">
                 <!-- 新的控制容器 -->
-                <ul id="bookmarks-list" class="bookmarks-list"></ul>
+                <ul id="bookmarks-list" class="bookmarks-list">
+                    <li class="loading-state">
+                        <div class="loading-spinner"></div>
+                        <div class="loading-text">正在加载书签...</div>
+                    </li>
+                </ul>
             </div>
             <!-- 搜索记录和结果容器 -->
             <div class="search-content">
@@ -276,6 +281,11 @@
                     </button>
                 </div>
                 <div class="right-group">
+                    <button id="feedback-button" class="icon-button" title="提交反馈">
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path fill="currentColor" d="M12,3C6.5,3 2,6.58 2,11C2.05,13.15 3.06,15.17 4.75,16.5C4.75,17.1 4.33,18.67 2,21C2,21 5.55,21 8.47,18.5C9.57,18.82 10.76,19 12,19C17.5,19 22,15.42 22,11C22,6.58 17.5,3 12,3M7,10C7.83,10 8.5,10.67 8.5,11.5C8.5,12.33 7.83,13 7,13C6.17,13 5.5,12.33 5.5,11.5C5.5,10.67 6.17,10 7,10M12,10C12.83,10 13.5,10.67 13.5,11.5C13.5,12.33 12.83,13 12,13C11.17,13 10.5,12.33 10.5,11.5C10.5,10.67 11.17,10 12,10M17,10C17.83,10 18.5,10.67 18.5,11.5C18.5,12.33 17.83,13 17,13C16.17,13 15.5,12.33 15.5,11.5C15.5,10.67 16.17,10 17,10Z" />
+                        </svg>
+                    </button>
                     <button id="keyboard-shortcuts" class="icon-button" title="键盘快捷键">
                         <svg viewBox="0 0 24 24" width="20" height="20">
                             <path fill="currentColor" d="M19 10H17V8H19M19 13H17V11H19M16 10H14V8H16M16 13H14V11H16M16 17H8V15H16M7 10H5V8H7M7 13H5V11H7M8 11H10V13H8M8 8H10V10H8M11 11H13V13H11M11 8H13V10H11M20 5H4C2.89 5 2 5.89 2 7V17C2 18.11 2.9 19 4 19H20C21.11 19 22 18.11 22 17V7C22 5.89 21.1 5 20 5Z" />
@@ -315,15 +325,21 @@
         </div>
     </template>
 
-    <script src="storageManager.js"></script>
-    <script src="util.js"></script>
+    <script src="consts.js"></script>
+    <script src="common.js"></script>
+    <script src="logger.js"></script>
     <script src="env.js"></script>
+    <script src="models.js"></script>
     <script src="config.js"></script>
+    <script src="storageManager.js"></script>
     <script src="settingsManager.js"></script>
     <script src="statsManager.js"></script>
+    <script src="util.js"></script>
+    <script src="api.js"></script>
     <script src="customFilter.js"></script>
     <script src="filterManager.js"></script>
     <script src="bookmarkRenderer.js"></script>
+    <script src="search.js"></script>
     <script src="popup.js"></script>
 </body>
 

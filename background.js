@@ -1,6 +1,8 @@
 // background.js
-importScripts('storageManager.js', 'util.js', 'env.js', 'sync.js');
+importScripts('common.js', 'consts.js', 'logger.js', 'env.js', 'config.js', 'models.js', 'storageManager.js', 'settingsManager.js', 'statsManager.js',
+     'util.js', 'sync.js', 'api.js', 'search.js');
 
+const EnvIdentifier = 'background';
 // ------------------------------ 辅助函数分割线 ------------------------------
 // 更新页面状态（图标和按钮）
 async function updatePageState() {
@@ -26,21 +28,28 @@ async function updatePageState() {
         const isSaved = await checkIfPageSaved(tab.url);
         await updateExtensionIcon(tab.id, isSaved);
         sendMessageSafely({
-            type: 'UPDATE_TAB_STATE'
+            type: MessageType.UPDATE_TAB_STATE
         });
     } catch (error) {
         logger.error('更新页面状态失败:', error);
     }
 }
 
-let syncManager = null;
-async function getSyncManager() {
-    if (!syncManager) {
-        syncManager = new SyncManager();
-        await syncManager.init();
+// 创建初始化函数
+async function initializeExtension() {
+    try {
+        await Promise.all([
+            LocalStorageMgr.init(),
+            SettingsManager.init(),
+        ]);
+        logger.info("扩展初始化完成");
+    } catch (error) {
+        logger.error("扩展初始化失败:", error);
     }
-    return syncManager;
 }
+
+// 调用初始化函数
+initializeExtension();
 
 // ------------------------------ 事件监听分割线 ------------------------------
 logger.info("background.js init");
@@ -51,8 +60,23 @@ chrome.sidePanel
   .catch((error) => logger.error(error));
 
 // 监听插件首次安装时的事件
-chrome.runtime.onInstalled.addListener(() => {
-    logger.info("Smart Bookmark 插件已成功安装！");
+chrome.runtime.onInstalled.addListener(async ({ reason }) => {
+    if (reason === 'install') {
+        logger.info("Smart Bookmark 插件已成功安装！");
+        // 打开介绍页
+        chrome.tabs.create({
+            url: chrome.runtime.getURL('intro.html')
+        });
+    } else if (reason === 'update') {
+        logger.info("Smart Bookmark 插件已成功更新！");
+        // 打开介绍页
+        const introCompleted = await LocalStorageMgr.get('intro-completed');
+        if (!introCompleted) {
+            chrome.tabs.create({
+                url: chrome.runtime.getURL('intro.html')
+            });
+        }
+    }
 });
 
 // 监听来自插件内部的消息
@@ -62,9 +86,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         sender: sender,
     });
 
-    if (message.type === 'FORCE_SYNC_BOOKMARK') {
-        getSyncManager()
-            .then(syncManager => syncManager.forceSync())
+    if (message.type === MessageType.FORCE_SYNC_BOOKMARK) {
+        syncManager.startSync(true)
             .then(() => sendResponse({ success: true }))
             .catch(error => {
                 logger.error('Error during sync:', error);
@@ -72,9 +95,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             });
 
         return true;
-    } else if (message.type === 'SYNC_BOOKMARK_CHANGE') {
-        getSyncManager()
-            .then(syncManager => syncManager.recordBookmarkChange(message.data.bookmarks, message.data.isDeleted))
+    } else if (message.type === MessageType.SYNC_BOOKMARK_CHANGE) {
+        syncManager.recordBookmarkChange(message.data.bookmarks, message.data.isDeleted, message.data.beginSync)
+            .then(() => sendResponse({ success: true }))
+            .catch(error => {
+                logger.error('Error during sync:', error);
+                sendResponse({ success: false, error: error.message });
+            });
+        return true;
+    } else if (message.type === MessageType.AUTO_SYNC_BOOKMARK) {
+        syncManager.startSync()
             .then(() => sendResponse({ success: true }))
             .catch(error => {
                 logger.error('Error during sync:', error);
@@ -85,7 +115,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 // 监听来自登录页面的消息
-chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessageExternal.addListener(async (message, sender, sendResponse) => {
     logger.debug("background 收到网页消息", {
         message: message,
         sender: sender,
@@ -93,8 +123,16 @@ chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => 
     if (sender.origin !== SERVER_URL) {
         return;
     }   
-    if (message.type === 'LOGIN_SUCCESS') {
+    if (message.type === ExternalMessageType.LOGIN_SUCCESS) {
         const { token, user } = message.data;
+        logger.debug('登录成功', {user: user});
+
+        const lastUser = await LocalStorageMgr.get('user');
+        const lastSyncVersion = await LocalStorageMgr.get('lastSyncVersion') || 0;
+        if (lastUser && lastUser.id !== user.id && lastSyncVersion > 0) {
+            // 如果用户发生变化，则需要重新同步全部书签
+            await LocalStorageMgr.remove(['lastSyncVersion', 'lastAutoSyncTime']);
+        }
             
         Promise.all([
             LocalStorageMgr.set('token', token),
@@ -105,7 +143,12 @@ chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => 
             
         // 重要：返回 true 表示我们会异步发送响应
         return true;
-    } 
+    }  else if (message.type === ExternalMessageType.CHECK_LOGIN_STATUS) {
+        const token = await LocalStorageMgr.get('token');
+        const user = await LocalStorageMgr.get('user');
+        sendResponse({ success: true, token: token, user: user });
+        return true;
+    }
 });
 
 chrome.storage.onChanged.addListener(async (changes, areaName) => {
@@ -179,8 +222,121 @@ chrome.commands.onCommand.addListener(async (command) => {
         });
         if (tab) {
             sendMessageSafely({
-                type: 'TOGGLE_SEARCH',
+                type: MessageType.TOGGLE_SEARCH,
             });
         }
     }
 });
+
+// 地址栏事件监听
+if (chrome.omnibox) {
+    let cachedQuery = '';
+    chrome.omnibox.setDefaultSuggestion({
+        description: `输入搜索词，按Space键开始搜索`,
+    });
+
+    chrome.omnibox.onInputStarted.addListener(() => {
+        logger.debug("Omnibox 输入开始");
+        cachedQuery = '';
+    });
+
+    chrome.omnibox.onInputChanged.addListener(async (text, suggest) => {
+        logger.debug("Omnibox 输入变化", {
+            text: text,
+        });
+        const query = text.trim();
+        const description = `${query ? `按Space键开始搜索: ${query}` : '输入搜索词，按Space键开始搜索'}`;
+        chrome.omnibox.setDefaultSuggestion({
+            description: description,
+        });
+
+        // 如果输入不是以空格结尾，则不进行搜索
+        if (!text.endsWith(' ')) {
+            return;
+        }
+        if (!query || query.length < 2) {
+            logger.debug("Omnibox 输入太短，不进行搜索");
+            return;
+        }
+        cachedQuery = query;
+
+        try {
+            // 获取用户设置的omnibox结果数量限制
+            const settings = await SettingsManager.getAll();
+            const omniboxLimit = settings.search?.omniboxSearchLimit || 5;
+
+            const results = await searchManager.search(query, {
+                debounce: false,
+                maxResults: omniboxLimit, // 使用设置中的限制值
+                includeUrl: true,
+                includeChromeBookmarks: true,
+                recordSearch: false
+            });
+
+            const suggestions = results.map((result) => {
+                const title = escapeXml(result.title);
+                const url = escapeXml(result.url);
+                const tags = result.tags.map(tag => `🏷️${tag}`);
+                let tagsStr = '';
+                if (tags.length > 0) {
+                    tagsStr = tags.slice(0, 2).join(' ');
+                    tagsStr = escapeXml(tagsStr);
+                }
+
+                const description = `
+                    ${result.score > 80 ? `🌟`: ''}
+                    <dim>${title}</dim>
+                    ${tagsStr ? `| <url>${tagsStr}</url>` : ''}
+                    | 🔗<url>${url}</url>
+                `.trim().replace(/\s+/g, ' ');
+                return {
+                    content: url,
+                    description: description
+                };
+            });
+
+            suggest(suggestions);
+        } catch (error) {
+            logger.error('生成搜索建议失败:', error);
+        }
+    });
+
+    chrome.omnibox.onInputEntered.addListener(async (url) => {
+        logger.debug("Omnibox 输入完成", {
+            url: url,
+        });
+        // 检查url格式，如果不是正确的url则返回
+        url = url.trim();
+        if (!url) return;
+        
+        try {
+            new URL(url);
+        } catch (error) {
+            logger.debug('输入非URL:', {
+                url: url,
+                error: error,
+            });
+            const newURL = 'https://www.google.com/search?q=' + encodeURIComponent(url);
+            chrome.tabs.create({ url: newURL });
+            return;
+        }
+        
+        // 更新使用频率
+        await Promise.all([
+            updateBookmarkUsage(url),
+            searchManager.searchHistoryManager.addSearch(cachedQuery)
+        ]);
+        // 在当前标签页打开URL
+        chrome.tabs.create({ url: url });
+    });
+
+    chrome.omnibox.onInputStarted.addListener(() => {
+        logger.debug("Omnibox 输入开始");
+    });
+
+    chrome.omnibox.onInputCancelled.addListener(() => {
+        logger.debug("Omnibox 输入取消");
+    });
+} else {
+    logger.error("Omnibox API 不可用");
+}

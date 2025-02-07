@@ -2,14 +2,6 @@ class APIStatsManager {
     constructor() {
         this.storageKey = 'api_stats';
         this.currentMonth = new Date().getMonth();
-        this.inited = false;
-        this.stats = null;
-    }
-
-    async init() {
-        if (this.inited) return;
-        this.stats = await this.loadStats();
-        this.inited = true;
     }
 
     async loadStats() {
@@ -40,25 +32,27 @@ class APIStatsManager {
         }
     }
 
-    async saveStats() {
+    async saveStats(stats) {
         try {
-            await LocalStorageMgr.set(this.storageKey, this.stats);
+            await LocalStorageMgr.set(this.storageKey, stats);
         } catch (error) {
             logger.error('保存API统计数据失败:', error);
         }
     }
 
     async recordChatUsage(inputTokens, outputTokens) {
-        this.stats.chat.calls += 1;
-        this.stats.chat.inputTokens += inputTokens;
-        this.stats.chat.outputTokens += outputTokens;
-        await this.saveStats();
+        const stats = await this.loadStats();
+        stats.chat.calls += 1;
+        stats.chat.inputTokens += inputTokens;
+        stats.chat.outputTokens += outputTokens;
+        await this.saveStats(stats);
     }
 
     async recordEmbeddingUsage(tokens) {
-        this.stats.embedding.calls += 1;
-        this.stats.embedding.tokens += tokens;
-        await this.saveStats();
+        const stats = await this.loadStats();
+        stats.embedding.calls += 1;
+        stats.embedding.tokens += tokens;
+        await this.saveStats(stats);
     }
 }
 

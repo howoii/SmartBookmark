@@ -4,18 +4,50 @@ class LocalStorageMgr {
     };
 
     static _bookmarksCache = null;
+    static _debounceTimer = null;
+    static DEBOUNCE_DELAY = 300; // 300毫秒的防抖延迟
 
     static async init() {
         await this.getBookmarks();
-        this.setupStorageListener();
+        this.setupListener();
     }
 
-    static setupStorageListener() {
-        chrome.storage.onChanged.addListener(async (changes, areaName) => {
-            if (areaName === 'local') {
-                if (Object.keys(changes).some(key => key.startsWith('bookmark.'))) {
-                    this._bookmarksCache = null;
-                }   
+    static sendMessageSafely(message, callback = null) {
+        message.env = EnvIdentifier;
+        chrome.runtime.sendMessage(message, (response) => {
+            const lastError = chrome.runtime.lastError;
+            if (lastError) {
+                logger.debug('消息处理失败:', {
+                    error: lastError.message,
+                    message: message
+                });
+            }
+            if (callback) {
+                callback(response);
+            }
+        });
+    }
+
+    // 防抖函数
+    static async _debouncedUpdateBookmarks() {
+        if (this._debounceTimer) {
+            clearTimeout(this._debounceTimer);
+        }
+
+        this._bookmarksCache = null;
+        return new Promise((resolve) => {
+            this._debounceTimer = setTimeout(async () => {
+                await this.getBookmarks();
+                resolve();
+            }, this.DEBOUNCE_DELAY);
+        });
+    }
+
+    static setupListener() {
+        chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+            if (message.type === MessageType.BOOKMARK_STORAGE_UPDATED) {
+                // 使用防抖处理
+                this._debouncedUpdateBookmarks();
             }
         });
     }
@@ -27,7 +59,11 @@ class LocalStorageMgr {
     }
 
     static async set(key, value) {
-        await chrome.storage.local.set({ [key]: value });
+        await this.setObject({ [key]: value })
+    }
+
+    static async setObject(object) {
+        await chrome.storage.local.set(object);
     }
 
     static async remove(keys) {
@@ -53,31 +89,81 @@ class LocalStorageMgr {
     }
 
     // 书签相关操作
+    static getBookmarkKey(url) {
+        return `${this.Namespace.BOOKMARK}${url}`;
+    }
+
     static async getBookmarks() {
+        logger.debug('开始获取书签', Date.now()/1000);
         if (this._bookmarksCache) {
+            logger.debug('书签缓存命中', Date.now()/1000);
             return this._bookmarksCache;
         }
         const bookmarks = await this.getKeysByPrefix(this.Namespace.BOOKMARK);
+        logger.debug('书签缓存未命中', Date.now()/1000);
         this._bookmarksCache = bookmarks;
         return bookmarks;
     }
 
-    static async getBookmark(id) {
-        return await this.get(`${this.Namespace.BOOKMARK}${id}`);
+    static async getBookmark(url) {
+        const key = this.getBookmarkKey(url);
+        const bookmarks = await this.getBookmarks();
+        return bookmarks[key];
     }
 
-    static async setBookmark(id, bookmark) {
-        await this.set(`${this.Namespace.BOOKMARK}${id}`, bookmark);
-        this._bookmarksCache = null;  // 更新书签时清除缓存
+    static async setBookmark(url, bookmark) {
+        const key = this.getBookmarkKey(url);
+        await this.set(key, bookmark);
+        // 更新缓存
+        this._bookmarksCache[key] = bookmark;
+        this.sendMessageSafely({
+            type: MessageType.BOOKMARK_STORAGE_UPDATED,
+        });
     }
 
-    static async removeBookmark(id) {
-        await this.remove([`${this.Namespace.BOOKMARK}${id}`]);
-        this._bookmarksCache = null;  // 删除书签时清除缓存
+    static async setBookmarks(bookmarks) {
+        // 将书签数组转换为对象
+        const bookmarksObject = bookmarks.reduce((obj, bookmark) => {
+            obj[this.getBookmarkKey(bookmark.url)] = bookmark;
+            return obj;
+        }, {});
+        await this.setObject(bookmarksObject);
+        // 更新缓存
+        for (const key of Object.keys(bookmarksObject)) {
+            this._bookmarksCache[key] = bookmarksObject[key];
+        }
+        this.sendMessageSafely({
+            type: MessageType.BOOKMARK_STORAGE_UPDATED,
+        });
+    }
+
+    static async removeBookmark(url) {
+        const key = this.getBookmarkKey(url);
+        await this.remove([key]);
+        // 更新缓存
+        delete this._bookmarksCache[key];
+        this.sendMessageSafely({
+            type: MessageType.BOOKMARK_STORAGE_UPDATED,
+        });
+    }
+
+    static async removeBookmarks(urls) {
+        const keys = urls.map(url => this.getBookmarkKey(url));
+        await this.remove(keys);
+        // 更新缓存
+        for (const key of keys) {
+            delete this._bookmarksCache[key];
+        }
+        this.sendMessageSafely({
+            type: MessageType.BOOKMARK_STORAGE_UPDATED,
+        });
     }
 
     static async clearBookmarks() {
         await this.removeKeysByPrefix(this.Namespace.BOOKMARK);
-        this._bookmarksCache = null;  // 清空书签时清除缓存
+        this._bookmarksCache = {};  // 清空书签时清除缓存
+        this.sendMessageSafely({
+            type: MessageType.BOOKMARK_STORAGE_UPDATED,
+        });
     }
 }

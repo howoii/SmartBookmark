@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="css/settings.css">
 </head>
 <body>
+    <div id="toast" class="toast"></div>
     <!-- 添加侧边栏导航 -->
     <div class="sidebar">
         <div class="logo-section">
@@ -34,12 +35,26 @@
                 <i class="icon-privacy"></i>
                 <span>隐私</span>
             </a>
+            <a href="#import-export" class="nav-item" data-section="import-export">
+                <i class="icon-import-export"></i>
+                <span>导入/导出</span>
+            </a>
         </nav>
         <div class="sidebar-footer">
-            <a href="#" class="footer-link" id="privacy-policy-link">
-                <i class="icon-policy"></i>
-                <span>隐私政策</span>
-            </a>
+            <div class="footer-links">
+                <a href="#" class="footer-link" id="privacy-policy-link">
+                    <i class="icon-policy"></i>
+                    <span>隐私政策</span>
+                </a>
+                <a href="#" class="footer-link" id="changelog-link">
+                    <i class="icon-changelog"></i>
+                    <span>更新日志</span>
+                </a>
+                <a href="#" class="footer-link" id="feedback-link">
+                    <i class="icon-feedback"></i>
+                    <span>提交反馈</span>
+                </a>
+            </div>
         </div>
     </div>
 
@@ -79,6 +94,34 @@
                     </div>
                     <div id="actionButtons" class="status-actions">
                         <!-- 操作按钮将由 JavaScript 动态填充 -->
+                    </div>
+                </div>
+                
+                <!-- 修改搜索设置部分 -->
+                <div class="search-settings-card">
+                    <h3>搜索设置</h3>
+                    <div class="settings-grid">
+                        <div class="setting-item-card">
+                            <div class="form-group">
+                                <label for="max-search-results">最大搜索结果数量</label>
+                                <input type="number" id="max-search-results" min="1" max="100" value="50">
+                                <p class="setting-description">设置搜索时最多显示多少个结果（1-100之间）</p>
+                            </div>
+                        </div>
+                        <div class="setting-item-card">
+                            <div class="form-group">
+                                <label for="omnibox-search-limit">
+                                    地址栏搜索结果数量
+                                    <div class="tooltip-icon" data-tooltip="在浏览器地址栏输入 'sb' 后按空格或 Tab 键，即可使用地址栏快速搜索书签">
+                                        <svg width="14" height="14" viewBox="0 0 24 24">
+                                            <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                        </svg>
+                                    </div>
+                                </label>
+                                <input type="number" id="omnibox-search-limit" min="1" max="9" value="5">
+                                <p class="setting-description">设置在浏览器地址栏（Omnibox）搜索时显示的结果数量（1-9之间）</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -161,12 +204,40 @@
             <!-- 隐私部分 -->
             <div class="settings-section" id="privacy-section">
                 <h2>隐私设置</h2>
+                <div class="section-description">
+                    <p>系统会自动检测并保护以下类型的隐私页面，对于这些页面，将不会读取和分析页面内容:</p>
+                    <ul class="privacy-rules-list">
+                        <li>
+                            <span class="rule-name">认证页面</span>
+                            <span class="rule-desc">登录、注册、密码重置等页面</span>
+                        </li>
+                        <li>
+                            <span class="rule-name">个人账户页面</span>
+                            <span class="rule-desc">个人资料、账户设置、管理后台等页面</span>
+                        </li>
+                        <li>
+                            <span class="rule-name">支付页面</span>
+                            <span class="rule-desc">支付、账单、订阅管理等页面</span>
+                        </li>
+                        <li>
+                            <span class="rule-name">邮件消息页面</span>
+                            <span class="rule-desc">邮箱、私信、聊天等页面</span>
+                        </li>
+                        <li>
+                            <span class="rule-name">敏感参数</span>
+                            <span class="rule-desc">包含token、密钥等敏感信息的URL</span>
+                        </li>
+                    </ul>
+                </div>
+
                 <div id="custom-domains-section" class="setting-item">
                     <div class="setting-header">
                         <h3>自定义隐私域名</h3>
                         <button id="add-domain-btn" class="primary-btn">添加域名</button>
                     </div>
-                    <p class="setting-description">这些域名下的页面将自动启用隐私保护</p>
+                    <p class="setting-description">
+                        除了系统默认保护的页面外，您还可以添加需要额外保护的域名
+                    </p>
                     <div class="domains-list" id="domains-list">
                         <!-- 域名列表将通过 JavaScript 动态添加 -->
                     </div>
@@ -193,6 +264,171 @@
                     
                     <div id="filters-list" class="filters-list">
                         <!-- 标签列表将通过 JavaScript 动态添加 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 在settings-container中添加新的section -->
+            <div class="settings-section" id="import-export-section">
+                <h2>导入导出</h2>
+                <div class="section-description">
+                    导入或导出您的书签数据
+                </div>
+                
+                <div class="import-export-grid">
+                    <!-- 导入浏览器书签卡片 -->
+                    <div class="import-export-card">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" width="32" height="32">
+                                <path fill="currentColor" d="M17,3H7A2,2 0 0,0 5,5V21L12,18L19,21V5C19,3.89 18.1,3 17,3Z"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <h3>导入浏览器书签</h3>
+                            <p>从Chrome浏览器导入现有书签</p>
+                            <button id="import-browser-btn" class="primary-btn">
+                                开始导入
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 导出到本地文件卡片 -->
+                    <div class="import-export-card">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" width="32" height="32">
+                                <path fill="currentColor" d="M14,2H6C4.89,2 4,2.89 4,4V20C4,21.11 4.89,22 6,22H18C19.11,22 20,21.11 20,20V8L14,2M18,20H6V4H13V9H18V20M12,12L16,16H13.5V19H10.5V16H8L12,12Z"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <h3>导出到本地</h3>
+                            <p>将书签导出为本地文件</p>
+                            <button id="export-local-btn" class="primary-btn">
+                                开始导出
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 从本地文件导入卡片 -->
+                    <div class="import-export-card">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" width="32" height="32">
+                                <path fill="currentColor" d="M14,2H6C4.89,2 4,2.89 4,4V20C4,21.11 4.89,22 6,22H18C19.11,22 20,21.11 20,20V8L14,2M18,20H6V4H13V9H18V20M12,19L8,15H11V12H13V15H16L12,19Z"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <h3>从本地导入</h3>
+                            <p>从本地文件导入书签数据</p>
+                            <button id="import-local-btn" class="primary-btn">
+                                选择文件
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 导入进度对话框 -->
+                <div id="import-progress-dialog" class="dialog">
+                    <div class="dialog-content">
+                        <div class="dialog-header">
+                            <h3>导入浏览器书签</h3>
+                            <button class="close-dialog-btn">×</button>
+                        </div>
+                        <div class="import-progress-body">
+                            <div class="progress-status">正在导入...</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill"></div>
+                            </div>
+                            <div class="progress-details">
+                                <span class="progress-count">0/0</span>
+                                <span class="progress-percentage">0%</span>
+                            </div>
+                            <!-- 添加导入日志区域 -->
+                            <div class="import-logs">
+                                <div class="logs-header">导入详情</div>
+                                <div class="logs-list">
+                                    <!-- 日志条目将通过 JavaScript 动态添加 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 书签选择对话框 -->
+                <div id="bookmark-select-dialog" class="dialog">
+                    <div class="dialog-content large">
+                        <div class="dialog-header">
+                            <h3>选择要导入的书签</h3>
+                            <button class="close-dialog-btn">×</button>
+                        </div>
+                        <div class="dialog-body">
+                            <!-- 导入选项 -->
+                            <div class="import-options">
+                                <label class="checkbox-container">
+                                    <input type="checkbox" id="select-all-bookmarks">
+                                    <span class="checkmark"></span>
+                                    全选
+                                </label>
+                                <label class="checkbox-container" title="例如：如果书签在'学习资料/编程'文件夹中，会自动添加'学习资料'、'编程'这两个标签">
+                                    <input type="checkbox" id="keep-folder-tags" checked>
+                                    <span class="checkmark"></span>
+                                添加目录名作为标签
+                                </label>
+                                <label class="checkbox-container" title="开启后将不导入已存在的书签">
+                                    <input type="checkbox" id="skip-existing" checked>
+                                    <span class="checkmark"></span>
+                                    跳过已存在的书签
+                                </label>
+                            </div>
+                            
+                            <!-- 书签树容器 -->
+                            <div class="bookmark-tree-container">
+                                <div class="bookmark-tree" id="bookmark-tree">
+                                    <!-- 书签树将通过JavaScript动态生成 -->
+                                </div>
+                            </div>
+                            
+                            <!-- 选中统计 -->
+                            <div class="selection-stats">
+                                <div class="stats-row">
+                                    <span class="stats-label">已选择:</span>
+                                    <span class="stats-value" id="selected-count">0</span>
+                                    <span class="stats-unit">个书签</span>
+                                </div>
+                                <div class="stats-row tokens-estimate">
+                                    <div class="token-item">
+                                        <span class="token-icon">
+                                            <svg viewBox="0 0 24 24" width="14" height="14">
+                                                <path fill="currentColor" d="M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8M12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12A2,2 0 0,0 12,10M10,22C9.75,22 9.54,21.82 9.5,21.58L9.13,18.93C8.5,18.68 7.96,18.34 7.44,17.94L4.95,18.95C4.73,19.03 4.46,18.95 4.34,18.73L2.34,15.27C2.21,15.05 2.27,14.78 2.46,14.63L4.57,12.97L4.5,12L4.57,11L2.46,9.37C2.27,9.22 2.21,8.95 2.34,8.73L4.34,5.27C4.46,5.05 4.73,4.96 4.95,5.05L7.44,6.05C7.96,5.66 8.5,5.32 9.13,5.07L9.5,2.42C9.54,2.18 9.75,2 10,2H14C14.25,2 14.46,2.18 14.5,2.42L14.87,5.07C15.5,5.32 16.04,5.66 16.56,6.05L19.05,5.05C19.27,4.96 19.54,5.05 19.66,5.27L21.66,8.73C21.79,8.95 21.73,9.22 21.54,9.37L19.43,11L19.5,12L19.43,13L21.54,14.63C21.73,14.78 21.79,15.05 21.66,15.27L19.66,18.73C19.54,18.95 19.27,19.04 19.05,18.95L16.56,17.95C16.04,18.34 15.5,18.68 14.87,18.93L14.5,21.58C14.46,21.82 14.25,22 14,22H10M11.25,4L10.88,6.61C9.68,6.86 8.62,7.5 7.85,8.39L5.44,7.35L4.69,8.65L6.8,10.2C6.4,11.37 6.4,12.64 6.8,13.8L4.68,15.36L5.43,16.66L7.86,15.62C8.63,16.5 9.68,17.14 10.87,17.38L11.24,20H12.76L13.13,17.39C14.32,17.14 15.37,16.5 16.14,15.62L18.57,16.66L19.32,15.36L17.2,13.81C17.6,12.64 17.6,11.37 17.2,10.2L19.31,8.65L18.56,7.35L16.15,8.39C15.38,7.5 14.32,6.86 13.12,6.62L12.75,4H11.25Z"/>
+                                            </svg>
+                                        </span>
+                                        <span class="token-label">预计 Chat Token:</span>
+                                        <span class="token-value" id="estimated-chat-tokens">0</span>
+                                    </div>
+                                    <div class="token-item">
+                                        <span class="token-icon">
+                                            <svg viewBox="0 0 24 24" width="14" height="14">
+                                                <path fill="currentColor" d="M7,2H17A2,2 0 0,1 19,4V20A2,2 0 0,1 17,22H7A2,2 0 0,1 5,20V4A2,2 0 0,1 7,2M7,4V8H17V4H7M7,10V12H9V10H7M11,10V12H13V10H11M15,10V12H17V10H15M7,14V16H9V14H7M11,14V16H13V14H11M15,14V16H17V14H15M7,18V20H9V18H7M11,18V20H13V18H11M15,18V20H17V18H15Z"/>
+                                            </svg>
+                                        </span>
+                                        <span class="token-label">预计 Embed Token:</span>
+                                        <span class="token-value" id="estimated-embed-tokens">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dialog-footer">
+                            <div class="footer-tip">
+                                <span class="tip-icon">
+                                    <svg width="16" height="16" viewBox="0 0 24 24">
+                                        <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                                    </svg>
+                                </span>
+                                <span>建议先使用<a href="https://chromewebstore.google.com/detail/%E6%87%92%E7%8C%AB%E4%B9%A6%E7%AD%BE%E6%B8%85%E7%90%86/aeehapalakdoclgmfeondmephgiandef" target="_blank">书签清理工具</a>清理无效链接，以提高导入效率</span>
+                            </div>
+                            <div class="footer-actions">
+                                <button class="secondary-btn" id="cancel-import-btn">取消</button>
+                                <button class="primary-btn" id="confirm-import-btn">开始导入</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -223,7 +459,14 @@
             <div class="dialog-content service-config">
                 <div class="dialog-header">
                     <h3 class="service-name">服务配置</h3>
-                    <button class="close-dialog-btn">×</button>
+                    <div class="dialog-header-actions">
+                        <button class="icon-btn copy-config-btn" title="复制配置">
+                            <svg width="16" height="16" viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"/>
+                            </svg>
+                        </button>
+                        <button class="close-dialog-btn">×</button>
+                    </div>
                 </div>
                 <div class="service-config-body">
                     <div class="api-key-section">
@@ -263,7 +506,13 @@
                     <!-- 添加模型信息显示部分 -->
                     <div class="models-section">
                         <div class="models-section-header">
-                            <h3>模型信息</h3>
+                            <h3>模型信息
+                                <div class="tooltip-icon" data-tooltip="为了保证搜索结果的准确性，不支持修改Embedding模型，如有需要可以通过自定义服务配置来实现">
+                                    <svg width="14" height="14" viewBox="0 0 24 24">
+                                        <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                    </svg>
+                                </div>
+                            </h3>
                             <a class="model-pricing-link" target="_blank" title="查看模型定价">
                                 <span>查看定价</span>
                                 <svg viewBox="0 0 24 24" width="14" height="14">
@@ -274,7 +523,14 @@
                         <div class="model-info-group">
                             <div class="model-label">Chat 模型</div>
                             <div class="model-value chat-model">
-                                <!-- 由 JavaScript 填充，例如: gpt-3.5-turbo -->
+                                <div class="model-input-container">
+                                    <input type="text" placeholder="例如: gpt-3.5-turbo" readonly>
+                                    <button class="edit-model-btn" title="编辑模型">
+                                        <svg viewBox="0 0 24 24" width="16" height="16">
+                                            <path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -321,14 +577,161 @@
                 </div>
             </div>
         </div>
+
+        <!-- 在 settings.html 中添加自定义服务配置对话框 -->
+        <div id="custom-service-dialog" class="dialog">
+            <div class="dialog-content">
+                <div class="dialog-header">
+                    <h3>自定义服务配置</h3>
+                    <div class="dialog-header-actions">
+                        <button class="icon-btn copy-config-btn" title="复制配置">
+                            <svg width="16" height="16" viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"/>
+                            </svg>
+                        </button>
+                        <button class="icon-btn paste-config-btn" title="粘贴配置">
+                            <svg width="16" height="16" viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M19,20H5V4H7V7H17V4H19M12,2A1,1 0 0,1 13,3A1,1 0 0,1 12,4A1,1 0 0,1 11,3A1,1 0 0,1 12,2M19,2H14.82C14.4,0.84 13.3,0 12,0C10.7,0 9.6,0.84 9.18,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"/>
+                            </svg>
+                        </button>
+                        <button class="close-dialog-btn">×</button>
+                    </div>
+                </div>
+                <div class="service-config-body">
+                    <!-- 添加服务名称输入框 -->
+                    <div class="form-group">
+                        <label for="custom-service-name">
+                            API 服务名称
+                            <div class="tooltip-icon" data-tooltip="给这个自定义服务起个名字">
+                                <svg width="14" height="14" viewBox="0 0 24 24">
+                                    <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                </svg>
+                            </div>
+                        </label>
+                        <input type="text" id="custom-service-name" placeholder="输入服务名称" maxlength="20" required>
+                    </div>
+                    
+                    <!-- 其他配置项保持不变 -->
+                    <div class="form-group">
+                        <label for="custom-base-url">
+                            API 接口地址
+                            <div class="tooltip-icon" data-tooltip="设置API服务的基础URL地址，例如：https://api.openai.com/v1/">
+                                <svg width="14" height="14" viewBox="0 0 24 24">
+                                    <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                </svg>
+                            </div>
+                        </label>
+                        <input type="text" id="custom-base-url" placeholder="https://api.example.com/v1/" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="custom-api-key">
+                            API Key
+                            <div class="tooltip-icon" data-tooltip="输入您的API密钥。请确保API密钥具有足够的权限来调用Chat和Embedding接口">
+                                <svg width="14" height="14" viewBox="0 0 24 24">
+                                    <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                </svg>
+                            </div>
+                        </label>
+                        <div class="api-key-input">
+                            <input type="password" id="custom-api-key" placeholder="输入 API Key" required>
+                            <button class="icon-btn toggle-visibility">
+                                <svg width="16" height="16" viewBox="0 0 16 16">
+                                    <path d="M8 3C4.5 3 2 6 2 8C2 10 4.5 13 8 13C11.5 13 14 10 14 8C14 6 11.5 3 8 3Z" stroke="currentColor" fill="none"/>
+                                    <circle cx="8" cy="8" r="2" fill="currentColor"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat模型配置组 -->
+                    <div class="model-config-group">
+                        <button class="test-btn test-chat-btn">验证</button>
+                        <div class="form-group">
+                            <label for="custom-chat-model">
+                                Chat 模型
+                                <div class="tooltip-icon" data-tooltip="请配置你的API服务支持的对话模型（注意区分大小写）">
+                                    <svg width="14" height="14" viewBox="0 0 24 24">
+                                        <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                    </svg>
+                                </div>
+                                <span class="test-status" data-type="chat"></span>
+                            </label>
+                            <input type="text" id="custom-chat-model" placeholder="gpt-3.5-turbo" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Embedding模型配置组 -->
+                    <div class="model-config-group">
+                        <button class="test-btn test-embed-btn">验证</button>
+                        <div class="form-group">
+                            <label for="custom-embed-model">
+                                Embedding 模型
+                                <div class="tooltip-icon" data-tooltip="请配置你的API服务支持的文本嵌入模型。注意：修改模型后需要重新生成书签的向量">
+                                    <svg width="14" height="14" viewBox="0 0 24 24">
+                                        <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                    </svg>
+                                </div>
+                                <span class="test-status" data-type="embedding"></span>
+                            </label>
+                            <input type="text" id="custom-embed-model" placeholder="text-embedding-ada-002" required>
+                        </div>
+                    </div>
+                    
+                    <!-- 高级设置组 -->
+                    <div class="advanced-settings-group">
+                        <div class="form-group similarity-slider-group">
+                            <label for="similarity-threshold">
+                                相关度阈值
+                                <div class="tooltip-icon" data-tooltip="相关度阈值用于判断搜索结果与搜索词的相似程度。值越大要求匹配度越高，范围0-1。建议值0.3-0.6">
+                                    <svg width="14" height="14" viewBox="0 0 24 24">
+                                        <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                    </svg>
+                                </div>
+                                <span class="threshold-value">0.35</span>
+                            </label>
+                            <div class="slider-container">
+                                <input type="range" 
+                                       id="similarity-threshold" 
+                                       class="similarity-slider"
+                                       min="0" 
+                                       max="1" 
+                                       step="0.01" 
+                                       value="0.65">
+                            </div>
+                            <p class="setting-description">调整搜索结果的精确度，值越大搜索结果越精确但可能遗漏相关内容，值越小结果越宽松可能包含不太相关的内容</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="switch-label">
+                                <span class="switch-text">隐藏低相关度结果</span>
+                                <div class="switch-container">
+                                    <input type="checkbox" id="hide-low-similarity" checked>
+                                    <span class="switch-slider"></span>
+                                </div>
+                            </label>
+                            <p class="setting-description">开启后将只显示相关度高于阈值的搜索结果</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="dialog-footer">
+                    <button class="cancel-custom-btn">取消</button>
+                    <button class="save-custom-btn">保存</button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script src="storageManager.js"></script>
-    <script src="util.js"></script>
+    <script src="consts.js"></script>
+    <script src="common.js"></script>
+    <script src="logger.js"></script>
     <script src="env.js"></script>
+    <script src="models.js"></script>
     <script src="config.js"></script>
+    <script src="storageManager.js"></script>
     <script src="settingsManager.js"></script>
     <script src="statsManager.js"></script>
+    <script src="util.js"></script>
+    <script src="api.js"></script>
     <script src="customFilter.js"></script>
     <script src="settings.js"></script>
 </body>

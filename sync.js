@@ -1,43 +1,38 @@
 class SyncManager {
     constructor() {
-        this.lastSyncVersion = 0;
         this.changeManager = new LocalChangeManager(this);
         this.isSyncing = false;
+        this.BATCH_SIZE = 50; // 每批同步的书签数量
     }
 
-    sendMessageSafely(message) {
-        chrome.runtime.sendMessage(message, () => {
-            const lastError = chrome.runtime.lastError;
-        });
-    }
-
-    async init() {
-        this.lastSyncVersion = await LocalStorageMgr.get('lastSyncVersion') || 0;
+    async getSyncVersion() {
+        return await LocalStorageMgr.get('lastSyncVersion') || 0;
     }
 
     async cleanup() {
         logger.info('清理同步状态');
-        this.lastSyncVersion = 0;
         await this.changeManager.cleanup();
         this.isSyncing = false;
     }
 
     // 初始化同步
-    async forceSync() {
+    async startSync(force = false) {
         // 如果是第一次同步(版本号为0),则需要同步所有本地书签
-        if (this.lastSyncVersion === 0) {
-            await this.syncAllLocalBookmarks(true);
+        const lastSyncVersion = await this.getSyncVersion();
+        if (lastSyncVersion === 0) {
+            await this.syncAllLocalBookmarks(force);
         }else {
-            await this.syncChange(true);
+            await this.syncChange(force);
         }
     }
 
     // 记录书签变更
-    async recordBookmarkChange(bookmarks, isDeleted = false) {
+    async recordBookmarkChange(bookmarks, isDeleted = false, beginSync = true) {
         // 支持单个书签或书签数组
         const bookmarkArray = Array.isArray(bookmarks) ? bookmarks : [bookmarks];
 
-        if (this.lastSyncVersion == 0) {
+        const lastSyncVersion = await this.getSyncVersion();
+        if (lastSyncVersion == 0 && beginSync) {
             await this.syncAllLocalBookmarks();
         } else {
             // 批量添加变更
@@ -45,7 +40,9 @@ class SyncManager {
                 await this.changeManager.addChange(bookmark, isDeleted);
             }
             // 一次性同步所有变更
-            await this.syncChange();
+            if (beginSync) {
+                await this.syncChange();
+            }
         }
     }
 
@@ -86,36 +83,27 @@ class SyncManager {
 
             this.isSyncing = true;
             if (!force) {
-                this.sendMessageSafely({
-                    type: 'START_SYNC'
+                sendMessageSafely({
+                    type: MessageType.START_SYNC
                 });
             }
             logger.info('开始同步变更, 变更数:', changes.length);
 
+            const lastSyncVersion = await this.getSyncVersion();
             const response = await this.syncToServer({
-                lastSyncVersion: this.lastSyncVersion,
+                lastSyncVersion: lastSyncVersion,
                 changes: changes
             });
 
             // 处理服务器返回的变更
-            await this.processServerChanges(response);
+            await this.processServerChanges(response, changes);
 
-            // 更新最后同步版本
-            let syncVersion = response.currentVersion;
-            if (syncVersion == 0) {
-                syncVersion = Date.now();
-            }else if (syncVersion < this.lastSyncVersion) {
-                logger.info('服务器返回的版本号小于本地版本号，使用本地版本号');
-                syncVersion = this.lastSyncVersion;
-            }
-
-            await LocalStorageMgr.set('lastSyncVersion', syncVersion);
-            this.lastSyncVersion = syncVersion;
+            await LocalStorageMgr.set('lastSyncVersion', Date.now());
 
             // 清空已同步的变更
             await this.changeManager.clearChanges();
 
-            logger.info('同步变更完成, 最新版本:', syncVersion);
+            logger.info('同步变更完成, 服务器最新版本:', response.currentVersion);
         } catch (error) {
             logger.error('同步变更失败:', error);
             throw error;
@@ -123,8 +111,8 @@ class SyncManager {
             await this.changeManager.mergeTempQueueToStorage();
             this.isSyncing = false;
             if (!force) {
-                this.sendMessageSafely({
-                    type: 'FINISH_SYNC'
+                sendMessageSafely({
+                    type: MessageType.FINISH_SYNC
                 });
             }
         }
@@ -151,8 +139,8 @@ class SyncManager {
 
             this.isSyncing = true;
             if (!force) {
-                this.sendMessageSafely({
-                    type: 'START_SYNC'
+                sendMessageSafely({
+                    type: MessageType.START_SYNC
                 });
             }
 
@@ -166,48 +154,100 @@ class SyncManager {
             logger.info('开始同步所有本地书签, 书签数:', changes.length);
 
             // 执行同步
+            const lastSyncVersion = await this.getSyncVersion();
             const response = await this.syncToServer({
-                lastSyncVersion: this.lastSyncVersion,
+                lastSyncVersion: lastSyncVersion,
                 changes: changes
             });
 
             // 处理服务器返回的变更
-            await this.processServerChanges(response);
-
-            // 更新最后同步版本
-            let syncVersion = response.currentVersion;
-            if (syncVersion == 0) {
-                syncVersion = Date.now();
-            }else if (syncVersion < this.lastSyncVersion) {
-                logger.info('服务器返回的版本号小于本地版本号，使用本地版本号');
-                syncVersion = this.lastSyncVersion;
-            }
-
-            await LocalStorageMgr.set('lastSyncVersion', syncVersion);
-            this.lastSyncVersion = syncVersion;
-
-            logger.info('同步本地书签完成, 最新版本:', syncVersion);
+            await this.processServerChanges(response, changes);
+            
+            await LocalStorageMgr.set('lastSyncVersion', Date.now());
+            logger.info('同步本地书签完成, 服务器最新版本:', response.currentVersion);
         } catch (error) {
             logger.error('同步本地书签失败:', error);
             throw error;
         } finally {
             this.isSyncing = false;
             if (!force) {
-                this.sendMessageSafely({
-                    type: 'FINISH_SYNC'
+                sendMessageSafely({
+                    type: MessageType.FINISH_SYNC
                 });
             }
         }
     }
 
-    // 发送同步请求到服务器
+    // 修改 syncToServer 方法，支持分批请求
     async syncToServer(syncData) {
         const token = await LocalStorageMgr.get('token');
         if (!token) {
             throw new Error('未登录');
         }
-        
-        logger.debug('同步请求数据:', syncData);
+
+        const { lastSyncVersion, changes } = syncData;
+        const totalChanges = changes.length;
+        logger.info(`开始分批同步，总变更数: ${totalChanges}`);
+
+        // 如果变更数量小于批量大小，直接发送
+        if (totalChanges <= this.BATCH_SIZE) {
+            return await this.sendSyncRequest(token, { lastSyncVersion, changes });
+        }
+
+        // 分批处理变更
+        const batches = Math.ceil(totalChanges / this.BATCH_SIZE);
+        let serverChanges = [];
+        let maxVersion = 0;
+        let syncVersion = lastSyncVersion;
+
+        for (let i = 0; i < batches; i++) {
+            const start = i * this.BATCH_SIZE;
+            const end = Math.min(start + this.BATCH_SIZE, totalChanges);
+            const batchChanges = changes.slice(start, end);
+
+            logger.info(`发送第 ${i + 1}/${batches} 批变更，数量: ${batchChanges.length}`);
+
+            const response = await this.sendSyncRequest(token, {
+                lastSyncVersion: syncVersion,
+                changes: batchChanges,
+                isBatchSync: true,
+                batchInfo: {
+                    current: i + 1,
+                    total: batches
+                }
+            });
+            
+            logger.debug('服务器返回结果:', response);
+
+            // 合并服务器返回的变更
+            if (response.changes) {
+                serverChanges = serverChanges.concat(response.changes);
+            }
+
+            // 更新最大版本号
+            if (response.currentVersion > maxVersion) {
+                maxVersion = response.currentVersion;
+            }
+
+            // 更新同步版本
+            syncVersion = response.currentVersion;
+
+            // 添加小延迟，避免请求过于频繁
+            await sleep(200);
+        }
+
+        logger.info(`分批同步完成，合并后的变更数: ${serverChanges.length}`);
+
+        // 返回合并后的结果
+        return {
+            currentVersion: maxVersion,
+            changes: serverChanges
+        };
+    }
+
+    // 新增发送同步请求的辅助方法
+    async sendSyncRequest(token, requestData) {
+        logger.debug('发送同步请求:', requestData);
 
         const response = await fetch(`${SERVER_URL}/api/bookmarks/sync`, {
             method: 'POST',
@@ -215,7 +255,7 @@ class SyncManager {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify(syncData)
+            body: JSON.stringify(requestData)
         });
 
         return await this.checkResponseError(response);
@@ -232,7 +272,7 @@ class SyncManager {
             switch (response.status) {
                 case 401:
                     // token过期，清除登录状态
-                    await LocalStorageMgr.remove(['token', 'user']);
+                    await LocalStorageMgr.remove(['token']);
                     throw new Error('登录已过期，请重新登录');
                 default:
                     throw new Error(`${response.status} ${response.statusText || '未知错误'}`);
@@ -246,43 +286,89 @@ class SyncManager {
     }
 
     // 处理服务器返回的变更
-    async processServerChanges(response) {     
+    async processServerChanges(response, localChanges) {     
         logger.debug('服务器返回的变更:', response);
 
         const { changes } = response;
         let hasChanges = false;
         
         logger.info('处理服务器变更 - 数量:', changes.length);
+
+        // 批量处理的缓存
+        const batchSize = 100; // 每批处理的数量
+        const bookmarksToSave = new Map(); // 需要保存的书签
+        const urlsToDelete = new Set(); // 需要删除的书签URL
+
+        // 创建本地变更版本的映射，用于快速查找
+        const localVersionMap = new Map(
+            localChanges.map(change => [change.content.url, change.version])
+        );
+
+        // 首先处理所有变更，但不立即写入存储
         for (const serverBookmark of changes) {
-            logger.debug('处理服务器变更 - URL:', serverBookmark.content.url, 
-                '版本:', serverBookmark.version, 
-                '删除状态:', serverBookmark.isDeleted);
+            const bookmarkUrl = serverBookmark.content.url;
+            const serverVersion = serverBookmark.version;
+            const localVersion = localVersionMap.get(bookmarkUrl) || 0;
+
+            logger.debug('处理服务器变更:', {
+                url: bookmarkUrl,
+                serverVersion,
+                localVersion,
+                isDeleted: serverBookmark.isDeleted
+            });
+
+            // 只有当服务器版本大于本地版本时才应用变更
+            if (serverVersion > localVersion) {
+                const localBookmark = await LocalStorageMgr.getBookmark(bookmarkUrl);
+                const updatedBookmark = this.convertToLocalFormat(serverBookmark, localBookmark);
                 
-            const localBookmark = await LocalStorageMgr.getBookmark(serverBookmark.content.url);
-            const updatedBookmark = this.convertToLocalFormat(serverBookmark, localBookmark);
-            
-            if (serverBookmark.isDeleted) {
-                if (localBookmark) {
-                    // 处理删除的书签
-                    logger.debug('删除本地书签:', updatedBookmark.url);
-                    await LocalStorageMgr.removeBookmark(updatedBookmark.url);
+                if (serverBookmark.isDeleted) {
+                    if (localBookmark) {
+                        urlsToDelete.add(updatedBookmark.url);
+                        hasChanges = true;
+                        logger.debug('将删除书签:', bookmarkUrl, '(服务器版本更新)');
+                    }
+                } else {
+                    bookmarksToSave.set(updatedBookmark.url, updatedBookmark);
                     hasChanges = true;
-                }else {
-                    logger.debug('本地书签不存在:', updatedBookmark.url);
+                    logger.debug('将更新书签:', bookmarkUrl, '(服务器版本更新)');
                 }
             } else {
-                // 更新或新增书签
-                logger.debug('保存本地书签:', updatedBookmark.url);
-                await LocalStorageMgr.setBookmark(updatedBookmark.url, updatedBookmark);
-                hasChanges = true;
+                logger.debug('跳过书签更新:', bookmarkUrl, '(本地版本更新或相同)');
             }
         }
-    
+
+        logger.info('处理服务器变更 - 最终结果:', {
+            待保存数量: bookmarksToSave.size,
+            待删除数量: urlsToDelete.size
+        });
+
+        // 批量处理删除操作
+        if (urlsToDelete.size > 0) {
+            // 将Set转换为数组
+            const urlsArray = Array.from(urlsToDelete);
+            for (let i = 0; i < urlsArray.length; i += batchSize) {
+                const batch = urlsArray.slice(i, i + batchSize);
+                logger.debug(`批量删除书签 ${i + 1}-${i + batch.length}/${urlsArray.length}`);
+                await LocalStorageMgr.removeBookmarks(batch);
+            }
+        }
+
+        // 批量处理保存操作
+        if (bookmarksToSave.size > 0) {
+            // 将Map转换为数组
+            const bookmarksArray = Array.from(bookmarksToSave.values());
+            for (let i = 0; i < bookmarksArray.length; i += batchSize) {
+                const batch = bookmarksArray.slice(i, i + batchSize);
+                logger.debug(`批量保存书签 ${i + 1}-${i + batch.length}/${bookmarksArray.length}`);
+                await LocalStorageMgr.setBookmarks(batch);
+            }
+        }
+
         // 如果有变更，通知更新书签列表
         if (hasChanges) {
-            // 发送消息给 popup 和 background
-            chrome.runtime.sendMessage({
-                type: 'BOOKMARKS_UPDATED',
+            sendMessageSafely({
+                type: MessageType.BOOKMARKS_UPDATED,
                 source: 'sync'
             });
         }
@@ -298,7 +384,8 @@ class SyncManager {
                 excerpt: localBookmark.excerpt || '',
                 embedding: localBookmark.embedding,
                 savedAt: localBookmark.savedAt ? (typeof localBookmark.savedAt === 'number' ? localBookmark.savedAt : new Date(localBookmark.savedAt).getTime()) : 0,
-                apiService: localBookmark.apiService
+                apiService: localBookmark.apiService,
+                embedModel: localBookmark.embedModel
             },
             version: Date.now(),
             isDeleted: isDeleted
@@ -315,6 +402,7 @@ class SyncManager {
             embedding: serverBookmark.content.embedding,
             savedAt: serverBookmark.content.savedAt ? new Date(serverBookmark.content.savedAt).toISOString() : new Date().toISOString(),
             apiService: serverBookmark.content.apiService,
+            embedModel: serverBookmark.content.embedModel,
             lastUsed: localBookmark?.lastUsed ? localBookmark.lastUsed : null,
             useCount: localBookmark?.useCount || 0
         };
@@ -389,3 +477,5 @@ class LocalChangeManager {
         return Object.keys(changes).length;
     }
 }
+
+const syncManager = new SyncManager();
