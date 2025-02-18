@@ -1,0 +1,10 @@
+build.sh
+env.json
+build.py
+build
+.git
+.cursorrules
+.DS_Store
+.gitignore
+tmp_build
+exclude_list.txt

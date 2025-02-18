@@ -50,48 +50,157 @@ h1 {
 }
 
 .steps-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-    gap: var(--spacing);
-    margin-bottom: var(--spacing);
-}
-
-.step {
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto var(--spacing);
     background: var(--card-background);
     border-radius: var(--border-radius);
-    padding: var(--spacing);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
-}
-
-.step:hover {
-    transform: translateY(-4px);
+    padding: var(--spacing);
 }
 
 .step-header {
     display: flex;
     align-items: center;
-    margin-bottom: 16px;
+    gap: 12px;
+    margin-bottom: 20px;
 }
 
 .step-number {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     background-color: var(--primary-color);
     color: white;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: 12px;
     font-weight: bold;
+    flex-shrink: 0;
+}
+
+.step-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--text-color);
+}
+
+.carousel-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    margin: 20px 0;
+    min-height: 400px;
+}
+
+.carousel-track {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+}
+
+.step {
+    min-width: 100%;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    transform: translateX(100%);
+}
+
+.step.active {
+    opacity: 1;
+    visibility: visible;
+    position: relative;
+    transform: translateX(0);
+}
+
+.step.prev {
+    transform: translateX(-100%);
+}
+
+.step.next {
+    transform: translateX(100%);
+}
+
+.carousel-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: white;
+    border: none;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.arrow-icon {
+    width: 32px;
+    height: 32px;
+    fill: var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+.carousel-button:hover {
+    background: var(--primary-color);
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 6px 16px rgba(66, 133, 244, 0.3);
+}
+
+.carousel-button:hover .arrow-icon {
+    fill: white;
+}
+
+.carousel-button:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.carousel-button.prev {
+    left: -80px;
+}
+
+.carousel-button.next {
+    right: -80px;
+}
+
+.carousel-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ddd;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.3s ease;
+}
+
+.indicator.active {
+    background: var(--primary-color);
+    transform: scale(1.2);
 }
 
 .video-container {
     width: 100%;
     border-radius: 8px;
     overflow: hidden;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     position: relative;
     cursor: pointer;
@@ -178,6 +287,36 @@ footer {
     .video-container {
         max-width: 100%;
     }
+
+    .step p {
+        font-size: 1rem;
+        padding: 12px;
+    }
+
+    .step p::before {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 1000px) {
+    .carousel-button {
+        width: 48px;
+        height: 48px;
+        background: rgba(255, 255, 255, 0.95);
+    }
+
+    .arrow-icon {
+        width: 24px;
+        height: 24px;
+    }
+
+    .carousel-button.prev {
+        left: -28px;
+    }
+
+    .carousel-button.next {
+        right: -28px;
+    }
 }
 
 /* 添加模态框样式 */
@@ -227,4 +366,149 @@ footer {
     width: 100%;
     max-height: 80vh;
     object-fit: contain;
+}
+
+.step p {
+    font-size: 1.1rem;
+    color: #666;
+    line-height: 1.6;
+    margin: 0;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.step p::before {
+    content: '💡';
+    margin-right: 8px;
+    font-size: 1.2rem;
+}
+
+/* 快捷键部分样式 */
+.shortcuts-container {
+    max-width: 800px;
+    margin: var(--spacing) auto;
+    padding: var(--spacing);
+    background: var(--card-background);
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.shortcuts-container h2 {
+    text-align: center;
+    color: var(--primary-color);
+    margin-bottom: var(--spacing);
+    font-size: 1.8rem;
+}
+
+.shortcuts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 0 12px;
+}
+
+.shortcut-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background: var(--background-color);
+    border-radius: 8px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.shortcut-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.shortcut-key {
+    background: var(--primary-color);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: 'SF Mono', 'Menlo', monospace;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(66, 133, 244, 0.2);
+    flex-shrink: 0;
+}
+
+.shortcut-description {
+    color: var(--text-color);
+    font-size: 0.95rem;
+    line-height: 1.4;
+    text-align: right;
+    margin-left: 16px;
+    flex-grow: 1;
+}
+
+.shortcuts-footer {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--spacing);
+}
+
+.secondary-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.secondary-button:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.secondary-button:hover .button-icon {
+    fill: white;
+}
+
+.button-icon {
+    width: 18px;
+    height: 18px;
+    fill: var(--primary-color);
+    transition: fill 0.3s ease;
+}
+
+/* 响应式布局调整 */
+@media (max-width: 640px) {
+    .shortcuts-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 0 8px;
+    }
+
+    .shortcuts-container {
+        padding: 16px;
+        margin: 16px auto;
+    }
+
+    .shortcuts-container h2 {
+        font-size: 1.5rem;
+        margin-bottom: 16px;
+    }
+
+    .shortcut-card {
+        padding: 12px;
+    }
+
+    .shortcut-key {
+        padding: 6px 10px;
+        font-size: 0.85rem;
+    }
+
+    .shortcut-description {
+        font-size: 0.9rem;
+    }
 } 

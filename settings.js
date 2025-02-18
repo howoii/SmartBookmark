@@ -1,4 +1,4 @@
-const EnvIdentifier = 'settings';
+EnvIdentifier = 'settings';
 
 class BaseSettingsTab {
     constructor() {
@@ -47,6 +47,14 @@ class OverviewSettingsTab extends BaseSettingsTab {
         // 添加搜索设置相关元素
         this.maxSearchResults = document.getElementById('max-search-results');
         this.omniboxSearchLimit = document.getElementById('omnibox-search-limit');
+        this.quickSearchSitesDisplay = document.getElementById('quick-search-sites-display');
+        this.sitesDisplayCount = document.getElementById('sites-display-count');
+        this.sitesDisplayCountContainer = document.getElementById('sites-display-count-container');
+
+        // 添加快捷键相关元素
+        this.quickSaveShortcut = document.getElementById('quickSave-shortcut');
+        this.quickSearchShortcut = document.getElementById('quickSearch-shortcut');
+        this.editShortcutsBtn = document.getElementById('edit-shortcuts-btn');
         
         // 获取模板
         this.loggedInTemplate = document.getElementById('logged-in-template');
@@ -57,17 +65,20 @@ class OverviewSettingsTab extends BaseSettingsTab {
         this.handleLogout = this.handleLogout.bind(this);
         this.handleMaxSearchResultsChange = this.handleMaxSearchResultsChange.bind(this);
         this.handleOmniboxSearchLimitChange = this.handleOmniboxSearchLimitChange.bind(this);
+        this.handleSitesDisplayChange = this.handleSitesDisplayChange.bind(this);
+        this.handleSitesDisplayCountChange = this.handleSitesDisplayCountChange.bind(this);
     }
 
     async initialize() {
-        // 初始检查登录状态
+        await this.initializeSearchSettings();
+        await this.initializeThemeSettings();
         await this.checkLoginStatus();
-        await this.initializeSettings();
-        this.setupStorageListener();
+        await this.initializeShortcuts();
         this.setupEventListeners();
+        this.setupStorageListener();
     }
 
-    async initializeSettings() {
+    async initializeSearchSettings() {
         const settings = await SettingsManager.getAll();
         if (settings?.search?.maxResults) {
             this.maxSearchResults.value = settings.search.maxResults;
@@ -75,11 +86,65 @@ class OverviewSettingsTab extends BaseSettingsTab {
         if (settings?.search?.omniboxSearchLimit) {
             this.omniboxSearchLimit.value = settings.search.omniboxSearchLimit;
         }
+        const sitesDisplay = settings.search.sitesDisplay || 'pinned';
+        this.quickSearchSitesDisplay.value = sitesDisplay;
+        this.sitesDisplayCount.value = settings.search.sitesDisplayCount || 10;
+        this.sitesDisplayCountContainer.style.display = 
+            (sitesDisplay === 'pinned' || sitesDisplay === 'none') ? 'none' : 'flex';
+    }
+
+    async initializeThemeSettings() {
+        try {
+            const settings = await SettingsManager.get('display.theme');
+            this.updateThemeUI(settings.mode);
+            
+            // 添加主题选择事件监听
+            const themeOptions = document.querySelectorAll('.theme-option');
+            themeOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    const theme = option.dataset.theme;
+                    this.handleThemeChange(theme);
+                });
+            });
+        } catch (error) {
+            logger.error('初始化主题设置失败:', error);
+        }
+    }
+
+    updateThemeUI(theme) {
+        // 移除所有选项的active状态
+        document.querySelectorAll('.theme-option').forEach(option => {
+            option.classList.remove('active');
+        });
+        
+        // 添加当前选中选项的active状态
+        const activeOption = document.querySelector(`.theme-option[data-theme="${theme}"]`);
+        if (activeOption) {
+            activeOption.classList.add('active');
+        }
+    }
+
+    async handleThemeChange(theme) {
+        try {
+            await themeManager.updateTheme({
+                mode: theme
+            });
+            this.updateThemeUI(theme);
+            showToast('主题设置已更新');
+        } catch (error) {
+            logger.error('更新主题失败:', error);
+            showToast('主题设置更新失败', true);
+        }
     }
 
     setupEventListeners() {
         this.maxSearchResults.addEventListener('change', this.handleMaxSearchResultsChange);
         this.omniboxSearchLimit.addEventListener('change', this.handleOmniboxSearchLimitChange);
+        this.editShortcutsBtn.addEventListener('click', () => this.handleEditShortcuts());
+
+        // 添加网站显示设置的事件监听
+        this.quickSearchSitesDisplay.addEventListener('change', this.handleSitesDisplayChange);
+        this.sitesDisplayCount.addEventListener('change', this.handleSitesDisplayCountChange);
     }
 
     setupStorageListener() {
@@ -165,6 +230,7 @@ class OverviewSettingsTab extends BaseSettingsTab {
                     maxResults: value
                 }
             });
+            showToast('设置已保存');
         } else {
             this.maxSearchResults.value = 50; // 重置为默认值
         }
@@ -174,14 +240,92 @@ class OverviewSettingsTab extends BaseSettingsTab {
         logger.debug('handleOmniboxSearchLimitChange', this.omniboxSearchLimit.value);
 
         const value = parseInt(this.omniboxSearchLimit.value);
-        if (value >= 1 && value <= 20) {
+        if (value >= 1 && value <= 9) {
             await SettingsManager.update({
                 search: {
                     omniboxSearchLimit: value
                 }
             });
+            showToast('设置已保存');
         } else {
             this.omniboxSearchLimit.value = 5; // 重置为默认值
+        }
+    }
+
+    // 初始化快捷键显示
+    async initializeShortcuts() {
+        try {
+            const commands = await chrome.commands.getAll();
+            commands.forEach(command => {
+                if (command.name === '_execute_action') return; // 跳过默认的扩展图标快捷键
+                
+                switch (command.name) {
+                    case 'quick-save':
+                        this.quickSaveShortcut.textContent = command.shortcut || '未设置';
+                        break;
+                    case 'quick-search':
+                        this.quickSearchShortcut.textContent = command.shortcut || '未设置';
+                        break;
+                }
+            });
+        } catch (error) {
+            console.error('获取快捷键设置失败:', error);
+        }
+    }
+
+    // 处理编辑快捷键按钮点击
+    handleEditShortcuts() {
+        // 打开 Chrome 扩展快捷键设置页面
+        chrome.tabs.create({
+            url: 'chrome://extensions/shortcuts'
+        });
+    }
+
+    async handleSitesDisplayChange() {
+        const displayType = this.quickSearchSitesDisplay.value;
+        
+        // 显示/隐藏数量设置
+        this.sitesDisplayCountContainer.style.display = 
+            (displayType === 'pinned' || displayType === 'none') ? 'none' : 'flex';
+
+        try {
+            await SettingsManager.update({
+                search: {
+                    sitesDisplay: displayType
+                }
+            });
+            showToast('设置已保存');
+        } catch (error) {
+            logger.error('保存网站显示设置失败:', error);
+            showToast('保存设置失败: ' + error.message, true);
+        }
+    }
+
+    async handleSitesDisplayCountChange() {
+        let count = parseInt(this.sitesDisplayCount.value);
+        if (isNaN(count)) {
+            showToast('显示数量必须是数字', true);
+            return;
+        }
+        if (count < 1) {
+            this.sitesDisplayCount.value = 1;
+            count = 1;
+        }
+        if (count > 50) {
+            this.sitesDisplayCount.value = 50;
+            count = 50;
+        }
+
+        try {
+            await SettingsManager.update({
+                search: {
+                    sitesDisplayCount: count
+                }
+            });
+            showToast('设置已保存');
+        } catch (error) {
+            logger.error('保存显示数量设置失败:', error);
+            showToast('保存设置失败: ' + error.message, true);
         }
     }
 
@@ -2753,7 +2897,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.settingsUI = settingsUI;
     await settingsUI.initialize();
     await Promise.all([
-        LocalStorageMgr.init(),
+        LocalStorageMgr.setupListener(),
         SettingsManager.init(),
     ]);
     logger.debug('初始化页面完成', Date.now()/1000);

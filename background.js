@@ -2,7 +2,7 @@
 importScripts('common.js', 'consts.js', 'logger.js', 'env.js', 'config.js', 'models.js', 'storageManager.js', 'settingsManager.js', 'statsManager.js',
      'util.js', 'sync.js', 'api.js', 'search.js');
 
-const EnvIdentifier = 'background';
+EnvIdentifier = 'background';
 // ------------------------------ 辅助函数分割线 ------------------------------
 // 更新页面状态（图标和按钮）
 async function updatePageState() {
@@ -39,7 +39,7 @@ async function updatePageState() {
 async function initializeExtension() {
     try {
         await Promise.all([
-            LocalStorageMgr.init(),
+            LocalStorageMgr.setupListener(),
             SettingsManager.init(),
         ]);
         logger.info("扩展初始化完成");
@@ -48,11 +48,11 @@ async function initializeExtension() {
     }
 }
 
-// 调用初始化函数
-initializeExtension();
-
 // ------------------------------ 事件监听分割线 ------------------------------
 logger.info("background.js init");
+
+// 调用初始化函数
+initializeExtension();
 
 // 设置侧边栏行为   
 chrome.sidePanel
@@ -215,15 +215,37 @@ chrome.windows.onFocusChanged.addListener(async (windowId) => {
 
 // 监听快捷键命令
 chrome.commands.onCommand.addListener(async (command) => {
-    if (command === "toggle-search") {
-        // 获取当前激活的标签页
-        const [tab] = await chrome.tabs.query({ 
-            active: true, 
-        });
-        if (tab) {
-            sendMessageSafely({
-                type: MessageType.TOGGLE_SEARCH,
-            });
+    // 获取当前激活的标签页
+    const [tab] = await chrome.tabs.query({ 
+        active: true, 
+        currentWindow: true
+    });
+    if (!tab) {
+        logger.debug('未找到活动标签页，无法执行快捷键命令');
+        return;
+    }
+    logger.debug('执行快捷键命令', {command: command, tab: tab});
+    if (command === "quick-search") {
+        try {
+            // 确保当前窗口是活动的
+            await chrome.windows.update(tab.windowId, { focused: true });
+            handleRuntimeError();
+            // 打开弹出窗口
+            await chrome.action.setPopup({popup: 'quickSearch.html'});
+            await chrome.action.openPopup({windowId: tab.windowId});
+        } catch (error) {
+            logger.error('处理弹出窗口失败:', error);
+        }
+    } else if (command === "quick-save") {
+        try {
+            // 确保当前窗口是活动的
+            await chrome.windows.update(tab.windowId, { focused: true });
+            handleRuntimeError();
+            // 打开弹出窗口
+            await chrome.action.setPopup({popup: 'quickSave.html'});
+            await chrome.action.openPopup({windowId: tab.windowId});
+        } catch (error) {
+            logger.error('处理弹出窗口失败:', error);
         }
     }
 });

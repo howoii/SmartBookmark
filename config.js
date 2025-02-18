@@ -120,7 +120,8 @@ class ConfigManager {
         ACTIVE_SERVICE: 'activeService',
         API_KEYS: 'apiKeys',
         BUILTIN_SERVICES_SETTINGS: 'builtinServicesSettings',
-        CUSTOM_SERVICES: 'customServices'
+        CUSTOM_SERVICES: 'customServices',
+        PINNED_SITES: 'pinnedSites'
     };
 
     // 通过API_SERVICES的id获取服务对象
@@ -470,5 +471,76 @@ class ConfigManager {
         }
 
         return false;
+    }
+
+    // 获取常用网站列表
+    static async getPinnedSites() {
+        try {
+            const data = await this.STORAGE.get(this.STORAGE_KEYS.PINNED_SITES);
+            return data[this.STORAGE_KEYS.PINNED_SITES] || [];
+        } catch (error) {
+            logger.error('获取常用网站失败:', error);
+            return [];
+        }
+    }
+
+    // 保存常用网站列表
+    static async savePinnedSites(sites) {
+        try {
+            if (sites.length > MAX_PINNED_SITES) {
+                throw new Error(`最多只能固定 ${MAX_PINNED_SITES} 个网站`);
+            }
+            await this.STORAGE.set({
+                [this.STORAGE_KEYS.PINNED_SITES]: sites
+            });
+        } catch (error) {
+            logger.error('保存常用网站失败:', error);
+            throw error;
+        }
+    }
+
+    // 添加常用网站
+    static async addPinnedSite(site) {
+        try {
+            const sites = await this.getPinnedSites();
+            if (sites.length >= MAX_PINNED_SITES) {
+                throw new Error(`最多只能固定 ${MAX_PINNED_SITES} 个网站`);
+            }
+            if (!sites.some(s => s.url === site.url)) {
+                sites.push(site);
+                await this.savePinnedSites(sites);
+            }
+            return sites;
+        } catch (error) {
+            logger.error('添加常用网站失败:', error);
+            throw error;
+        }
+    }
+
+    // 移除常用网站
+    static async removePinnedSite(url) {
+        try {
+            const sites = await this.getPinnedSites();
+            const index = sites.findIndex(site => site.url === url);
+            if (index !== -1) {
+                sites.splice(index, 1);
+                await this.savePinnedSites(sites);
+            }
+            return sites;
+        } catch (error) {
+            logger.error('移除常用网站失败:', error);
+            throw error;
+        }
+    }
+
+    // 检查网站是否已固定
+    static async isPinnedSite(url) {
+        try {
+            const sites = await this.getPinnedSites();
+            return sites.some(site => site.url === url);
+        } catch (error) {
+            logger.error('检查常用网站状态失败:', error);
+            return false;
+        }
     }
 }

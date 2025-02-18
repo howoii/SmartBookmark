@@ -1,11 +1,16 @@
 :root {
     --sidebar-width: 240px;
-    --primary-color: #4285f4;
     --sidebar-bg: #2d2d2d;
-    --text-color: #333;
-    --border-color: #ddd;
-    --bg-color: #fff;
-    --hover-bg: #f5f5f5;
+}
+
+[data-theme="dark"] {
+    --sidebar-bg: #1b1b1c;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root[data-theme="system"] {
+        --sidebar-bg: #1b1b1c;
+    }
 }
 
 body {
@@ -13,7 +18,7 @@ body {
     padding: 0;
     display: flex;
     min-height: 100vh;
-    background-color: #f5f5f5;
+    background-color: var(--bg-tertiary);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
@@ -21,7 +26,7 @@ body {
 .sidebar {
     width: var(--sidebar-width);
     background-color: var(--sidebar-bg);
-    color: white;
+    color: var(--text-fifth);
     flex-shrink: 0;
     position: fixed;
     height: 100vh;
@@ -86,12 +91,12 @@ body {
 
 .nav-item:hover {
     background-color: rgba(255, 255, 255, 0.1);
-    color: #fff;
+    color: var(--text-fifth);
 }
 
 .nav-item.active {
     background-color: rgba(255, 255, 255, 0.15);
-    color: #fff;
+    color: var(--text-fifth);
     font-weight: 500;
 }
 
@@ -120,7 +125,7 @@ body {
 .settings-container {
     max-width: 800px;
     margin: 0 auto;
-    background: var(--bg-color);
+    background: var(--bg-primary);
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
@@ -141,7 +146,7 @@ body {
 }
 
 .setting-item {
-    background-color: #f8f9fa;
+    background-color: var(--bg-secondary);
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 20px;
@@ -161,7 +166,7 @@ body {
 }
 
 .setting-description {
-    color: #666;
+    color: var(--text-secondary);
     font-size: 14px;
     margin: 0;
 }
@@ -187,7 +192,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #ccc;
+    background-color: var(--bg-scrollbar-thumb);
     transition: .4s;
     border-radius: 20px;
 }
@@ -199,13 +204,13 @@ body {
     width: 16px;
     left: 2px;
     bottom: 2px;
-    background-color: white;
+    background-color: var(--bg-primary);
     transition: .4s;
     border-radius: 50%;
 }
 
 input:checked + .slider {
-    background-color: var(--primary-color);
+    background-color: var(--action-color);
 }
 
 input:checked + .slider:before {
@@ -223,7 +228,7 @@ input:checked + .slider:before {
     justify-content: space-between;
     padding: 10px;
     margin: 5px 0;
-    background: var(--hover-bg);
+    background: var(--bg-tertiary);
     border-radius: 4px;
 }
 
@@ -233,21 +238,21 @@ input:checked + .slider:before {
 
 .remove-domain-btn {
     padding: 4px 8px;
-    color: #666;
+    color: var(--text-secondary);
     background: none;
     border: none;
     cursor: pointer;
 }
 
 .remove-domain-btn:hover {
-    color: #d32f2f;
+    color: var(--danger-color);
 }
 
 /* 按钮样式 */
 .primary-btn {
     padding: 8px 16px;
-    color: white;
-    background-color: var(--primary-color);
+    color: var(--text-fifth);
+    background-color: var(--action-color);
     border: none;
     border-radius: 6px;
     cursor: pointer;
@@ -257,10 +262,11 @@ input:checked + .slider:before {
     gap: 6px;
     transition: all 0.2s ease;
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    white-space: nowrap;
 }
 
 .primary-btn:hover {
-    background-color: #3367d6;
+    background-color: var(--action-hover);
     box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
 
@@ -269,29 +275,30 @@ input:checked + .slider:before {
 }
 
 .primary-btn:disabled {
-    background-color: #ccc;
+    background-color: var(--action-disabled);
     cursor: not-allowed;
     box-shadow: none;
     opacity: 0.7;
 }
 
 .primary-btn:disabled:hover {
-    background-color: #ccc;
+    background-color: var(--action-disabled);
     box-shadow: none;
     transform: none;
 }
 
 .secondary-btn {
     padding: 8px 16px;
-    color: var(--text-color);
-    background-color: #f5f5f5;
+    color: var(--text-primary);
+    background-color: var(--bg-tertiary);
     border: 1px solid var(--border-color);
     border-radius: 4px;
     cursor: pointer;
+    white-space: nowrap;
 }
 
 .secondary-btn:hover {
-    background-color: #e0e0e0;
+    background-color: var(--bg-tertiary-hover);
 }
 
 /* 对话框样式 */
@@ -313,7 +320,7 @@ input:checked + .slider:before {
 }
 
 .dialog-content {
-    background: white;
+    background: var(--bg-primary);
     border-radius: 12px;
     padding: 24px;
     width: 500px;
@@ -340,7 +347,7 @@ input:checked + .slider:before {
 .help-text {
     margin: 5px 0;
     font-size: 12px;
-    color: #666;
+    color: var(--text-secondary);
 }
 
 .dialog-buttons {
@@ -354,7 +361,7 @@ input:checked + .slider:before {
     padding: 0;
     list-style-type: none;
     font-size: 12px;
-    color: #666;
+    color: var(--text-secondary);
 }
 
 .example-list li {
@@ -390,7 +397,7 @@ input:checked + .slider:before {
 .api-service-selector select {
     padding: 8px;
     font-size: 14px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     min-width: 200px;
 }
@@ -400,7 +407,7 @@ input:checked + .slider:before {
 }
 
 .api-service-item {
-    background: #f5f5f5;
+    background: var(--bg-tertiary);
     border-radius: 8px;
     padding: 15px;
     margin-bottom: 15px;
@@ -423,7 +430,7 @@ input:checked + .slider:before {
 .api-key-input input {
     flex: 1;
     padding: 8px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
 }
 
@@ -461,19 +468,19 @@ input:checked + .slider:before {
 }
 
 .verify-icon {
-    color: #999;
+    color: var(--text-tertiary);
     opacity: 0;
     transition: all 0.3s;
 }
 
 .verify-icon.success {
     opacity: 1;
-    color: #4CAF50;
+    color: var(--success-text);
 }
 
 .verify-icon.error {
     opacity: 1;
-    color: #f44336;
+    color: var(--error-text);
 }
 
 .verify-icon .check {
@@ -489,7 +496,7 @@ input:checked + .slider:before {
     padding: 4px;
     background: none;
     border: none;
-    color: #666;
+    color: var(--text-secondary);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -498,7 +505,7 @@ input:checked + .slider:before {
 }
 
 .icon-btn:hover {
-    background: #f5f5f5;
+    background: var(--bg-tertiary);
 }
 
 .verify-container {
@@ -520,15 +527,15 @@ input:checked + .slider:before {
 }
 
 .api-service-status.success {
-    color: #4CAF50;
+    color: var(--success-text);
 }
 
 .api-service-status.error {
-    color: #f44336;
+    color: var(--error-text);
 }
 
 .api-service-status.verifying {
-    color: #2196f3;
+    color: var(--action-color);
 }
 
 .api-key-actions {
@@ -540,13 +547,13 @@ input:checked + .slider:before {
 
 /* 添加新的样式 */
 .section-description {
-    color: #666;
+    color: var(--text-secondary);
     font-size: 14px;
     margin: -10px 0 20px 0;
 }
 
 .service-selector {
-    background: white;
+    background: var(--bg-primary);
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 20px;
@@ -561,12 +568,12 @@ input:checked + .slider:before {
 
 .service-selector-header span {
     font-size: 14px;
-    color: #666;
+    color: var(--text-secondary);
 }
 
 .service-selector select {
     padding: 8px 12px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     font-size: 14px;
     min-width: 200px;
@@ -580,7 +587,7 @@ input:checked + .slider:before {
 }
 
 .service-card {
-    background: white;
+    background: var(--bg-primary);
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -605,7 +612,7 @@ input:checked + .slider:before {
     width: 32px;
     height: 32px;
     border-radius: 8px;
-    background: #f5f5f5;
+    background: var(--bg-secondary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -638,7 +645,7 @@ input:checked + .slider:before {
 
 .service-description {
     font-size: 13px;
-    color: #888;
+    color: var(--text-sixth);
     margin: 0 0 0 44px;  /* 左边距等于 logo宽度(32px) + gap(12px) */
 }
 
@@ -654,7 +661,7 @@ input:checked + .slider:before {
 .status-toggle {
     width: 40px;
     height: 24px;
-    background: #eee;
+    background: var(--bg-fourth);
     border-radius: 12px;
     position: relative;
     cursor: pointer;
@@ -662,7 +669,7 @@ input:checked + .slider:before {
 }
 
 .status-toggle.active {
-    background: #4285f4;
+    background: var(--action-color);
 }
 
 .status-toggle::after {
@@ -670,7 +677,7 @@ input:checked + .slider:before {
     position: absolute;
     width: 20px;
     height: 20px;
-    background: white;
+    background: var(--bg-primary);
     border-radius: 50%;
     top: 2px;
     left: 2px;
@@ -689,7 +696,7 @@ input:checked + .slider:before {
 
 .dialog-header {
     padding: 16px 20px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--bg-border-light);
     flex-shrink: 0; /* 防止头部压缩 */
     display: flex;
     justify-content: space-between;
@@ -711,15 +718,15 @@ input:checked + .slider:before {
     padding: 0;
     border: none;
     background: none;
-    color: #666;
+    color: var(--text-secondary);
     cursor: pointer;
     border-radius: 4px;
     transition: all 0.2s ease;
 }
 
 .dialog-header-actions .icon-btn:hover {
-    background: #f5f5f5;
-    color: #1976d2;
+    background: var(--bg-tertiary);
+    color: var(--action-color);
 }
 
 .dialog-header h3 {
@@ -730,7 +737,7 @@ input:checked + .slider:before {
     background: none;
     border: none;
     font-size: 24px;
-    color: #666;
+    color: var(--text-secondary);
     cursor: pointer;
     padding: 0;
 }
@@ -754,8 +761,8 @@ input:checked + .slider:before {
     font-size: 12px;
     padding: 4px 8px;
     border-radius: 4px;
-    background: #f0f0f0;
-    color: #666;
+    background: var(--bg-fifth);
+    color: var(--text-secondary);
     display: flex;
     align-items: center;
     gap: 4px;
@@ -773,12 +780,12 @@ input:checked + .slider:before {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: #999;
+    background: var(--text-tertiary);
 }
 
 .api-status.configured {
-    background: #e8f5e9;
-    color: #2e7d32;
+    background: var(--success-bg);
+    color: var(--success-text);
 }
 
 .api-status.configured::before {
@@ -786,7 +793,7 @@ input:checked + .slider:before {
 }
 
 .api-status.configured::after {
-    background: #4CAF50;
+    background: var(--success-text);
 }
 
 /* 调整服务状态容器的样式 */
@@ -826,22 +833,22 @@ input:checked + .slider:before {
 }
 
 .dialog-content::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: var(--bg-scrollbar-track);
     border-radius: 4px;
 }
 
 .dialog-content::-webkit-scrollbar-thumb {
-    background: #ccc;
+    background: var(--bg-scrollbar-thumb);
     border-radius: 4px;
 }
 
 .dialog-content::-webkit-scrollbar-thumb:hover {
-    background: #999;
+    background: var(--bg-scrollbar-thumb-hover);
 }
 
 /* 添加登录状态卡片样式 */
 .login-status-card {
-    background: #fff;
+    background: var(--bg-primary);
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 20px;
@@ -850,7 +857,7 @@ input:checked + .slider:before {
 
 .status-header h3 {
     margin: 0 0 15px 0;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .status-content {
@@ -864,15 +871,15 @@ input:checked + .slider:before {
 }
 
 .logged-in {
-    background-color: #e8f5e9;
-    color: #2e7d32;
-    border: 1px solid #a5d6a7;
+    background-color: var(--success-bg);
+    color: var(--success-text);
+    border: 1px solid var(--success-border);
 }
 
 .logged-out {
-    background-color: #fbe9e7;
-    color: #c62828;
-    border: 1px solid #ffccbc;
+    background-color: var(--error-bg);
+    color: var(--error-text);
+    border: 1px solid var(--error-border);
 }
 
 .status-actions {
@@ -882,13 +889,13 @@ input:checked + .slider:before {
 
 .username {
     font-weight: 600;
-    color: #1a73e8;
+    color: var(--text-link);
 }
 
 /* 登录按钮样式 */
 .login-btn {
-    background-color: #1a73e8;
-    color: white;
+    background-color: var(--action-color);
+    color: var(--text-fifth);
     border: none;
     padding: 8px 16px;
     border-radius: 4px;
@@ -898,13 +905,13 @@ input:checked + .slider:before {
 }
 
 .login-btn:hover {
-    background-color: #1557b0;
+    background-color: var(--action-hover);
 }
 
 /* 登出按钮样式 */
 .logout-btn {
-    background-color: #dc3545;
-    color: white;
+    background-color: var(--danger-color);
+    color: var(--text-fifth);
     border: none;
     padding: 8px 16px;
     border-radius: 4px;
@@ -912,12 +919,12 @@ input:checked + .slider:before {
 }
 
 .logout-btn:hover {
-    background-color: #c82333;
+    background-color: var(--danger-hover);
 } 
 
 .models-section {
     margin-top: 24px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--bg-border-light);
     padding-top: 20px;
 }
 
@@ -930,16 +937,16 @@ input:checked + .slider:before {
 
 .model-label {
     font-size: 13px;
-    color: #666;
+    color: var(--text-secondary);
     font-weight: 600;  /* 加粗显示 */
     min-width: 100px;  /* 固定 label 宽度 */
 }
 
 .model-value {
     font-size: 14px;
-    color: #333;
+    color: var(--text-primary);
     padding: 8px 12px;
-    background: #f5f5f5;
+    background: var(--bg-tertiary);
     border-radius: 4px;
     flex: 1;  /* 占据剩余空间 */
     line-height: 1.5;  /* 添加固定的行高 */
@@ -959,7 +966,7 @@ input:checked + .slider:before {
 .models-section-header h3 {
     font-size: 14px;
     font-weight: 500;
-    color: #333;
+    color: var(--text-primary);
     margin: 0;
     display: flex;  /* 添加 flex 布局 */
     align-items: center;  /* 垂直居中对齐 */
@@ -1022,7 +1029,7 @@ input:checked + .slider:before {
 
 .footer-link:hover {
     background-color: rgba(255, 255, 255, 0.1);
-    color: #fff;
+    color: var(--text-fifth);
 }
 
 .footer-link i {
@@ -1054,9 +1061,9 @@ input:checked + .slider:before {
 
 /* API 安全提示样式 */
 .api-security-notice {
-    background-color: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-left: 4px solid #2196f3;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--bg-secondary-border);
+    border-left: 4px solid var(--info-color);
     border-radius: 8px;
     padding: 16px;
     margin: 24px 0;
@@ -1065,7 +1072,7 @@ input:checked + .slider:before {
 }
 
 .notice-icon {
-    color: #2196f3;
+    color: var(--info-color);
     flex-shrink: 0;
     margin-top: 4px;
 }
@@ -1076,7 +1083,7 @@ input:checked + .slider:before {
 
 .notice-content h4 {
     margin: 0 0 12px 0;
-    color: #2196f3;
+    color: var(--info-color);
     font-size: 14px;
     font-weight: 600;
 }
@@ -1087,7 +1094,7 @@ input:checked + .slider:before {
 }
 
 .notice-content li {
-    color: #666;
+    color: var(--text-secondary);
     font-size: 13px;
     margin-bottom: 8px;
     line-height: 1.5;
@@ -1113,7 +1120,7 @@ input:checked + .slider:before {
 .api-usage-stats {
     margin: 24px 0;
     padding: 20px;
-    background: #fff;
+    background: var(--bg-primary);
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -1128,14 +1135,14 @@ input:checked + .slider:before {
 .stats-header h3 {
     margin: 0;
     font-size: 16px;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .stats-period {
     font-size: 13px;
-    color: #666;
+    color: var(--text-secondary);
     padding: 4px 8px;
-    background: #f5f5f5;
+    background: var(--bg-tertiary);
     border-radius: 4px;
 }
 
@@ -1147,21 +1154,21 @@ input:checked + .slider:before {
 
 .stats-card {
     padding: 16px;
-    background: #f8f9fa;
+    background: var(--bg-secondary);
     border-radius: 8px;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--bg-secondary-border);
 }
 
 .stats-title {
     font-size: 14px;
-    color: #666;
+    color: var(--text-secondary);
     margin-bottom: 8px;
 }
 
 .stats-value {
     font-size: 24px;
     font-weight: 600;
-    color: #2196f3;
+    color: var(--info-color);
     margin-bottom: 12px;
 }
 
@@ -1170,10 +1177,10 @@ input:checked + .slider:before {
     flex-direction: column;
     gap: 8px;
     font-size: 13px;
-    color: #666;
+    color: var(--text-secondary);
     margin-top: 8px;  /* 与上方数值的间距 */
     padding-top: 8px;  /* 内边距 */
-    border-top: 1px solid #eee;  /* 添加分隔线 */
+    border-top: 1px solid var(--bg-border-light);  /* 添加分隔线 */
 }
 
 .stats-tokens span {
@@ -1183,12 +1190,12 @@ input:checked + .slider:before {
 }
 
 .stats-tokens .token-label {
-    color: #888;  /* 标签颜色稍微淡一些 */
+    color: var(--text-sixth);  /* 标签颜色稍微淡一些 */
 }
 
 .stats-tokens .token-value {
     font-weight: 500;  /* 数值加粗 */
-    color: #444;  /* 数值颜色更深一些 */
+    color: var(--text-seventh);  /* 数值颜色更深一些 */
 }
 
 /* 响应式调整 */
@@ -1220,9 +1227,9 @@ input:checked + .slider:before {
 }
 
 .filter-item {
-    background: #ffffff;
+    background: var(--bg-primary);
     border-radius: 6px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--bg-border);
     padding: 16px;
     transition: all 0.2s;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -1232,25 +1239,25 @@ input:checked + .slider:before {
 
 .filter-item.dragging {
     opacity: 0.5;
-    background: #f8f9fa;
+    background: var(--bg-secondary);
 }
 
 .filter-item:hover {
-    border-color: #d0d0d0;
+    border-color: var(--bg-border-hover);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .filter-item.built-in {
-    background: #fafafa;
-    border: 1px solid #e0e0e0;
+    background: var(--bg-seventh);
+    border: 1px solid var(--bg-border);
 }
 
 .built-in-badge {
     display: inline-flex;
     align-items: center;
     padding: 2px 6px;
-    background: #e3f2fd;
-    color: #1976d2;
+    background: var(--action-light);
+    color: var(--info-color);
     border-radius: 4px;
     font-size: 12px;
     font-weight: normal;
@@ -1258,7 +1265,7 @@ input:checked + .slider:before {
 }
 
 .filter-item.built-in:hover {
-    border-color: #e0e0e0;
+    border-color: var(--bg-border-hover);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
@@ -1272,7 +1279,7 @@ input:checked + .slider:before {
     gap: 8px;
     font-size: 16px;
     font-weight: 500;
-    color: #333;
+    color: var(--text-primary);
     margin-bottom: 8px;
 }
 
@@ -1296,7 +1303,7 @@ input:checked + .slider:before {
     gap: 12px;
     justify-content: flex-end;
     padding-top: 12px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--bg-border-light);
 }
 
 .filter-actions button {
@@ -1307,7 +1314,7 @@ input:checked + .slider:before {
     transition: all 0.2s;
     border: none;
     background: none;
-    color: #666;
+    color: var(--text-secondary);
     display: flex;
     align-items: center;
     gap: 4px;
@@ -1320,24 +1327,24 @@ input:checked + .slider:before {
 }
 
 .filter-actions .edit-btn:hover {
-    background: #e3f2fd;
-    color: #1976d2;
+    background: var(--action-light);
+    color: var(--action-color);
 }
 
 .filter-actions .delete-btn:hover {
-    background: #ffebee;
-    color: #d32f2f;
+    background: var(--error-bg);
+    color: var(--danger-color);
 }
 
 .filter-actions .view-btn:hover {
-    background: #e3f2fd;
-    color: #1976d2;
+    background: var(--action-light);
+    color: var(--action-color);
 }
 
 input:disabled,
 select:disabled {
-    background-color: #f8f9fa;
-    color: #666;
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
     cursor: not-allowed;
 }
 
@@ -1358,12 +1365,12 @@ select:disabled {
 
 .dialog-footer {
     padding: 12px 20px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--bg-border-light);
     display: flex;
     justify-content: flex-end;
     gap: 12px;
     flex-shrink: 0; /* 防止底部压缩 */
-    background: #fff; /* 确保底部背景色 */
+    background: var(--bg-primary); /* 确保底部背景色 */
 }
 
 /* 优化内容区域的滚动条样式 */
@@ -1372,31 +1379,31 @@ select:disabled {
 }
 
 .filter-config-body::-webkit-scrollbar-track {
-    background: #f5f5f5;
+    background: var(--bg-scrollbar-track);
     border-radius: 4px;
 }
 
 .filter-config-body::-webkit-scrollbar-thumb {
-    background: #ddd;
+    background: var(--bg-scrollbar-thumb);
     border-radius: 4px;
 }
 
 .filter-config-body::-webkit-scrollbar-thumb:hover {
-    background: #ccc;
+    background: var(--bg-scrollbar-thumb-hover);
 }
 
 .dialog-header h3 {
     margin: 0;
     font-size: 16px;
     font-weight: 500;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .close-dialog-btn {
     background: none;
     border: none;
     font-size: 20px;
-    color: #666;
+    color: var(--text-secondary);
     cursor: pointer;
     padding: 4px;
     border-radius: 4px;
@@ -1404,8 +1411,8 @@ select:disabled {
 }
 
 .close-dialog-btn:hover {
-    background: #f5f5f5;
-    color: #333;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
 }
 
 .filter-config-body {
@@ -1420,13 +1427,13 @@ select:disabled {
     display: block;
     margin-bottom: 6px;
     font-size: 14px;
-    color: #666;
+    color: var(--text-secondary);
 }
 
 .form-group input {
     width: 100%;
     padding: 6px 10px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     font-size: 14px;
     transition: all 0.2s;
@@ -1434,7 +1441,7 @@ select:disabled {
 
 .form-group input:focus {
     outline: none;
-    border-color: var(--primary-color);
+    border-color: var(--border-edit);
     box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.1);
 }
 
@@ -1449,15 +1456,15 @@ select:disabled {
 .filter-rules-header label {
     font-size: 14px;
     font-weight: 400;
-    color: #666;
+    color: var(--text-secondary);
 }
 
 .filter-rules {
     margin-top: 6px;
-    background: #ffffff;
+    background: var(--bg-primary);
     border-radius: 8px;
     padding: 16px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--bg-border);
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
@@ -1465,9 +1472,9 @@ select:disabled {
 #add-condition-btn {
     padding: 6px 12px;
     font-size: 13px;
-    color: #1976d2;
-    background: #e3f2fd;
-    border: 1px solid #bbdefb;
+    color: var(--action-color);
+    background: var(--action-light);
+    border: 1px solid var(--action-light-hover);
     border-radius: 4px;
     cursor: pointer;
     display: flex;
@@ -1477,7 +1484,7 @@ select:disabled {
 }
 
 #add-condition-btn:hover {
-    background: #bbdefb;
+    background: var(--action-light-hover);
 }
 
 #add-condition-btn::before {
@@ -1497,16 +1504,16 @@ select:disabled {
     align-items: center;
     gap: 6px;
     padding: 6px;
-    background: #ffffff;
+    background: var(--bg-primary);
     border-radius: 4px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--bg-border);
     transition: all 0.2s;
     min-width: 0;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .condition-item:hover {
-    border-color: #ccc;
+    border-color: var(--bg-border-hover);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
@@ -1520,18 +1527,18 @@ select:disabled {
     width: 100px; /* 固定宽度 */
     flex-shrink: 0; /* 防止收缩 */
     padding: 6px 10px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     font-size: 13px;
-    color: #333;
-    background: #fff;
+    color: var(--text-primary);
+    background: var(--bg-primary);
     transition: all 0.2s;
 }
 
 .condition-select:focus,
 .condition-operator:focus {
     outline: none;
-    border-color: var(--primary-color);
+    border-color: var(--border-edit);
     box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.1);
 }
 
@@ -1546,7 +1553,7 @@ select:disabled {
     flex: 1;
     min-width: 0; /* 允许输入框收缩 */
     padding: 6px 10px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     font-size: 13px;
     transition: all 0.2s;
@@ -1555,7 +1562,7 @@ select:disabled {
 .remove-condition-btn {
     background: none;
     border: none;
-    color: #999;
+    color: var(--text-tertiary);
     padding: 6px;
     border-radius: 4px;
     width: 28px;
@@ -1582,7 +1589,7 @@ select:disabled {
 
 .remove-condition-btn:hover {
     background: rgba(244, 67, 54, 0.1);
-    color: #f44336;
+    color: var(--danger-color);
 }
 
 .remove-condition-btn:hover::before {
@@ -1591,7 +1598,7 @@ select:disabled {
 
 .dialog-footer {
     padding: 12px 20px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--bg-border-light);
     display: flex;
     justify-content: flex-end;
     gap: 12px;
@@ -1606,23 +1613,23 @@ select:disabled {
 }
 
 .dialog-footer .secondary-btn {
-    background: #f5f5f5;
-    border: 1px solid #ddd;
-    color: #666;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
 }
 
 .dialog-footer .secondary-btn:hover {
-    background: #eee;
+    background: var(--bg-fourth);
 }
 
 .dialog-footer .primary-btn {
-    background: var(--primary-color);
+    background: var(--action-color);
     border: none;
-    color: white;
+    color: var(--text-fifth);
 }
 
 .dialog-footer .primary-btn:hover {
-    background: #3367d6;
+    background: var(--action-hover);
 }
 
 /* 标签输入框样式 */
@@ -1636,13 +1643,13 @@ select:disabled {
     border: 1px solid var(--border-color);
     border-radius: 4px;
     min-height: 32px;
-    background: #fff;
+    background: var(--bg-primary);
     align-items: center;
     transition: all 0.2s;
 }
 
 .tags-input-container:focus-within {
-    border-color: var(--primary-color);
+    border-color: var(--border-edit);
     box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.1);
 }
 
@@ -1651,16 +1658,16 @@ select:disabled {
     align-items: center;
     gap: 4px;
     padding: 2px 8px;
-    background: #e3f2fd;
-    color: #1976d2;
+    background: var(--tag-recommended-bg);
+    color: var(--tag-recommended-text);
     border-radius: 4px;
     font-size: 0.9em;
-    border: 1px solid #bbdefb;
+    border: 1px solid var(--tag-recommended-border);
     transition: all 0.2s;
 }
 
 .tag-item:hover {
-    background: #bbdefb;
+    background: var(--tag-recommended-border);
 }
 
 .tag-item .remove-tag {
@@ -1673,7 +1680,7 @@ select:disabled {
     border-radius: 50%;
     font-size: 12px;
     margin-left: 2px;
-    color: #1976d2;
+    color: var(--tag-recommended-text);
     transition: all 0.2s;
 }
 
@@ -1688,21 +1695,21 @@ select:disabled {
     min-width: 60px;
     padding: 4px;
     font-size: 13px;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .tags-input::placeholder {
-    color: #999;
+    color: var(--text-tertiary);
     font-size: 12px;
 }
 
 /* 条件分组样式 */
 .condition-group {
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--bg-border);
     border-radius: 8px;
     margin: 4px 0;
     padding: 12px;
-    background: linear-gradient(to bottom, #f8f9fa, #f3f4f6);
+    background: var(--bg-secondary);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
@@ -1717,7 +1724,7 @@ select:disabled {
 
 .group-title {
     font-weight: 500;
-    color: #444;
+    color: var(--text-seventh);
     font-size: 13px;
 }
 
@@ -1725,13 +1732,13 @@ select:disabled {
     padding: 4px 8px;
     background: none;
     border: none;
-    color: #666;
+    color: var(--text-secondary);
     cursor: pointer;
     font-size: 16px;
 }
 
 .remove-group-btn:hover {
-    color: #f44336;
+    color: var(--danger-color);
 }
 
 .group-conditions {
@@ -1749,19 +1756,19 @@ select:disabled {
 
 .dragging {
     opacity: 0.5 !important;
-    border: 2px dashed #1976d2 !important;
-    background: #fff !important;
+    border: 2px dashed var(--border-edit) !important;
+    background: var(--bg-primary) !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
 }
 
 .drag-over {
-    background: #e8f0fe !important;
-    border-color: #1976d2;
+    background: var(--action-light) !important;
+    border-color: var(--border-edit);
     box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
 }
 
 .condition-item.dragging {
-    background: #fff;
+    background: var(--bg-primary);
 }
 
 .input-wrapper {
@@ -1779,13 +1786,13 @@ input[type="number"].condition-value-input {
 .input-unit {
     position: absolute;
     right: 8px;
-    color: #666;
+    color: var(--text-secondary);
     font-size: 13px;
     pointer-events: none; /* 防止单位文字影响输入 */
 }
 
 .condition-group:hover {
-    border-color: #d0d0d0;
+    border-color: var(--bg-border-hover);
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
 }
 
@@ -1805,7 +1812,7 @@ input[type="number"].condition-value-input {
     font-weight: 500;
     font-size: 14px;
     margin-bottom: 8px;
-    color: #333;
+    color: var(--text-primary);
     white-space: nowrap; /* 防止换行 */
 }
 
@@ -1817,14 +1824,14 @@ input[type="number"].condition-value-input {
 #custom-service-dialog .form-group input {
     width: 100%;
     padding: 8px 12px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     font-size: 14px;
     transition: all 0.2s;
 }
 
 #custom-service-dialog .form-group input:focus {
-    border-color: var(--primary-color);
+    border-color: var(--border-edit);
     box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.1);
     outline: none;
 }
@@ -1841,7 +1848,7 @@ input[type="number"].condition-value-input {
     right: 12px;
     bottom: 8px;
     font-size: 12px;
-    color: #666;
+    color: var(--text-secondary);
     pointer-events: none;
 }
 
@@ -1861,9 +1868,9 @@ input[type="number"].condition-value-input {
     padding: 6px 12px;
     height: 34px;
     font-size: 13px;
-    color: #1976d2;
-    background: #e3f2fd;
-    border: 1px solid #bbdefb;
+    color: var(--action-color);
+    background: var(--action-light);
+    border: 1px solid var(--action-light-hover);
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s;
@@ -1878,8 +1885,8 @@ input[type="number"].condition-value-input {
 }
 
 .model-config-group .test-btn:hover {
-    background: #bbdefb;
-    border-color: #90caf9;
+    background: var(--action-light-hover);
+    border-color: var(--action-light-active);
     box-shadow: 0 2px 4px rgba(25, 118, 210, 0.1);
     transform: translateY(-1px);
 }
@@ -1887,7 +1894,7 @@ input[type="number"].condition-value-input {
 .model-config-group .test-btn:active {
     transform: translateY(0);
     box-shadow: none;
-    background: #90caf9;
+    background: var(--action-light-active);
 }
 
 /* 确保输入框不会被按钮遮挡 */
@@ -1904,7 +1911,7 @@ input[type="number"].condition-value-input {
 .advanced-settings-group {
     margin-top: 24px;
     padding-top: 20px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--bg-border-light);
 }
 
 .advanced-settings-group .form-group:last-child {
@@ -1926,7 +1933,7 @@ input[type="number"].condition-value-input {
     order: 1;
     margin-right: 12px;
     font-size: 14px;
-    color: #333;
+    color: var(--text-primary);
 }
 
 /* checkbox 容器样式 */
@@ -1951,7 +1958,7 @@ input[type="number"].condition-value-input {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #ccc;
+    background-color: var(--bg-scrollbar-thumb);
     transition: .3s;
     border-radius: 20px;
 }
@@ -1963,14 +1970,14 @@ input[type="number"].condition-value-input {
     width: 16px;
     left: 2px;
     bottom: 2px;
-    background-color: white;
+    background-color: var(--bg-primary);
     transition: .3s;
     border-radius: 50%;
 }
 
 /* 选中状态样式 */
 #custom-service-dialog .advanced-settings-group input[type="checkbox"]:checked + .switch-slider {
-    background-color: #1976d2;
+    background-color: var(--info-color);
 }
 
 #custom-service-dialog .advanced-settings-group input[type="checkbox"]:checked + .switch-slider:before {
@@ -1995,7 +2002,7 @@ input[type="number"].condition-value-input {
 /* 对话框底部按钮样式 */
 #custom-service-dialog .dialog-footer {
     padding: 16px 20px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--bg-border-light);
     display: flex;
     justify-content: flex-end;
     gap: 12px;
@@ -2010,29 +2017,29 @@ input[type="number"].condition-value-input {
 }
 
 .save-custom-btn {
-    background: var(--primary-color);
-    color: white;
+    background: var(--action-color);
+    color: var(--text-fifth);
     border: none;
 }
 
 .save-custom-btn:hover {
-    background: #3367d6;
+    background: var(--action-hover);
 }
 
 .cancel-custom-btn {
-    background: #f5f5f5;
-    border: 1px solid #ddd;
-    color: #666;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
 }
 
 .cancel-custom-btn:hover {
-    background: #eee;
+    background: var(--bg-fourth);
 }
 
 /* 设置说明文本样式 */
 #custom-service-dialog .setting-description {
     font-size: 12px;
-    color: #666;
+    color: var(--text-secondary);
     margin-top: 4px;
     line-height: 1.4;
 }
@@ -2054,7 +2061,7 @@ input[type="number"].condition-value-input {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    color: #666;
+    color: var(--text-secondary);
     margin-left: 6px;
 }
 
@@ -2070,30 +2077,30 @@ input[type="number"].condition-value-input {
 }
 
 .test-status.testing::before {
-    background-color: #ffd700;
+    background-color: var(--action-color);
 }
 
 .test-status.success::before {
-    background-color: #4caf50;
+    background-color: var(--success-text);
 }
 
 .test-status.error::before {
-    background-color: #f44336;
+    background-color: var(--error-text);
 }
 
 /* 测试状态的不同状态样式 */
 .test-status.testing {
-    color: #ffa000;
+    color: var(--action-color);
 }
 
 .test-status.success {
-    color: #4caf50;
+    color: var(--success-text);
 }
 
 .test-status.error {
     cursor: pointer;
     user-select: none;
-    color: #f44336;
+    color: var(--error-text);
 }
 
 /* 相似度滑动条样式 */
@@ -2107,7 +2114,7 @@ input[type="number"].condition-value-input {
     align-items: center;
     font-weight: 500;
     gap: 8px;
-    color: #333;
+    color: var(--text-primary);
     margin-bottom: 0px;
 }
 
@@ -2122,11 +2129,11 @@ input[type="number"].condition-value-input {
 }
 
 .threshold-value {
-    background: #f0f0f0;
+    background: var(--bg-fifth);
     padding: 2px 8px;
     border-radius: 4px;
     font-size: 14px;
-    color: #666;
+    color: var(--text-secondary);
     min-width: 48px;
     text-align: center;
     margin-left: auto;
@@ -2149,7 +2156,7 @@ input[type="number"].condition-value-input {
 .similarity-slider-group .setting-description {
     margin: 0;
     font-size: 13px;
-    color: #666;
+    color: var(--text-secondary);
     line-height: 1.5;
 }
 
@@ -2164,7 +2171,7 @@ input[type="number"].condition-value-input {
 /* 对话框头部 */
 #custom-service-dialog .dialog-header {
     padding: 20px 24px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--bg-border-light);
     flex-shrink: 0;
 }
 
@@ -2175,7 +2182,7 @@ input[type="number"].condition-value-input {
     padding: 24px;
     /* 添加滚动条样式 */
     scrollbar-width: thin;
-    scrollbar-color: #ccc transparent;
+    scrollbar-color: var(--bg-scrollbar-thumb) transparent;
 }
 
 /* 自定义滚动条样式 */
@@ -2188,23 +2195,23 @@ input[type="number"].condition-value-input {
 }
 
 #custom-service-dialog .service-config-body::-webkit-scrollbar-thumb {
-    background-color: #ccc;
+    background-color: var(--bg-scrollbar-thumb);
     border-radius: 3px;
 }
 
 #custom-service-dialog .service-config-body::-webkit-scrollbar-thumb:hover {
-    background-color: #999;
+    background-color: var(--bg-scrollbar-thumb-hover);
 }
 
 /* 对话框底部按钮样式 */
 #custom-service-dialog .dialog-footer {
     flex-shrink: 0;
     padding: 16px 20px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--bg-border-light);
     display: flex;
     justify-content: flex-end;
     gap: 12px;
-    background: white;
+    background: var(--bg-primary);
 }
 
 /* 提示图标样式 */
@@ -2212,13 +2219,13 @@ input[type="number"].condition-value-input {
     display: inline-flex;
     align-items: center;
     margin-left: 6px;
-    color: #999;
+    color: var(--text-tertiary);
     cursor: help;
     position: relative;
 }
 
 .tooltip-icon:hover {
-    color: #666;
+    color: var(--text-secondary);
 }
 
 /* 提示框样式 */
@@ -2230,7 +2237,7 @@ input[type="number"].condition-value-input {
     transform: translateY(-10%) translateX(8px);
     padding: 8px 12px;
     background: rgba(33, 33, 33, 0.9);
-    color: white;
+    color: var(--text-fifth);
     font-size: 12px;
     font-weight: normal;
     white-space: nowrap;
@@ -2254,16 +2261,16 @@ input[type="number"].condition-value-input {
 
 /* 搜索设置卡片样式 */
 .search-settings-card {
-    background: #fff;
+    background: var(--bg-primary);
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-md);
 }
 
 .search-settings-card h3 {
     margin: 0 0 16px 0;
-    color: #333;
+    color: var(--text-primary);
     font-weight: 500;
 }
 
@@ -2276,10 +2283,10 @@ input[type="number"].condition-value-input {
 
 /* 单个设置项卡片样式 */
 .setting-item-card {
-    background: #f8f9fa;
+    background: var(--bg-secondary);
     border-radius: 6px;
     padding: 16px;
-    border: 1px solid #eee;
+    border: 1px solid var(--bg-border-light);
 }
 
 .setting-item-card .form-group {
@@ -2290,34 +2297,44 @@ input[type="number"].condition-value-input {
 }
 
 .setting-item-card label {
-    color: #333;
+    color: var(--text-primary);
     font-size: 14px;
     font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .setting-item-card input[type="number"] {
     width: 100%;
     max-width: 120px;
     padding: 6px 8px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     font-size: 14px;
-    color: #333;
+    color: var(--text-primary);
     transition: all 0.2s;
-    background: #fff;
+    background: var(--bg-primary);
 }
 
 .setting-item-card input[type="number"]:focus {
-    border-color: #1a73e8;
+    border-color: var(--action-color);
     box-shadow: 0 0 0 2px rgba(26,115,232,0.1);
     outline: none;
 }
 
 .setting-item-card .setting-description {
     margin-top: 6px;
-    color: #666;
+    color: var(--text-secondary);
     font-size: 13px;
     line-height: 1.4;
+}
+
+/* 修改 tooltip-icon 在 setting-item-card 中的样式 */
+.setting-item-card .tooltip-icon {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
 }
 
 .setting-item-card .tooltip-icon[data-tooltip]:before {
@@ -2334,7 +2351,7 @@ input[type="number"].condition-value-input {
 
 /* 添加自定义服务卡片样式 */
 .add-custom-card {
-    border: 2px dashed #ddd;
+    border: 2px dashed var(--border-color);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2343,13 +2360,13 @@ input[type="number"].condition-value-input {
 }
 
 .add-custom-card:hover {
-    border-color: var(--primary-color);
-    background: #f8f9fa;
+    border-color: var(--border-edit);
+    background: var(--bg-secondary);
 }
 
 .add-custom-content {
     text-align: center;
-    color: #666;
+    color: var(--text-secondary);
 }
 
 .add-icon {
@@ -2370,7 +2387,7 @@ input[type="number"].condition-value-input {
     border: 1px solid transparent;
     box-shadow: 0 2px 4px rgba(220, 38, 38, 0.1);  /* 添加阴影效果 */
     border: none;
-    color: #666;
+    color: var(--text-secondary);
     cursor: pointer;
     border-radius: 20px;
     display: flex;
@@ -2385,9 +2402,9 @@ input[type="number"].condition-value-input {
 }
 
 .delete-service-btn:hover {
-    background: #fee2e2;
-    color: #dc2626;
-    border-color: #fecaca;  /* 添加边框颜色 */
+    background: var(--error-bg);
+    color: var(--danger-color);
+    border-color: var(--error-border);  /* 添加边框颜色 */
     transform: translateY(-1px);  /* 添加轻微上浮效果 */
 }
 
@@ -2409,8 +2426,8 @@ input[type="number"].condition-value-input {
     top: 20px;
     left: 50%;
     transform: translateX(-50%) translateY(-10px);
-    background-color: white;
-    color: #333;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
     padding: 12px 20px;
     border-radius: 8px;
     z-index: 3000;
@@ -2433,8 +2450,8 @@ input[type="number"].condition-value-input {
 }
 
 .toast.error {
-    background-color: #f8d7da;
-    color: #dc2626;
+    background-color: var(--error-bg);
+    color: var(--error-text);
 }
 
 .toast.error::before {
@@ -2461,12 +2478,12 @@ input[type="number"].condition-value-input {
     border: none;
     font-size: 14px;
     line-height: 1.5;  /* 添加相同的行高 */
-    color: var(--text-color);
-    background-color: var(--bg-color);
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
 }
 
 .model-input-container input:read-only {
-    background-color: var(--bg-color-secondary);
+    background-color: var(--bg-primary-secondary);
     cursor: default;
     user-select: none;  /* 禁用文本选择 */
     -webkit-user-select: none;  /* Safari 支持 */
@@ -2479,9 +2496,9 @@ input[type="number"].condition-value-input {
 }
 
 .model-input-container input:not(:read-only) {
-    border-color: var(--primary-color);
-    background-color: var(--bg-color);
-    box-shadow: 0 0 0 2px var(--primary-color-light);
+    border-color: var(--border-edit);
+    background-color: var(--bg-primary);
+    box-shadow: 0 0 0 2px var(--action-light);
 }
 
 .edit-model-btn {
@@ -2494,19 +2511,19 @@ input[type="number"].condition-value-input {
     border: none;
     border-radius: 6px;
     background-color: transparent;
-    color: var(--text-color-secondary);
+    color: var(--text-primary-secondary);
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .edit-model-btn:hover {
-    background-color: var(--hover-color);
-    color: var(--primary-color);
+    background-color: var(--bg-tertiary-hover);
+    color: var(--action-color);
 }
 
 .edit-model-btn.active {
-    color: var(--primary-color);
-    background-color: var(--primary-color-light);
+    color: var(--action-color);
+    background-color: var(--action-light);
 }
 
 /* 导入导出卡片网格布局 */
@@ -2519,7 +2536,7 @@ input[type="number"].condition-value-input {
 
 /* 导入导出卡片样式 */
 .import-export-card {
-    background: #fff;
+    background: var(--bg-primary);
     border-radius: 12px;
     padding: 24px;
     display: flex;
@@ -2535,7 +2552,7 @@ input[type="number"].condition-value-input {
 }
 
 .card-icon {
-    color: var(--primary-color);
+    color: var(--action-color);
     opacity: 0.9;
     flex-shrink: 0;
 }
@@ -2548,13 +2565,13 @@ input[type="number"].condition-value-input {
     margin: 0 0 8px 0;
     font-size: 16px;
     font-weight: 500;
-    color: var(--text-color);
+    color: var(--text-primary);
 }
 
 .card-content p {
     margin: 0 0 16px 0;
     font-size: 14px;
-    color: #666;
+    color: var(--text-secondary);
     line-height: 1.4;
 }
 
@@ -2586,12 +2603,12 @@ input[type="number"].condition-value-input {
 .progress-status {
     margin-bottom: 16px;
     font-size: 14px;
-    color: var(--text-color);
+    color: var(--text-primary);
 }
 
 .progress-bar {
     height: 8px;
-    background: #f0f0f0;
+    background: var(--bg-fifth);
     border-radius: 4px;
     overflow: hidden;
     margin-bottom: 12px;
@@ -2599,7 +2616,7 @@ input[type="number"].condition-value-input {
 
 .progress-fill {
     height: 100%;
-    background: var(--primary-color);
+    background: var(--action-color);
     width: 0;
     transition: width 0.3s ease;
 }
@@ -2608,7 +2625,7 @@ input[type="number"].condition-value-input {
     display: flex;
     justify-content: space-between;
     font-size: 12px;
-    color: #666;
+    color: var(--text-secondary);
 }
 
 /* 响应式布局 */
@@ -2655,7 +2672,7 @@ input[type="number"].condition-value-input {
 }
 
 .checkbox-container:hover {
-    color: var(--primary-color);
+    color: var(--action-color);
 }
 
 .checkbox-container input[type="checkbox"] {
@@ -2672,6 +2689,28 @@ input[type="number"].condition-value-input {
     flex: 1;
     min-height: 0;  /* 重要：允许flex子项收缩 */
     overflow-y: auto;  /* 只在书签树容器内滚动 */
+    /* 添加滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-scrollbar-thumb) transparent;
+}
+
+/* 自定义滚动条样式 */
+.bookmark-tree-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.bookmark-tree-container::-webkit-scrollbar-track {
+    background: var(--bg-scrollbar-track);
+    border-radius: 3px;
+}
+
+.bookmark-tree-container::-webkit-scrollbar-thumb {
+    background: var(--bg-scrollbar-thumb);
+    border-radius: 3px;
+}
+
+.bookmark-tree-container::-webkit-scrollbar-thumb:hover {
+    background: var(--bg-scrollbar-thumb-hover);
 }
 
 .bookmark-tree {
@@ -2692,7 +2731,7 @@ input[type="number"].condition-value-input {
 }
 
 .folder-header:hover {
-    background-color: var(--hover-color);
+    background-color: var(--bg-tertiary-hover);
 }
 
 .folder-header .folder-icon {
@@ -2758,7 +2797,7 @@ input[type="number"].condition-value-input {
 }
 
 .bookmark-item:hover {
-    background-color: var(--hover-color);
+    background-color: var(--bg-tertiary-hover);
 }
 
 .bookmark-item .bookmark-icon {
@@ -2811,7 +2850,7 @@ input[type="number"].condition-value-input {
 
 .selection-stats .stats-value {
     font-weight: 500;
-    color: var(--text-color);
+    color: var(--text-primary);
 }
 
 .selection-stats .stats-unit {
@@ -2852,7 +2891,7 @@ input[type="number"].condition-value-input {
 .selection-stats .token-value {
     margin-left: 4px;
     font-weight: 500;
-    color: var(--text-color);
+    color: var(--text-primary);
     white-space: nowrap;
 }
 
@@ -2870,9 +2909,9 @@ input[type="number"].condition-value-input {
     display: inline-block;
     width: 24px;
     height: 24px;
-    border: 2px solid #e0e0e0;  /* 修改边框颜色为浅灰色 */
+    border: 2px solid var(--bg-border);  /* 修改边框颜色为浅灰色 */
     border-radius: 50%;
-    border-top-color: var(--primary-color);  /* 顶部边框使用主题色 */
+    border-top-color: var(--border-edit);  /* 顶部边框使用主题色 */
     animation: spin 0.8s linear infinite;
     margin: 20px auto;
     display: block;  /* 使其居中显示 */
@@ -2887,7 +2926,7 @@ input[type="number"].condition-value-input {
 /* 导入日志样式 */
 #import-progress-dialog .import-logs {
     margin-top: 20px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--bg-border-light);
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -2898,28 +2937,28 @@ input[type="number"].condition-value-input {
     padding: 12px 0;
     font-size: 14px;
     font-weight: 500;
-    color: #333;
+    color: var(--text-primary);
     flex-shrink: 0;
 }
 
 #import-progress-dialog .logs-list {
     flex: 1;
     overflow-y: auto;
-    border: 1px solid #eee;
+    border: 1px solid var(--bg-border-light);
     border-radius: 8px;
-    background: #f8f9fa;
+    background: var(--bg-secondary);
     max-height: 300px;
     min-height: 100px; /* 设置最小高度 */
 }
 
 /* 优化日志条目样式 */
 #import-progress-dialog .log-item {
-    background: white; /* 添加白色背景 */
+    background: var(--bg-primary); /* 添加白色背景 */
     transition: background-color 0.2s;
 }
 
 #import-progress-dialog .log-item:hover {
-    background: #f5f5f5;
+    background: var(--bg-tertiary);
 }
 
 /* 优化滚动条样式 */
@@ -2928,23 +2967,23 @@ input[type="number"].condition-value-input {
 }
 
 #import-progress-dialog .logs-list::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: var(--bg-scrollbar-track);
     border-radius: 3px;
 }
 
 #import-progress-dialog .logs-list::-webkit-scrollbar-thumb {
-    background: #ccc;
+    background: var(--bg-scrollbar-thumb);
     border-radius: 3px;
 }
 
 #import-progress-dialog .logs-list::-webkit-scrollbar-thumb:hover {
-    background: #999;
+    background: var(--bg-scrollbar-thumb-hover);
 }
 
 /* 日志条目样式 */
 .log-item {
     padding: 10px 12px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--bg-border-light);
     font-size: 13px;
     display: flex;
     flex-direction: column;
@@ -2978,7 +3017,7 @@ input[type="number"].condition-value-input {
 
 /* 标题文本容器 */
 .log-item .title-text {
-    color: #333;
+    color: var(--text-primary);
     font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
@@ -2995,11 +3034,11 @@ input[type="number"].condition-value-input {
     width: 14px;
     height: 14px;
     flex-shrink: 0; /* 防止图标压缩 */
-    color: #666;
+    color: var(--text-secondary);
 }
 
 .log-item .log-url {
-    color: #666;
+    color: var(--text-secondary);
     font-size: 12px;
     white-space: nowrap;
     overflow: hidden;
@@ -3019,20 +3058,20 @@ input[type="number"].condition-value-input {
 }
 
 .log-item.success .log-status {
-    background: #e8f5e9;
-    color: #2e7d32;
+    background: var(--success-bg);
+    color: var(--success-text);
 }
 
 .log-item.error .log-status {
-    background: #fdecea;
-    color: #d32f2f;
+    background: var(--error-bg);
+    color: var(--error-text);
 }
 
 /* 进度状态信息样式 */
 #import-progress-dialog .progress-status {
     margin-bottom: 16px;
     font-size: 14px;
-    color: var(--text-color);
+    color: var(--text-primary);
 }
 
 #import-progress-dialog .progress-info {
@@ -3044,7 +3083,7 @@ input[type="number"].condition-value-input {
 
 #import-progress-dialog .progress-info div {
     padding: 6px 12px;
-    background: #f5f5f5;
+    background: var(--bg-tertiary);
     border-radius: 4px;
     text-align: center;
     font-size: 13px;
@@ -3059,11 +3098,11 @@ input[type="number"].condition-value-input {
 #import-progress-dialog .tokens-info div {
     flex: 1;
     padding: 6px 12px;
-    background: #f8f9fa;
+    background: var(--bg-secondary);
     border-radius: 4px;
     text-align: center;
     font-size: 13px;
-    color: #666;
+    color: var(--text-secondary);
 }
 
 #bookmark-select-dialog .dialog-footer {
@@ -3073,27 +3112,27 @@ input[type="number"].condition-value-input {
     align-items: center; /* 垂直居中对齐 */
     gap: 12px;
     padding: 16px 20px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--bg-border-light);
     flex-shrink: 0;
-    background: white;
+    background: var(--bg-primary);
 }
 
 #bookmark-select-dialog .dialog-footer .footer-tip {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #666;
+    color: var(--text-secondary);
     font-size: 13px;
     max-width: 60%; /* 限制提示文本的最大宽度 */
 }
 
 #bookmark-select-dialog .dialog-footer .footer-tip .tip-icon {
-    color: #f59e0b; /* 警告色 */
+    color: var(--warning-text); /* 警告色 */
     flex-shrink: 0;
 }
 
 #bookmark-select-dialog .dialog-footer .footer-tip a {
-    color: #1976d2;
+    color: var(--text-link);
     text-decoration: none;
     white-space: nowrap;
 }
@@ -3124,13 +3163,13 @@ input[type="number"].condition-value-input {
     align-items: flex-start;
     position: relative;
     padding: 8px 12px 8px 32px;
-    background: rgba(255, 255, 255, 0.5);
+    background: var(--bg-tertiary);
     border-radius: 6px;
     transition: background-color 0.2s ease;
 }
 
 .privacy-rules-list li:hover {
-    background: rgba(255, 255, 255, 0.8);
+    background: var(--bg-tertiary-hover);
 }
 
 .privacy-rules-list li:before {
@@ -3157,4 +3196,252 @@ input[type="number"].condition-value-input {
     color: var(--text-secondary);
     font-size: 13px;
     line-height: 1.5;
+}
+
+/* 快捷键设置卡片样式 */
+.shortcuts-settings-card {
+    background: var(--bg-primary);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-md);
+}
+
+.shortcuts-settings-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.shortcuts-settings-card .card-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.shortcuts-settings-card .shortcut-actions {
+    margin-left: auto;
+}
+
+.shortcuts-settings-card .icon-btn {
+    height: 32px;
+    padding: 6px 12px;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    cursor: pointer;
+    border: 1px solid var(--bg-border);
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.shortcuts-settings-card .icon-btn:hover {
+    background: var(--action-light);
+    color: var(--action-color);
+    border-color: var(--action-color);
+    box-shadow: 0 2px 4px rgba(25, 118, 210, 0.1);
+    transform: translateY(-1px);
+}
+
+.shortcuts-settings-card .icon-btn:active {
+    background: var(--action-light);
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(25, 118, 210, 0.1);
+}
+
+.shortcuts-settings-card .icon-btn svg {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+
+.shortcuts-settings-card .icon-btn:hover svg {
+    transform: scale(1.1);
+}
+
+.shortcuts-settings-card .icon-btn span {
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.shortcuts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.shortcut-item {
+    background: var(--bg-secondary);
+    border-radius: 6px;
+    padding: 12px;
+    border: 1px solid var(--bg-border-light);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.shortcut-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.shortcut-name {
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* 移除通用图标 */
+.shortcut-name::before {
+    content: '';
+    width: 16px;
+    height: 16px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    opacity: 0.8;
+}
+
+/* 保存书签图标 */
+.shortcut-save::before {
+    background-image: url("data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path stroke='%23666666' stroke-width='1' fill='none' d='M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/></svg>");
+}
+
+/* 搜索书签图标 */
+.shortcut-search::before {
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23666" d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>');
+}
+
+.shortcut-key {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 8px;
+    background: var(--bg-primary);
+    border: 1px solid var(--bg-border);
+    border-radius: 4px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
+    line-height: 1;
+    white-space: nowrap;
+    margin-left: 8px;
+}
+
+.shortcut-description {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-left: 24px;
+}
+
+.setting-item-card select {
+    width: 100%;
+    max-width: 120px;
+    padding: 6px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.setting-item-card select:focus {
+    outline: none;
+    border-color: var(--border-edit);
+}
+
+.form-group .quick-search-sites-row label {
+    display: inline;
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 400;
+    white-space: nowrap;
+    margin-bottom: 0;
+}
+
+.setting-item-card .quick-search-sites-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+/* 外观设置卡片 */
+.appearance-settings-card {
+    background: var(--bg-primary);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-md);
+}
+
+.appearance-settings-card h3 {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0 0 16px 0;
+    color: var(--text-primary);
+}
+
+/* 主题选择器 */
+.theme-selector {
+    display: flex;
+    gap: 16px;
+    margin-top: 12px;
+}
+
+.theme-option {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+    background: var(--bg-secondary);
+}
+
+.theme-option:hover {
+    background: var(--bg-tertiary);
+}
+
+.theme-option.active {
+    border-color: var(--border-edit);
+    background: var(--bg-tertiary);
+}
+
+.theme-preview {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.theme-preview svg {
+    width: 24px;
+    height: 24px;
+}
+
+.theme-label {
+    font-size: 14px;
+    color: var(--text-primary);
+    text-align: center;
 }

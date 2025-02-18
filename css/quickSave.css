@@ -1,0 +1,403 @@
+/* 基础样式 */
+body {
+    width: 350px;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    height: fit-content;
+    min-height: 0;
+}
+
+/* 对话框内容 */
+.dialog-content {
+    padding: 16px;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 当只显示状态信息时的样式 */
+.dialog-content.status-only {
+    padding: 8px;
+}
+
+/* 当只显示状态信息时的样式 */
+.dialog-content.status-only .main-content {
+    display: none;
+}
+
+/* 标题行样式优化 */
+.title-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+    margin-bottom: 0px;
+}
+
+.page-favicon {
+    width: 16px;
+    height: 16px;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.page-favicon img {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+}
+
+/* 标题样式优化 */
+.page-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    min-width: 0;
+    padding: 4px 28px 4px 4px;  /* 始终保持右侧空间 */
+    border: 1px solid transparent;
+    border-radius: 4px;
+    transition: all 0.2s;
+    position: relative;
+}
+
+/* 标题获得焦点时的样式 */
+.page-title:focus {
+    white-space: normal;  /* 允许换行 */
+    word-break: break-word;  /* 允许在任意字符处换行 */
+    outline: none;
+    background: var(--bg-primary);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+}
+
+/* 添加编辑图标 */
+.page-title::after {
+    content: '✎';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: var(--text-tertiary);
+    opacity: 1;
+}
+
+/* 获得焦点时隐藏编辑图标 */
+.page-title:focus::after {
+    opacity: 0;
+}
+
+.page-title:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+    cursor: text;
+}
+
+.page-title:hover::after {
+    color: var(--text-link);
+}
+
+.page-url {
+    font-size: 11px;
+    color: var(--text-link);
+    padding: 4px 4px;
+    margin-bottom: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 页面摘要 */
+.page-excerpt {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    padding: 8px;
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+/* 标签区域 */
+.tags-container {
+    margin-bottom: 16px;
+}
+
+.tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    border-radius: 6px;
+    font-size: 12px;
+    gap: 4px;
+}
+
+.remove-tag-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--tag-text);
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.remove-tag-btn:hover {
+    color: var(--danger-color);
+    transform: scale(1.1);
+}
+
+.remove-tag-btn:active {
+    transform: scale(0.95);
+}
+
+.tag-input-container {
+    position: relative;
+}
+
+#new-tag-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 13px;
+    box-sizing: border-box;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+#new-tag-input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+/* 推荐标签区域 */
+.recommended-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 0;
+    margin-bottom: 12px;
+    padding: 12px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+}
+
+.recommended-tags-title {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    display: block;
+    font-weight: 500;
+}
+
+.recommended-tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.recommended-tags-list .tag {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background: var(--tag-recommended-bg);
+    color: var(--tag-recommended-text);
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+}
+
+.recommended-tags-list .tag:hover {
+    background: var(--tag-recommended-bg);
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* 按钮区域 */
+.dialog-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 0px;
+}
+
+.dialog-buttons .left-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.dialog-buttons button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+#save-tags-btn {
+    background: var(--primary-color);
+    color: white;
+    min-width: 64px;
+    height: 32px;
+}
+
+#save-tags-btn:hover {
+    background: var(--primary-hover);
+}
+
+#cancel-tags-btn {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    min-width: 64px;
+    height: 32px;
+}
+
+#cancel-tags-btn:hover {
+    background: var(--bg-secondary);
+}
+
+/* 删除按钮样式 */
+.danger-button {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    height: 32px;
+    border: none;
+    border-radius: 4px;
+    background: var(--bg-primary);
+    color: var(--danger-color);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 13px;
+}
+
+.danger-button:hover {
+    background: var(--error-bg);
+}
+
+.danger-button svg {
+    width: 16px;
+    height: 16px;
+    opacity: 0.8;
+}
+
+/* 加载状态 */
+.loading {
+    display: none;
+    text-align: center;
+    padding: 8px;
+    color: #666;
+}
+
+.loading.show {
+    display: block;
+}
+
+/* 状态提示 */
+.status-message {
+    display: none;
+    padding: 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1.4;
+    text-align: center;
+}
+
+.status-message.show {
+    display: block;
+}
+
+.status-message.error {
+    background-color: var(--error-bg);
+    color: var(--error-text);
+}
+
+.status-message.warning {
+    background-color: var(--warning-bg);
+    color: var(--warning-text);
+}
+
+.status-message.success {
+    background-color: var(--success-bg);
+    color: var(--success-text);
+}
+
+/* 关闭按钮 */
+.close-status {
+    float: right;
+    background: none;
+    border: none;
+    padding: 0;
+    margin-left: 8px;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.7;
+}
+
+.close-status:hover {
+    opacity: 1;
+}
+
+/* 主要内容容器 */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tags-list.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    color: #666;
+    font-size: 13px;
+    gap: 8px;
+}
+
+.tags-list.loading .loading-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #e0e0e0;
+    border-top-color: #4CAF50;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

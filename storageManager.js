@@ -1,6 +1,7 @@
 class LocalStorageMgr {
     static Namespace = {
-        BOOKMARK: 'bookmark.'
+        BOOKMARK: 'bookmark.',
+        TAGCACHE: 'tagcache'
     };
 
     static _bookmarksCache = null;
@@ -105,17 +106,23 @@ class LocalStorageMgr {
         return bookmarks;
     }
 
-    static async getBookmark(url) {
+    static async getBookmark(url, withoutCache = false) {
         const key = this.getBookmarkKey(url);
-        const bookmarks = await this.getBookmarks();
-        return bookmarks[key];
+        if (!withoutCache) {
+            const bookmarks = await this.getBookmarks();
+            return bookmarks[key];
+        } else {
+            return await this.get(key);
+        }
     }
 
     static async setBookmark(url, bookmark) {
         const key = this.getBookmarkKey(url);
         await this.set(key, bookmark);
         // 更新缓存
-        this._bookmarksCache[key] = bookmark;
+        if (this._bookmarksCache) {
+            this._bookmarksCache[key] = bookmark;
+        }
         this.sendMessageSafely({
             type: MessageType.BOOKMARK_STORAGE_UPDATED,
         });
@@ -129,8 +136,10 @@ class LocalStorageMgr {
         }, {});
         await this.setObject(bookmarksObject);
         // 更新缓存
-        for (const key of Object.keys(bookmarksObject)) {
-            this._bookmarksCache[key] = bookmarksObject[key];
+        if (this._bookmarksCache) {
+            for (const key of Object.keys(bookmarksObject)) {
+                this._bookmarksCache[key] = bookmarksObject[key];
+            }
         }
         this.sendMessageSafely({
             type: MessageType.BOOKMARK_STORAGE_UPDATED,
@@ -141,7 +150,9 @@ class LocalStorageMgr {
         const key = this.getBookmarkKey(url);
         await this.remove([key]);
         // 更新缓存
-        delete this._bookmarksCache[key];
+        if (this._bookmarksCache) {
+            delete this._bookmarksCache[key];
+        }
         this.sendMessageSafely({
             type: MessageType.BOOKMARK_STORAGE_UPDATED,
         });
@@ -151,8 +162,10 @@ class LocalStorageMgr {
         const keys = urls.map(url => this.getBookmarkKey(url));
         await this.remove(keys);
         // 更新缓存
-        for (const key of keys) {
-            delete this._bookmarksCache[key];
+        if (this._bookmarksCache) {
+            for (const key of keys) {
+                delete this._bookmarksCache[key];
+            }
         }
         this.sendMessageSafely({
             type: MessageType.BOOKMARK_STORAGE_UPDATED,
@@ -161,9 +174,30 @@ class LocalStorageMgr {
 
     static async clearBookmarks() {
         await this.removeKeysByPrefix(this.Namespace.BOOKMARK);
-        this._bookmarksCache = {};  // 清空书签时清除缓存
+        if (this._bookmarksCache) {
+            this._bookmarksCache = {};  // 清空书签时清除缓存
+        }
         this.sendMessageSafely({
             type: MessageType.BOOKMARK_STORAGE_UPDATED,
         });
+    }
+
+    // 标签缓存
+    static async getTags(url) {
+        try {
+            const data = await this.get(this.Namespace.TAGCACHE);
+            return data && data.url === url ? data.tags : null;
+        } catch (error) {
+            logger.error('获取缓存标签失败:', error);
+            return null;
+        }
+    }
+
+    static async setTags(url, tags) {
+        try {
+            await this.set(this.Namespace.TAGCACHE, { url: url, tags: tags });
+        } catch (error) {
+            logger.error('缓存标签失败:', error);
+        }
     }
 }

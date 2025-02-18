@@ -23,8 +23,8 @@ python3 build.py production
 TMP_DIR="tmp_build"
 mkdir -p $TMP_DIR
 
-# 复制所有文件到临时目录，除了 build.sh 和 env.json 和 build.py 和 build 目录 和 .git 目录 和 .cursorrules 文件 和 tmp_build 目录
-rsync -av --exclude 'build.sh' --exclude 'env.json' --exclude 'build.py' --exclude 'build' --exclude '.git' --exclude '.cursorrules' --exclude 'tmp_build' . $TMP_DIR/
+# 使用排除文件列表进行文件复制
+rsync -av --exclude-from='exclude_list.txt' . $TMP_DIR/
 
 # 创建 ZIP 包
 cd $TMP_DIR

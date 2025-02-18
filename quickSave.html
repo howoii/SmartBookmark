@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>快速保存书签</title>
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/quickSave.css">
+</head>
+<body>
+    <div class="dialog-content">
+        <div id="status" class="status-message"></div>
+        <div class="main-content">
+            <div class="dialog-header">
+                <div class="title-row">
+                    <div class="page-favicon">
+                        <img src="" alt="favicon">
+                    </div>
+                    <h3 class="page-title" contenteditable="true" spellcheck="false"></h3>
+                </div>
+                <div class="page-url"></div>
+            </div>
+            <div class="page-excerpt"></div>
+            <div class="tags-container">
+                <div class="recommended-tags">
+                    <div class="recommended-tags-title">推荐标签：</div>
+                    <div class="recommended-tags-list"></div>
+                </div>
+                <div id="tags-list" class="tags-list"></div>
+                <div class="tag-input-container">
+                    <input type="text" id="new-tag-input" placeholder="输入标签按回车键添加...">
+                </div>
+            </div>
+            <div class="dialog-buttons">
+                <div class="left-buttons">
+                    <button id="cancel-tags-btn">取消</button>
+                    <button id="save-tags-btn">保存</button>
+                </div>
+                <button id="delete-bookmark-btn" class="danger-button" style="display: none;">
+                    <svg viewBox="0 0 24 24" width="16" height="16">
+                        <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
+                    </svg>
+                    删除
+                </button>
+            </div>
+        </div>
+    </div>
+    <script src="consts.js"></script>
+    <script src="common.js"></script>
+    <script src="logger.js"></script>
+    <script src="env.js"></script>
+    <script src="models.js"></script>
+    <script src="config.js"></script>
+    <script src="storageManager.js"></script>
+    <script src="settingsManager.js"></script>
+    <script src="statsManager.js"></script>
+    <script src="util.js"></script>
+    <script src="api.js"></script>
+    <script src="themeManager.js"></script>
+    <script src="quickSave.js"></script>
+</body>
+</html> 

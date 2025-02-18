@@ -1,4 +1,19 @@
-const EnvIdentifier = 'popup';
+EnvIdentifier = 'popup';
+
+let quickSaveKey = 'Ctrl+B';
+let quickSearchKey = 'Ctrl+K';
+async function initShortcutKey() {
+    const commands = await chrome.commands.getAll();
+    commands.forEach((command) => {
+            if (command.name === 'quick-search') {
+                quickSearchKey = command.shortcut;
+                logger.info('搜索快捷键:', quickSearchKey);
+            } else if (command.name === 'quick-save') {
+                quickSaveKey = command.shortcut;
+                logger.info('保存快捷键:', quickSaveKey);
+            }
+        });
+}
 
 // 更新保存按钮和图标状态
 async function updateTabState() {
@@ -13,37 +28,6 @@ async function updateTabState() {
     updatePrivacyIconState(tab);
     // 更新图标状态
     await updateExtensionIcon(tab.id, isSaved);
-}
-
-// 获取隐私模式设置
-async function determinePrivacyMode(tab) {
-    const autoPrivacyMode = await SettingsManager.get('privacy.autoDetect');
-    const manualPrivacyMode = await SettingsManager.get('privacy.enabled');
-    // 打印隐私模式设置的调试信息
-    logger.debug('隐私模式设置:', {
-        autoPrivacyMode,
-        manualPrivacyMode
-    });
-    
-    // 判断是否启用隐私模式
-    let isPrivate = false;
-    if (autoPrivacyMode) {
-        // 自动检测模式
-        isPrivate = await containsPrivateContent(tab.url);
-    } else {
-        // 手动控制模式
-        isPrivate = manualPrivacyMode;
-    }
-    return isPrivate;
-}
-
-async function isPrivacyModeManuallyDisabled() {
-    const autoPrivacyMode = await SettingsManager.get('privacy.autoDetect');
-    const manualPrivacyMode = await SettingsManager.get('privacy.enabled');
-    if (autoPrivacyMode) {
-        return false;
-    }
-    return !manualPrivacyMode;
 }
 
 async function handlePrivacyIconClick(isPrivate) {
@@ -965,48 +949,6 @@ class BookmarkManager {
     }
 }
 
-// 获取当前页面的文本内容
-async function getPageContent(tab) {
-    try {
-        const isPrivate = await determinePrivacyMode(tab);
-        if (isPrivate || !isContentFulUrl(tab.url)) {
-            logger.info('页面为隐私模式或URL无内容');
-            return {};
-        }
-        // 首先注 content script
-        await chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            files: ["lib/Readability.js", "contentScript.js"]
-        });
-        
-        const response = await chrome.tabs.sendMessage(tab.id, { action: "getContent" });
-        
-        let content = response?.content;
-        // 清理内容
-        content = content
-            .replace(/\s+/g, ' ')           // 将多个空白字符替换为单个空格
-            .replace(/[\r\n]+/g, ' ')       // 将换行符替换为空格
-            .replace(/\t+/g, ' ')           // 将制表符替换为空格
-            .trim();                        // 去除首尾空白
-
-        // 如果提取失败，返回空字符串
-        if (!response || !content) {
-            logger.warn('内容提取失败');
-            return {};
-        }
-
-        return {
-            title: response.title,
-            content: content,
-            excerpt: response.excerpt,
-            metadata: response.metadata
-        };
-    } catch (error) {
-        logger.error('获取页面内容时出错:', error);
-        return {};
-    }
-}
-
 function displaySearchResults(results) {
     const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = '';
@@ -1018,7 +960,7 @@ function displaySearchResults(results) {
         li.className = 'result-item';
         
         // 添加高相关度样式
-        if (result.score >= 80) {
+        if (result.score >= 85) {
             li.classList.add('high-relevance');
         }
 
@@ -1137,10 +1079,10 @@ function displaySearchResults(results) {
         });
 
         // 删除按钮事件处理保持不变
-        li.querySelector('.delete-btn').onclick = (e) => {
+        li.querySelector('.delete-btn').onclick = async (e) => {
             e.stopPropagation();
             e.preventDefault();
-            deleteBookmark(result);
+            await deleteBookmark(result);
         };
 
         return li;
@@ -1177,7 +1119,7 @@ async function deleteBookmark(bookmark) {
                 const includeChromeBookmarks = await SettingsManager.get('display.showChromeBookmarks');
                 const results = await searchManager.search(searchInput.value, {
                     debounce: false,
-                    includeUrl: false,
+                    includeUrl: true,
                     includeChromeBookmarks: includeChromeBookmarks
                 });
                 displaySearchResults(results);
@@ -1349,10 +1291,10 @@ function updateSaveButtonState(isSaved) {
     
     if (isSaved) {
         saveButton.classList.add('editing');
-        saveButton.title = '编辑书签';
+        saveButton.title = `编辑书签 ${quickSaveKey}`;
     } else {
         saveButton.classList.remove('editing');
-        saveButton.title = '为此页面添加书签';
+        saveButton.title = `为此页面添加书签 ${quickSaveKey}`;
     }
 }
 
@@ -1366,20 +1308,6 @@ async function updateBookmarkCount() {
         bookmarkCount.textContent = '书签';
     } catch (error) {
         logger.error('获取收藏数量失败:', error);
-    }
-}
-
-// 获取网站图标的辅函数
-async function getFaviconUrl(bookmarkUrl) {
-    try {
-        const url = new URL(chrome.runtime.getURL("/_favicon/"));
-        url.searchParams.set("pageUrl", bookmarkUrl);
-        url.searchParams.set("size", "32");
-
-        return url.toString();  
-    } catch (error) {
-        logger.error('获取网站图标失败:', error);
-        return 'icons/default_favicon.png'; // 返回默认图标
     }
 }
 
@@ -1698,7 +1626,7 @@ class BookmarkRenderer {
         li.querySelector('.delete-btn').addEventListener('click', async (e) => {
             e.stopPropagation();
             e.preventDefault();
-            deleteBookmark(bookmark);
+            await deleteBookmark(bookmark);
         });
 
         // 添加编辑按钮事件处理
@@ -1886,7 +1814,8 @@ class SettingsDialog {
             manualPrivacyContainer: document.getElementById('manual-privacy-container'),
             shortcutsBtn: document.getElementById('keyboard-shortcuts'),
             openSettingsPageBtn: document.getElementById('open-settings-page'),
-            feedbackBtn: document.getElementById('feedback-button')
+            feedbackBtn: document.getElementById('feedback-button'),
+            storeReviewButton: document.getElementById('store-review-button')
         };
     }
 
@@ -1965,6 +1894,15 @@ class SettingsDialog {
             chrome.tabs.create({
                 url: `${SERVER_URL}/feedback`
             });
+            this.close();
+        });
+        
+        // 添加商店评价按钮点击事件
+        this.elements.storeReviewButton.addEventListener('click', () => {
+            // 获取扩展ID并打开Chrome商店评价页面
+            const extensionId = chrome.runtime.id;
+            const storeUrl = `https://chrome.google.com/webstore/detail/${extensionId}`;
+            chrome.tabs.create({ url: storeUrl });
             this.close();
         });
     }
@@ -2257,7 +2195,7 @@ async function handleSearch() {
         const includeChromeBookmarks = await SettingsManager.get('display.showChromeBookmarks');
         const results = await searchManager.search(query, {
             debounce: false,
-            includeUrl: false,
+            includeUrl: true,
             includeChromeBookmarks: includeChromeBookmarks
         });
         
@@ -2390,6 +2328,9 @@ async function initializeSearch() {
     // 设置搜索相关事件监听器
     toggleSearch?.addEventListener('click', () => openSearching(false));
     closeSearch?.addEventListener('click', closeSearching);
+
+    toggleSearch.title = `搜索书签 ${quickSearchKey}`;
+    searchInput.placeholder = `搜索书签 ${quickSearchKey}`;
     
     // ESC 键关闭搜索
     document.addEventListener('keydown', (e) => {
@@ -2462,6 +2403,7 @@ async function initializePopup() {
 
 // 初始化设置对话框
 document.addEventListener('DOMContentLoaded', async () => {
+    await initShortcutKey();
     initializePopup().catch(error => {
         logger.error('初始化过程中发生错误:', error);
         updateStatus('初始化失败，请刷新页面重试', true);

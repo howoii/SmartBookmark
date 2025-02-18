@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>设置</title>
+    <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/settings.css">
 </head>
 <body>
@@ -113,13 +114,110 @@
                                 <label for="omnibox-search-limit">
                                     地址栏搜索结果数量
                                     <div class="tooltip-icon" data-tooltip="在浏览器地址栏输入 'sb' 后按空格或 Tab 键，即可使用地址栏快速搜索书签">
-                                        <svg width="14" height="14" viewBox="0 0 24 24">
+                                        <svg width="16" height="16" viewBox="0 0 24 24">
                                             <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
                                         </svg>
                                     </div>
                                 </label>
                                 <input type="number" id="omnibox-search-limit" min="1" max="9" value="5">
                                 <p class="setting-description">设置在浏览器地址栏（Omnibox）搜索时显示的结果数量（1-9之间）</p>
+                            </div>
+                        </div>
+                        <!-- 添加网站显示设置 -->
+                        <div class="setting-item-card">
+                            <div class="form-group">
+                                <label>
+                                    快捷访问网站
+                                    <div class="tooltip-icon" data-tooltip="设置搜索面板顶部的快捷访问网站">
+                                        <svg width="16" height="16" viewBox="0 0 24 24">
+                                            <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                        </svg>
+                                    </div>
+                                </label>
+                                <div class="quick-search-sites-row">
+                                    <label for="quick-search-sites-display">快捷访问显示：</label>
+                                    <select id="quick-search-sites-display">
+                                        <option value="none">隐藏</option>
+                                        <option value="pinned">固定网站</option>
+                                        <option value="recent">最近访问</option>
+                                        <option value="most">访问最多</option>
+                                        <option value="recent-saved">最近保存</option>
+                                    </select>
+                                </div>
+                                <div id="sites-display-count-container" class="quick-search-sites-row">
+                                    <label for="sites-display-count">显示数量：</label>
+                                    <input type="number" id="sites-display-count" min="1" max="50" value="10">
+                                </div>
+                                <p class="setting-description">设置搜索面板顶部显示的快捷访问网站类型及数量</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 添加快捷键设置卡片 -->
+                <div class="shortcuts-settings-card">
+                    <div class="card-header">
+                        <h3>快捷键设置</h3>
+                        <div class="shortcut-actions">
+                            <button id="edit-shortcuts-btn" class="icon-btn" title="在 Chrome 扩展管理页面修改快捷键">
+                                <svg viewBox="0 0 24 24" width="20" height="20">
+                                    <path fill="currentColor" d="M20 5H4c-1.1 0-1.99.9-1.99 2L2 17c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 2H5v-2h2v2zm0-3H5V8h2v2zm9 7H8v-2h8v2zm0-4h-2v-2h2v2zm0-3h-2V8h2v2zm3 3h-2v-2h2v2zm0-3h-2V8h2v2z"/>
+                                </svg>
+                                <span>设置快捷键</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="shortcuts-grid">
+                        <div class="shortcut-item">
+                            <div class="shortcut-info">
+                                <span class="shortcut-name shortcut-save">快速保存书签</span>
+                                <span class="shortcut-key" id="quickSave-shortcut">未设置</span>
+                            </div>
+                            <div class="shortcut-description">快速保存当前页面为书签</div>
+                        </div>
+                        <div class="shortcut-item">
+                            <div class="shortcut-info">
+                                <span class="shortcut-name shortcut-search">快速搜索书签</span>
+                                <span class="shortcut-key" id="quickSearch-shortcut">未设置</span>
+                            </div>
+                            <div class="shortcut-description">打开快速搜索面板</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 添加外观设置卡片 -->
+                <div class="appearance-settings-card">
+                    <h3>外观设置</h3>
+                    <div class="settings-grid">
+                        <div class="setting-item-card">
+                            <div class="form-group">
+                                <label>显示模式</label>
+                                <div class="theme-selector">
+                                    <div class="theme-option" data-theme="light">
+                                        <div class="theme-preview">
+                                            <svg viewBox="0 0 24 24" width="24" height="24">
+                                                <path fill="currentColor" d="M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,2L14.39,5.42C13.65,5.15 12.84,5 12,5C11.16,5 10.35,5.15 9.61,5.42L12,2M3.34,7L7.5,6.65C6.9,7.16 6.36,7.78 5.94,8.5C5.5,9.24 5.25,10 5.11,10.79L3.34,7M3.36,17L5.12,13.23C5.26,14 5.53,14.78 5.95,15.5C6.37,16.24 6.91,16.86 7.5,17.37L3.36,17M20.65,7L18.88,10.79C18.74,10 18.47,9.23 18.05,8.5C17.63,7.78 17.1,7.15 16.5,6.64L20.65,7M20.64,17L16.5,17.36C17.09,16.85 17.62,16.22 18.04,15.5C18.46,14.77 18.73,14 18.87,13.21L20.64,17M12,22L9.59,18.56C10.33,18.83 11.14,19 12,19C12.82,19 13.63,18.83 14.37,18.56L12,22Z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="theme-label">浅色</div>
+                                    </div>
+                                    <div class="theme-option" data-theme="dark">
+                                        <div class="theme-preview">
+                                            <svg viewBox="0 0 24 24" width="24" height="24">
+                                                <path fill="currentColor" d="M12,3C7.03,3 3,7.03 3,12C3,16.97 7.03,21 12,21C16.97,21 21,16.97 21,12C21,7.03 16.97,3 12,3M12,19C8.14,19 5,15.86 5,12C5,8.14 8.14,5 12,5C15.86,5 19,8.14 19,12C19,15.86 15.86,19 12,19M12,17C14.76,17 17,14.76 17,12C17,9.24 14.76,7 12,7V17Z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="theme-label">深色</div>
+                                    </div>
+                                    <div class="theme-option" data-theme="system">
+                                        <div class="theme-preview">
+                                            <svg viewBox="0 0 24 24" width="24" height="24">
+                                                <path fill="currentColor" d="M12,18V6A6,6 0 0,1 18,12A6,6 0 0,1 12,18M20,15.31L23.31,12L20,8.69V4H15.31L12,0.69L8.69,4H4V8.69L0.69,12L4,15.31V20H8.69L12,23.31L15.31,20H20V15.31Z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="theme-label">设备</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -481,7 +579,7 @@
                             <a class="get-key-link" target="_blank" title="获取 API Key">
                                 <span>获取 API Key</span>
                                 <svg viewBox="0 0 24 24" width="14" height="14">
-                                    <path fill="currentColor" d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"/>
+                                    <path fill="currentColor" d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,20V12H19V19Z"/>
                                 </svg>
                             </a>
                         </div>
@@ -732,6 +830,7 @@
     <script src="statsManager.js"></script>
     <script src="util.js"></script>
     <script src="api.js"></script>
+    <script src="themeManager.js"></script>
     <script src="customFilter.js"></script>
     <script src="settings.js"></script>
 </body>

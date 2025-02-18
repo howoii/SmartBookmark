@@ -19,9 +19,14 @@ const MessageType = {
     // 设置页相关
     SWITCH_TO_TAB: 'SWITCH_TO_TAB',
     UPDATE_DOMAINS_LIST: 'UPDATE_DOMAINS_LIST',
+
+    // 主题相关
+    THEME_CHANGED: 'THEME_CHANGED',
 }
 
 const ExternalMessageType = {
     LOGIN_SUCCESS: 'LOGIN_SUCCESS',
     CHECK_LOGIN_STATUS: 'CHECK_LOGIN_STATUS',
 }
+
+const MAX_PINNED_SITES = 10;

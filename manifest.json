@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Smart Bookmark",
-    "version": "1.1.5",
+    "version": "1.1.7",
     "description": "A smart bookmark manager with auto-tagging and natural language search.",
     "icons": {
         "16": "icons/saved_16.png",
@@ -16,7 +16,8 @@
             "48": "icons/saved_48.png",
             "128": "icons/saved_128.png"
         },
-        "default_title": "Smart Bookmark"
+        "default_title": "Smart Bookmark",
+        "default_popup": "quickSave.html"
     },
     "background": {
         "service_worker": "background.js"
@@ -53,12 +54,19 @@
         "keyword": "sb"
     },
     "commands": {
-        "toggle-search": {
+        "quick-search": {
             "suggested_key": {
                 "default": "Ctrl+K",
                 "mac": "Command+K"
             },
-            "description": "打开搜索框"
+            "description": "搜索书签"
+        },
+        "quick-save": {
+            "suggested_key": {
+                "default": "Ctrl+B",
+                "mac": "Command+B"
+            },
+            "description": "添加书签"
         }
     },
     "externally_connectable": {

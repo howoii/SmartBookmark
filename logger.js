@@ -1,3 +1,4 @@
+let EnvIdentifier = 'default';
 // 定义日志级别常量
 const LOG_LEVELS = {
     TRACE: 0,

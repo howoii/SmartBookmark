@@ -12,7 +12,10 @@ class SettingsManager {
             autoFocusSearch: false,  // 打开时自动聚焦搜索框
             confirmTags: true,       // 保存时确认标签，默认开启
             skipApiKeyNotice: false,   // 跳过API Key检查提示，默认关闭
-            viewMode: 'list' // 添加默认视图模式
+            viewMode: 'list', // 添加默认视图模式
+            theme: {
+                mode: 'light',  // 'system' | 'light' | 'dark'
+            }
         },
         privacy: {
             autoDetect: true,  // 默认开启自动检测
@@ -21,7 +24,9 @@ class SettingsManager {
         },
         search: {
             maxResults: 50,
-            omniboxSearchLimit: 9
+            omniboxSearchLimit: 9,
+            sitesDisplay: 'pinned',
+            sitesDisplayCount: 10
         }
     };
 

@@ -275,7 +275,14 @@ class SyncManager {
                     await LocalStorageMgr.remove(['token']);
                     throw new Error('登录已过期，请重新登录');
                 default:
-                    throw new Error(`${response.status} ${response.statusText || '未知错误'}`);
+                    let errorMessage = `${response.status} ${response.statusText || '未知错误'}`;
+                    try {
+                        const errorBody = await response.json();
+                        errorMessage = `${errorBody.error || '未知错误'}`;
+                    } catch (error) {
+                        logger.error('获取错误信息失败:', error);
+                    }
+                    throw new Error(errorMessage);
             }
         } catch (error) {
             if (error.name === 'SyntaxError') {

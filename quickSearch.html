@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>快速搜索</title>
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/quickSearch.css">
+</head>
+<body>
+    <div class="dialog-content">
+        <div id="status" class="status-message"></div>
+        <div class="main-content">
+            <div class="search-container">
+                <div class="search-input-wrapper">
+                    <input type="text" id="search-input" placeholder="输入关键词搜索..." autofocus>
+                    <button id="clear-search-btn" class="clear-search-btn" style="display: none;">
+                        <svg viewBox="0 0 24 24" width="16" height="16">
+                            <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="sites-container">
+                    <div id="pinned-sites" class="pinned-sites">
+                        <!-- 常用网站图标将在这里动态显示 -->
+                    </div>
+                    <div id="drop-zone" class="drop-zone">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div id="search-results" class="search-results">
+                <!-- 搜索结果将在这里动态显示 -->
+            </div>
+            <div class="search-stats">
+                <span id="results-count">0 个结果</span>
+                <span id="search-time">0ms</span>
+            </div>
+        </div>
+    </div>
+    <script src="consts.js"></script>
+    <script src="common.js"></script>
+    <script src="logger.js"></script>
+    <script src="env.js"></script>
+    <script src="models.js"></script>
+    <script src="config.js"></script>
+    <script src="storageManager.js"></script>
+    <script src="settingsManager.js"></script>
+    <script src="statsManager.js"></script>
+    <script src="util.js"></script>
+    <script src="api.js"></script>
+    <script src="themeManager.js"></script>
+    <script src="search.js"></script>
+    <script src="quickSearch.js"></script>
+</body>
+</html> 

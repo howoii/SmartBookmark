@@ -1,11 +1,52 @@
 /* CSS变量定义 */
 :root {
-    --primary-color: #4CAF50;
-    --text-primary: #333333;
-    --text-secondary: #666666;
-    --border-color: #eeeeee;
-    --error-color: #f44336;
-    --background-color: #ffffff;
+    --bg-privacy: #faf4ea;
+    --bg-privacy-active: #e67e22;
+    --bg-privacy-active-hover: #d35400;
+    --bg-privacy-border: #fbe8cc;
+    --text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    --shadow-group-content: inset 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+    --shadow-group-content-bottom: inset 0 -4px 6px -4px rgba(0, 0, 0, 0.05);
+    --shadow-privacy-icon: 2px 2px 2px rgba(255, 255, 255, 0.9);
+    --shadow-privacy-icon-bottom: -2px -2px 2px rgba(184, 99, 27, 0.3);
+    --shadow-privacy-icon-hover: 2px 2px 6px rgba(255, 255, 255, 1);
+    --shadow-privacy-icon-hover-bottom: -2px -2px 6px rgba(184, 99, 27, 0.4);
+    --privacy-text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.9);
+    --privacy-text-shadow-bottom: -2px -2px 4px rgba(184, 99, 27, 0.3);
+}
+
+[data-theme="dark"] {
+    --bg-privacy: #363636;
+    --bg-privacy-active: #7a3b04;
+    --bg-privacy-active-hover: #904401;
+    --bg-privacy-border: #301e00;
+    --text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+    --shadow-group-content: inset 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+    --shadow-group-content-bottom: inset 0 -4px 6px -4px rgba(0, 0, 0, 0.05);
+    --shadow-privacy-icon: 2px 2px 2px rgba(0, 0, 0, 0.9);
+    --shadow-privacy-icon-bottom: -2px -2px 2px rgba(50, 27, 8, 0.3);
+    --shadow-privacy-icon-hover: 2px 2px 6px rgba(0, 0, 0, 1);
+    --shadow-privacy-icon-hover-bottom: -2px -2px 6px rgba(50, 27, 8, 0.4);
+    --privacy-text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+    --privacy-text-shadow-bottom: -2px -2px 4px rgba(50, 27, 8, 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root[data-theme="system"] {    
+        --bg-privacy: #363636;
+        --bg-privacy-active: #7a3b04;
+        --bg-privacy-active-hover: #904401;
+        --bg-privacy-border: #301e00;
+        --text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+        --shadow-group-content: inset 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+        --shadow-group-content-bottom: inset 0 -4px 6px -4px rgba(0, 0, 0, 0.05);
+        --shadow-privacy-icon: 2px 2px 2px rgba(0, 0, 0, 0.9);
+        --shadow-privacy-icon-bottom: -2px -2px 2px rgba(50, 27, 8, 0.3);
+        --shadow-privacy-icon-hover: 2px 2px 6px rgba(0, 0, 0, 1);
+        --shadow-privacy-icon-hover-bottom: -2px -2px 6px rgba(50, 27, 8, 0.4);
+        --privacy-text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+        --privacy-text-shadow-bottom: -2px -2px 4px rgba(50, 27, 8, 0.3);
+    }   
 }
 
 body {
@@ -14,7 +55,7 @@ body {
     margin: 0;
     padding: 0;
     overflow-x: hidden;
-    background: #ffffff;
+    background: var(--bg-primary);
 }
 
 .container {
@@ -41,7 +82,7 @@ body {
 .status-bar {
     position: sticky;
     top: 0;
-    background: #ffffff;
+    background: var(--bg-primary);
     z-index: 100;
     padding: 8px 0;
 }
@@ -50,7 +91,7 @@ body {
 .search-area {
     position: sticky;
     top: 48px;
-    background: #ffffff;
+    background: var(--bg-primary);
     z-index: 99;
     padding: 8px 0;
     margin: 16px 0;
@@ -67,15 +108,15 @@ body {
     border: none;
     border-radius: 6px;
     background: transparent;
-    color: #666;
+    color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.2s;
     position: relative;
 }
 
 .icon-button:hover {
-    background: #e8f5e9;
-    color: #4CAF50;
+    background: var(--primary-hover-bg);
+    color: var(--primary-color);
 }
 
 .search-input-wrapper {
@@ -87,13 +128,13 @@ body {
 .search-icon {
     position: absolute;
     left: 12px;
-    color: #999;
+    color: var(--text-tertiary);
 }
 
 #search-input {
     width: 100%;
     padding: 8px 12px 8px 36px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     font-size: 14px;
     transition: all 0.2s;
@@ -101,7 +142,7 @@ body {
 
 #search-input:focus {
     outline: none;
-    border-color: #4CAF50;
+    border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
 }
 
@@ -116,13 +157,13 @@ body {
 }
 
 .status-message.success {
-    background-color: #e8f5e9;
-    color: #2e7d32;
+    background-color: var(--success-bg);
+    color: var(--success-text);
 }
 
 .status-message.error {
-    background-color: #ffebee;
-    color: #c62828;
+    background-color: var(--error-bg);
+    color: var(--error-text);
 }
 
 /* 当没有消息时隐藏 */
@@ -163,7 +204,7 @@ body {
 
 .result-title {
     font-weight: 500;
-    color: #333;
+    color: var(--text-primary);
     flex: 1;
     min-width: 0;
     overflow: hidden;
@@ -181,13 +222,13 @@ body {
 .result-preview {
     font-size: 12px;
     line-height: 1.5;
-    color: #666;
+    color: var(--text-secondary);
     margin: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     position: relative;
-    background: #f8f9fa;
+    background: var(--bg-secondary);
     padding: 6px 8px;
     border-radius: 4px;
 }
@@ -201,7 +242,7 @@ body {
 
 mark {
     background-color: inherit;
-    color: #d93025;
+    color: var(--danger-color);
 }
 
 /* 工具栏样式优化 */
@@ -209,9 +250,9 @@ mark {
     height: 48px;
     min-height: 48px;
     flex-shrink: 0;
-    border-bottom: 1px solid #eee;
-    background-color: #f8f9fa; /* 添加浅灰色背景 */
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* 添加轻微阴影 */
+    border-bottom: 1px solid var(--bg-border-light);
+    background-color: var(--bg-secondary); /* 添加浅灰色背景 */
+    box-shadow: var(--shadow-sm); /* 添加轻微阴影 */
     box-sizing: border-box;
     position: relative;
     z-index: 10; /* 确保工具栏在内容之上 */
@@ -237,31 +278,31 @@ mark {
 .bookmark-count-wrapper {
     display: flex;
     align-items: center;
-    background: #ecedef; /* 加深背景色 */
+    background: var(--bg-secondary-border); /* 加深背景色 */
     border-radius: 6px;
     padding: 3px 8px;
     transition: all 0.2s;
     box-shadow: 
-        inset 0 1px 2px rgba(0, 0, 0, 0.1), /* 内阴影 */
-        inset 0 0 0 1px rgba(0, 0, 0, 0.03); /* 微妙的边框效果 */
+        inset var(--shadow-sm), /* 内阴影 */
+        inset var(--shadow-xs); /* 微妙的边框效果 */
 }
 
 /* 书签计数器样式 */
 .bookmark-count {
     font-size: 12px;
-    color: #555; /* 稍微加深文字颜色 */
+    color: var(--text-seventh); /* 稍微加深文字颜色 */
     white-space: nowrap;
     display: flex;
     align-items: center;
     gap: 4px;
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5); /* 添加文字阴影增加立体感 */
+    text-shadow: var(--text-shadow); /* 添加文字阴影增加立体感 */
 }
 
 /* 添加字突出显示样式 */
 .bookmark-count::before {
     content: attr(data-count);
     font-weight: 600;
-    color: #4CAF50;
+    color: var(--primary-color);
     font-size: 14px;
     padding: 0 2px;
 }
@@ -288,7 +329,7 @@ mark {
     right: 0;
     height: 100%;
     padding: 8px 12px;
-    background: #fff;
+    background: var(--bg-primary);
     opacity: 0;
     transform: translateX(100%);
     pointer-events: none;
@@ -319,7 +360,7 @@ mark {
     flex: 1;
     height: 32px;
     padding: 0 12px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     font-size: 14px;
     transition: all 0.2s;
@@ -327,7 +368,7 @@ mark {
 
 #search-input:focus {
     outline: none;
-    border-color: #4CAF50;
+    border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
 }
 
@@ -380,11 +421,11 @@ mark {
 
 /* Firefox滚动条样式 */
 .bookmarks-container {
-    scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+    scrollbar-color: var(--bg-scrollbar-thumb) transparent;
 }
 
 .bookmarks-container:hover {
-    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+    scrollbar-color: var(--bg-scrollbar-thumb-hover) transparent;
 }
 
 /* 当不在搜索模式时显示书签列表 */
@@ -413,7 +454,7 @@ mark {
 }
 
 .bookmark-item:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: var(--bg-tertiary);
 }
 
 .bookmark-favicon {
@@ -438,7 +479,7 @@ mark {
 .bookmark-title {
     font-size: 13px;
     font-weight: normal;
-    color: #333;
+    color: var(--text-primary);
     margin: 0;
     white-space: nowrap;
     overflow: hidden;
@@ -470,21 +511,25 @@ mark {
     line-height: 18px;
     font-size: 11px;
     padding: 2px 6px;
-    background: #f5f5f5;
-    color: #666;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border: 1px solid var(--bg-secondary-border);
     border-radius: 4px;
     opacity: 0;
     transform: translateY(5px);
     transition: all 0.2s ease;
-    /* 使用CSS变量设置动画延迟，默认为0 */
     --delay: 0s;
     transition-delay: var(--delay);
 }
 
+.bookmark-tags .tag:hover {
+    transform: translateY(-1px);
+}
+
 .bookmark-tags .tag.folder-tag {
-    background: #f0f2f7;
-    color: #5c6bc0;
-    border-color: #e3e6f0;
+    background: var(--tag-recommended-bg);
+    color: var(--tag-recommended-text);
+    border-color: var(--tag-recommended-border);
 }
 
 .bookmark-tags .tag::before {
@@ -496,10 +541,6 @@ mark {
 .bookmark-tags .tag.folder-tag::before {
     content: "📁";
     margin-right: 2px;
-}
-
-.bookmark-tags .tag:hover {
-    background: #eeeeee;
 }
 
 /* 悬浮时标签动画 */
@@ -520,7 +561,7 @@ mark {
     background: none;
     border: none;
     cursor: pointer;
-    color: #666;
+    color: var(--text-secondary);
     display: none;
     transition: opacity 0.2s;
 }
@@ -530,8 +571,8 @@ mark {
 }
 
 .bookmark-actions .edit-btn:hover {
-    color: #1a73e8;
-    background-color: rgba(26, 115, 232, 0.1);
+    color: var(--action-color);
+    background-color: var(--action-light-hover);
     border-radius: 4px;
 }
 
@@ -547,15 +588,15 @@ mark {
     padding: 4px;
     border: none;
     background: transparent;
-    color: #666;
+    color: var(--text-secondary);
     cursor: pointer;
     border-radius: 4px;
     transition: all 0.2s;
 }
 
 .delete-btn:hover {
-    background: #ffebee;
-    color: #f44336;
+    background: var(--error-bg);
+    color: var(--danger-color);
 }
 
 /* 具提示样式优化 */
@@ -591,7 +632,7 @@ mark {
 }
 
 .dialog-content {
-    background: white;
+    background: var(--bg-primary);
     padding: 24px;
     border-radius: 8px;
     width: 80%;
@@ -635,12 +676,12 @@ mark {
 .page-excerpt {
     font-size: 13px;
     line-height: 1.5;
-    color: #666;
-    background: #f8f9fa;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
     padding: 12px;
     border-radius: 8px;
     margin: 12px 0;
-    border: 1px solid #eee;
+    border: 1px solid var(--bg-border-light);
     
     /* 限制最大高度为5行 */
     max-height: calc(1.5em * 5 + 24px);  /* 行高 * 5行 + padding */
@@ -648,7 +689,7 @@ mark {
     
     /* 美化滚动条 */
     scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+    scrollbar-color: var(--bg-scrollbar-thumb) transparent;
 }
 
 /* Webkit 滚动条样式 */
@@ -662,12 +703,12 @@ mark {
 }
 
 .page-excerpt::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: var(--bg-scrollbar-thumb);
     border-radius: 2px;
 }
 
 .page-excerpt::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: var(--bg-scrollbar-thumb-hover);
 }
 
 /* 当摘要为空时隐藏 */
@@ -684,7 +725,7 @@ mark {
     margin: 0;
     margin-bottom: 16px;
     padding: 12px;
-    background: #f8f9fa;
+    background: var(--bg-secondary);
     border-radius: 8px;
 }
 
@@ -696,7 +737,7 @@ mark {
 
 .recommended-tags-title {
     font-size: 13px;
-    color: #666;
+    color: var(--text-secondary);
     margin-bottom: 8px;
     display: block;
     font-weight: 500;
@@ -713,8 +754,8 @@ mark {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    background: #e3f2fd;
-    color: #1976d2;
+    background: var(--tag-recommended-bg);
+    color: var(--tag-recommended-text);
     cursor: pointer;
     transition: all 0.2s;
     padding: 4px 10px;
@@ -723,7 +764,7 @@ mark {
 }
 
 .recommended-tags .tag:hover {
-    background: #bbdefb;
+    background: var(--tag-recommended-bg-hover);
     transform: translateY(-1px);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
@@ -755,7 +796,7 @@ mark {
 .tag-input-container input {
     flex: 1;
     padding: 8px 12px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     font-size: 14px;
     transition: all 0.2s;
@@ -763,7 +804,7 @@ mark {
 
 .tag-input-container input:focus {
     outline: none;
-    border-color: #4CAF50;
+    border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
 }
 
@@ -781,21 +822,21 @@ mark {
 }
 
 #save-tags-btn {
-    background: #4CAF50;
-    color: white;
+    background: var(--primary-color);
+    color: var(--text-fifth);
 }
 
 #save-tags-btn:hover {
-    background: #43A047;
+    background: var(--primary-hover);
 }
 
 #cancel-tags-btn {
-    background: #f5f5f5;
-    color: #333;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
 }
 
 #cancel-tags-btn:hover {
-    background: #e0e0e0;
+    background: var(--bg-tertiary-hover);
 }
 
 .tag {
@@ -805,20 +846,20 @@ mark {
     border-radius: 4px;
     font-size: 12px;
     padding: 2px 6px;
-    background: #e8f5e9;
-    color: #2e7d32;
+    background: var(--tag-bg);
+    color: var(--tag-text);
 }
 
 .remove-tag-btn {
     border: none;
     background: none;
-    color: #666;
+    color: var(--text-secondary);
     cursor: pointer;
     padding: 0 2px;
 }
 
 .remove-tag-btn:hover {
-    color: #ff4444;
+    color: var(--danger-color);
 }
 
 /* 标题行样式优化 */
@@ -834,7 +875,7 @@ mark {
 .page-title {
     font-size: 16px;
     font-weight: 600;
-    color: #333;
+    color: var(--text-primary);
     margin: 0;
     line-height: 1.4;
     white-space: nowrap;
@@ -854,8 +895,8 @@ mark {
     white-space: normal;  /* 允许换行 */
     word-break: break-word;  /* 允许在任意字符处换行 */
     outline: none;
-    background: #fff;
-    border-color: #4CAF50;
+    background: var(--bg-primary);
+    border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
 }
 
@@ -867,7 +908,7 @@ mark {
     top: 50%;
     transform: translateY(-50%);
     font-size: 14px;
-    color: #999;
+    color: var(--text-tertiary);
     opacity: 1;
 }
 
@@ -877,18 +918,18 @@ mark {
 }
 
 .page-title:hover {
-    background: #f5f5f5;
-    border-color: #ddd;
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
     cursor: text;
 }
 
 .page-title:hover::after {
-    color: #0366d6;
+    color: var(--text-link);
 }
 
 .page-url {
     font-size: 11px;
-    color: #0366d6;  /* 使用链接色 */
+    color: var(--text-link);
     padding: 4px 8px;
     white-space: nowrap;
     overflow: hidden;
@@ -897,22 +938,22 @@ mark {
 
 .sort-select {
     padding: 4px 8px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     font-size: 12px;
-    color: #666;
-    background: #fff;
+    color: var(--text-secondary);
+    background: var(--bg-primary);
     cursor: pointer;
     outline: none;
     transition: border-color 0.2s;
 }
 
 .sort-select:hover {
-    border-color: #999;
+    border-color: var(--border-dark);
 }
 
 .sort-select:focus {
-    border-color: #4a90e2;
+    border-color: var(--border-edit);
 }
 
 .bookmark-link {
@@ -930,8 +971,8 @@ mark {
     margin: 12px 0;
     padding: 16px;
     border-radius: 12px;
-    background: #fff;
-    border: 1px solid #eee;
+    background: var(--bg-primary);
+    border: 1px solid var(--bg-border);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     transition: all 0.2s ease;
     position: relative;
@@ -940,7 +981,7 @@ mark {
 .result-item:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-color: #ddd;
+    border-color: var(--bg-border-hover);
 }
 
 /* 搜索果链接样式 */
@@ -963,9 +1004,9 @@ mark {
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid #eee;
-    color: #666;
+    background: var(--bg-secondary);
+    border: 1px solid var(--bg-secondary-border);
+    color: var(--text-secondary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -980,28 +1021,28 @@ mark {
 }
 
 .delete-btn:hover {
-    background: #ffebee;
-    color: #f44336;
-    border-color: #ffcdd2;
+    background: var(--error-bg);
+    color: var(--danger-color);
+    border-color: var(--error-border);
     transform: scale(1.1);
 }
 
 /* 确保搜索结果中的标签样式与书签列表一致 */
 .result-tags .tag {
     padding: 3px 8px;
-    background: #f5f7fa;
-    color: #666;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
     border-radius: 12px;
     font-size: 11px;
     font-weight: normal;
-    border: 1px solid #edf0f5;
+    border: 1px solid var(--bg-secondary-border);
     transition: all 0.2s;
 }
 
 .result-tags .tag.folder-tag {
-    background: #f0f2f7;
-    color: #5c6bc0;
-    border-color: #e3e6f0;
+    background: var(--tag-recommended-bg);
+    color: var(--tag-recommended-text);
+    border-color: var(--tag-recommended-border);
 }
 
 .result-tags .tag::before {
@@ -1016,8 +1057,6 @@ mark {
 }
 
 .result-tags .tag:hover {
-    background: #edf0f5;
-    color: #444;
     transform: translateY(-1px);
 }
 
@@ -1027,7 +1066,7 @@ mark {
     align-items: center;
     justify-content: center;
     padding: 20px;
-    color: #666;
+    color: var(--text-secondary);
     gap: 8px;
     font-size: 14px;
 }
@@ -1035,8 +1074,8 @@ mark {
 .loading-spinner {
     width: 20px;
     height: 20px;
-    border: 2px solid #f3f3f3;
-    border-top: 2px solid #4CAF50;
+    border: 2px solid var(--bg-border-light);
+    border-top: 2px solid var(--primary-color);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -1058,8 +1097,8 @@ mark {
     align-items: center;
     gap: 8px;
     padding: 8px;
-    background: #fff;
-    border-bottom: 1px solid #eee;
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--bg-border-light);
     min-height: 32px;
     flex-wrap: nowrap; /* 防止换行 */
 }
@@ -1090,7 +1129,7 @@ mark {
     align-items: center;
     gap: 4px;
     font-size: 12px;
-    color: #666;
+    color: var(--text-secondary);
     text-decoration: none;
     padding: 4px 8px;
     border-radius: 4px;
@@ -1118,15 +1157,15 @@ mark {
     gap: 4px;
     padding: 3px 0px 2px;
     border-radius: 4px;
-    color: #f57c00;
+    color: var(--warning-text);
     text-decoration: none;
     font-size: 13px;
     transition: all 0.2s ease;
 }
 
 .api-key-link:hover {
-    background: #fff3e0;
-    color: #e65100;
+    background: var(--warning-bg);
+    color: var(--warning-text-hover);
 }
 
 .api-key-link .notice-icon {
@@ -1154,9 +1193,9 @@ mark {
     justify-content: space-between;
     align-items: center;
     padding: 12px 16px;
-    background-color: #f8f9fa;
+    background-color: var(--bg-secondary);
     border-radius: 8px 8px 0 0;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--bg-secondary-border);
     margin: 0;
 }
 
@@ -1164,14 +1203,14 @@ mark {
     margin: 0;
     font-size: 15px;
     font-weight: 600;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .close-dialog-btn {
     padding: 4px;
     border: none;
     background: transparent;
-    color: #666;
+    color: var(--text-secondary);
     cursor: pointer;
     border-radius: 4px;
     display: flex;
@@ -1180,7 +1219,7 @@ mark {
 }
 
 .close-dialog-btn:hover {
-    background: #f5f5f5;
+    background: var(--bg-tertiary);
 }
 
 /* 设置内容区域可滚动 */
@@ -1222,7 +1261,7 @@ input[type="checkbox"] {
 
 .settings-item span {
     font-size: 14px;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .toggle-switch {
@@ -1237,7 +1276,7 @@ input[type="checkbox"] {
     display: inline-block;
     width: 36px;
     height: 20px;
-    background-color: #ccc;
+    background-color: var(--bg-scrollbar-thumb);
     border-radius: 20px;
     margin-right: 0px;
     transition: background-color 0.3s;
@@ -1249,7 +1288,7 @@ input[type="checkbox"] {
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background-color: white;
+    background-color: var(--bg-primary);
     top: 2px;
     left: 2px;
     transition: transform 0.3s;
@@ -1257,7 +1296,7 @@ input[type="checkbox"] {
 
 /* 中状态 */
 .toggle-switch input:checked + .switch-slider {
-    background-color: #2196F3;
+    background-color: var(--action-color);
 }
 
 .toggle-switch input:checked + .switch-slider:before {
@@ -1266,11 +1305,11 @@ input[type="checkbox"] {
 
 /* 悬停效果 */
 .toggle-switch:hover .switch-slider {
-    background-color: #aaa;
+    background-color: var(--bg-primary-hover);
 }
 
 .toggle-switch:hover input:checked + .switch-slider {
-    background-color: #1976D2;
+    background-color: var(--action-hover);
 }
 
 .privacy-icon {
@@ -1281,43 +1320,43 @@ input[type="checkbox"] {
     padding: 2px;
     border-radius: 0px;
     cursor: pointer;
-    color: #ccc;
+    color: var(--text-fourth);
     transition: all 0.2s ease;
     font-size: 18px;
 }
 
 .privacy-icon.active {
-    color: #e67e22;
+    color: var(--bg-privacy-active);
     cursor: help;
     text-shadow: 
-        2px 2px 4px rgba(255, 255, 255, 0.9),
-        -2px -2px 4px rgba(184, 99, 27, 0.3);
+        var(--privacy-text-shadow),
+        var(--privacy-text-shadow-bottom);
     filter: 
-        drop-shadow(2px 2px 2px rgba(255, 255, 255, 0.9))
-        drop-shadow(-2px -2px 2px rgba(184, 99, 27, 0.3));
+        drop-shadow(var(--shadow-privacy-icon))
+        drop-shadow(var(--shadow-privacy-icon-bottom));
 }
 
 .privacy-icon:hover {
-    color: #666;
+    color: var(--text-secondary);
     transform: scale(1.08);
 }
 
 .privacy-icon.active:hover {
-    color: #d35400;
+    color: var(--bg-privacy-active-hover);
 }
 
 .toolbar.privacy-mode .privacy-icon.active:hover {
-    color: #d35400;
+    color: var(--bg-privacy-active-hover);
     transform: scale(1.08);
     text-shadow: 
-        2px 2px 6px rgba(255, 255, 255, 1),     /* 增加hover状态的阴影范围 */
-        -2px -2px 6px rgba(184, 99, 27, 0.4);
+        var(--shadow-privacy-icon-hover),
+        var(--shadow-privacy-icon-hover-bottom);
 }
 
 /* 隐私模式下的工具样式 */
 .toolbar.privacy-mode {
-    background-color: #faf4ea; /* 使用暖橙色背景 */
-    border-bottom: 1px solid #fbe8cc;
+    background-color: var(--bg-privacy); /* 使用暖橙色背景 */
+    border-bottom: 1px solid var(--bg-privacy-border);
 }
 
 /* 设置项样式优化 */
@@ -1342,7 +1381,7 @@ input[type="checkbox"] {
 .settings-text span {
     display: block;
     font-size: 14px;
-    color: #333;
+    color: var(--text-primary);
     margin-bottom: 1px;
     font-weight: 500;
 }
@@ -1351,7 +1390,7 @@ input[type="checkbox"] {
 .settings-description {
     margin: 0;
     font-size: 12px;
-    color: #666;
+    color: var(--text-secondary);
     line-height: 1.3;
 }
 
@@ -1370,11 +1409,11 @@ input[type="checkbox"] {
 .settings-section h4 {
     margin: 0 0 12px 0; /* 减小标题下方间距 */
     font-size: 14px;
-    color: #666;
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     padding-bottom: 4px; /* 添加底部内边距 */
-    border-bottom: 1px solid #eee; /* 添加底部分隔线 */
+    border-bottom: 1px solid var(--bg-border-light); /* 添加底部分隔线 */
     position: relative; /* 为可能的装饰元素做准备 */
 }
 
@@ -1386,17 +1425,17 @@ input[type="checkbox"] {
     top: 0;
     bottom: -4px; /* 对应 padding-bottom */
     width: 3px;
-    background: #4CAF50;
+    background: var(--primary-color);
     border-radius: 0 2px 2px 0;
 }
 
 /* 悬停效果优化 */
 .settings-item:hover .settings-text span {
-    color: #1976D2;
+    color: var(--info-color);
 }
 
 .settings-item:hover .switch-slider {
-    background-color: #bbdefb;
+    background-color: var(--action-light-hover);
 }
 
 .settings-item.hide {
@@ -1424,8 +1463,8 @@ input[type="checkbox"] {
     align-items: center;
     padding: 8px 12px;
     gap: 8px;
-    border-top: 1px solid #eee;
-    background: #f8f9fa;
+    border-top: 1px solid var(--bg-border-light);
+    background: var(--bg-secondary);
     border-radius: 0 0 8px 8px;
 }
 
@@ -1450,9 +1489,9 @@ input[type="checkbox"] {
     width: 32px;
     height: 32px;
     border-radius: 8px;
-    background: #fff;
-    border: 1px solid #eee;
-    color: #666;
+    background: var(--bg-primary);
+    border: 1px solid var(--bg-border-light);
+    color: var(--text-secondary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1462,9 +1501,9 @@ input[type="checkbox"] {
 }
 
 .settings-footer .icon-button:hover {
-    background: #f5f5f5;
-    border-color: #ddd;
-    color: #1976D2;
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--action-color);
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
@@ -1489,9 +1528,9 @@ input[type="checkbox"] {
     justify-content: space-between;
     align-items: center;
     padding: 12px 16px;
-    background-color: #f8f9fa;
+    background-color: var(--bg-secondary);
     border-radius: 8px 8px 0 0;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--bg-secondary-border);
     margin: 0;
 }
 
@@ -1499,7 +1538,7 @@ input[type="checkbox"] {
     margin: 0;
     font-size: 15px;
     font-weight: 600;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .alert-content {
@@ -1511,7 +1550,7 @@ input[type="checkbox"] {
     margin: 0;
     font-size: 14px;
     line-height: 1.5;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .alert-buttons {
@@ -1519,8 +1558,8 @@ input[type="checkbox"] {
     justify-content: flex-end;
     gap: 8px;
     padding: 12px 16px;
-    border-top: 1px solid #eee;
-    background: #f8f9fa;
+    border-top: 1px solid var(--bg-secondary-border);
+    background: var(--bg-secondary);
     border-radius: 0 0 8px 8px;
 }
 
@@ -1534,23 +1573,23 @@ input[type="checkbox"] {
 }
 
 .alert-buttons .primary-button {
-    background: #4CAF50;
-    color: white;
+    background: var(--primary-color);
+    color: var(--text-fifth);
 }
 
 .alert-buttons .primary-button:hover {
-    background: #43A047;
+    background: var(--primary-hover);
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .alert-buttons .secondary-button {
-    background: #f5f5f5;
-    color: #333;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
 }
 
 .alert-buttons .secondary-button:hover {
-    background: #e0e0e0;
+    background: var(--bg-tertiary-hover);
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
@@ -1636,8 +1675,7 @@ input[type="checkbox"] {
 }
 
 .sync-button[data-is-login="false"] svg {
-    color: #ff5252;  /* 使用警示性的红色 */
-    filter: drop-shadow(0 0 2px rgba(255, 82, 82, 0.3));
+    color: var(--error-text);  /* 使用警示性的红色 */
 }
 
 .sync-button[data-is-login="false"]::after {
@@ -1645,17 +1683,15 @@ input[type="checkbox"] {
     position: absolute;
     width: 6px;
     height: 6px;
-    background-color: #ff5252;
+    background-color: var(--error-text);
     border-radius: 50%;
     top: 2px;
     right: 2px;
-    box-shadow: 0 0 4px rgba(255, 82, 82, 0.5);
-    /* animation: pulse 2s infinite; */
 }
 
 /* 登录状态 */
 .sync-button[data-is-login="true"] svg {
-    color: #4CAF50;
+    color: var(--primary-color);
 }
 
 .sync-button[data-is-login="true"]:hover {
@@ -1668,7 +1704,7 @@ input[type="checkbox"] {
 }
 
 .sync-button.syncing svg {
-    color: #4CAF50;
+    color: var(--primary-color);
     animation: rotate 1s linear infinite;
     filter: drop-shadow(0 0 2px rgba(76, 175, 80, 0.3));
 }
@@ -1688,7 +1724,7 @@ input[type="checkbox"] {
     height: 2px;
     width: 100%;
     border-radius: 1px;
-    background-color: #4CAF50;
+    background-color: var(--primary-color);
     transform: scaleX(1);
     transform-origin: left;
     animation: progress-bar 5s linear forwards;
@@ -1733,8 +1769,8 @@ input[type="checkbox"] {
     min-width: 14px;
     height: 14px;
     padding: 0 3px;
-    background-color: #4CAF50;
-    color: white;
+    background-color: var(--primary-color);
+    color: var(--text-fifth);
     border-radius: 7px;
     font-size: 9px;
     display: flex;
@@ -1758,10 +1794,10 @@ input[type="checkbox"] {
     align-items: center;
     gap: 4px;
     padding: 3px 8px 2px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
-    background: #fff;
-    color: #666;
+    background: var(--bg-primary);
+    color: var(--text-secondary);
     font-size: 12px;
     cursor: pointer;
     transition: all 0.2s;
@@ -1769,8 +1805,8 @@ input[type="checkbox"] {
 }
 
 .regenerate-button:hover {
-    background: #f5f5f5;
-    border-color: #999;
+    background: var(--bg-tertiary);
+    border-color: var(--border-dark);
 }
 
 .regenerate-button svg {
@@ -1810,13 +1846,44 @@ input[type="checkbox"] {
     padding: 0;
     list-style: none;
     min-height: 0;
+    
+    
+    /* 优化滚动条样式 */
+    scrollbar-gutter: auto; /* 不占用空间 */
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-scrollbar-thumb) transparent;
+    
+    /* 默认滚动条样式 */
+    &::-webkit-scrollbar {
+        width: 6px;
+        background: transparent;
+    }
+    
+    &::-webkit-scrollbar-track {
+        background: transparent;
+        border: none;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 3px;
+        border: none;
+        
+        &:hover {
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+    }
+}
+
+.search-results:hover {
+    scrollbar-color: var(--bg-scrollbar-thumb-hover) transparent;
 }
 
 /* 最近搜索记录容器 */
 .recent-searches {
     display: none;
-    background: white;
-    border: 1px solid #eee;
+    background: var(--bg-primary);
+    border: 1px solid var(--bg-border-light);
     border-radius: 8px;
     padding: 8px;
     flex-shrink: 0;
@@ -1836,7 +1903,7 @@ input[type="checkbox"] {
 /* 搜索记录标题 */
 .recent-searches-title {
     font-size: 11px;
-    color: #666;
+    color: var(--text-secondary);
     display: block;
 }
 
@@ -1845,14 +1912,14 @@ input[type="checkbox"] {
     display: inline-flex;
     align-items: center;
     padding: 2px 8px;
-    background: #f5f5f5;
+    background: var(--bg-tertiary);
     border-radius: 12px;
     cursor: pointer;
     font-size: 12px;
-    color: #666;
+    color: var(--text-secondary);
     gap: 4px;
     transition: all 0.2s;
-    border: 1px solid #eee;
+    border: 1px solid var(--bg-border-light);
 }
 
 /* 搜索记录文本部分 */
@@ -1866,14 +1933,14 @@ input[type="checkbox"] {
 }
 
 .recent-search-item:hover {
-    background: #e8e8e8;
-    color: #333;
+    background: var(--bg-tertiary-hover);
+    color: var(--text-primary);
 }
 
 .recent-search-item svg {
     width: 12px;
     height: 12px;
-    color: #999;
+    color: var(--text-tertiary);
     flex-shrink: 0; /* 防止图标被压缩 */
 }
 
@@ -1889,12 +1956,12 @@ input[type="checkbox"] {
     width: 24px;
     height: 24px;
     padding: 4px;
-    color: #999;
+    color: var(--text-tertiary);
 }
 
 .close-recent-searches:hover {
-    background: #f0f0f0;
-    color: #666;
+    background: var(--bg-tertiary-hover);
+    color: var(--text-secondary);
 }
 
 /* 搜索结果相关度样式 */
@@ -1910,7 +1977,7 @@ input[type="checkbox"] {
 
 .relevance-text {
     font-size: 11px;
-    color: #666;
+    color: var(--text-secondary);
     opacity: 0;
     margin-right: 4px;
     transition: opacity 0.2s ease;
@@ -1928,20 +1995,20 @@ input[type="checkbox"] {
 }
 
 .relevance-bar.high {
-    background-color: #4CAF50; /* 绿色 */
+    background-color: var(--primary-color); /* 绿色 */
 }
 
 .relevance-bar.medium {
-    background-color: #FFC107; /* 黄色 */
+    background-color: var(--relevance-medium); /* 黄色 */
 }
 
 .relevance-bar.low {
-    background-color: #E0E0E0; /* 灰色 */
+    background-color: var(--relevance-low); /* 灰色 */
 }
 
 /* 优化标题样式 */
 .result-item.high-relevance .result-title {
-    color: #1b5e20;
+    color: var(--relevance-high);
     font-weight: 600;
 }
 
@@ -1955,7 +2022,7 @@ input[type="checkbox"] {
 
 /* 悬浮时显示标签 */
 .bookmark-item:hover .bookmark-meta {
-    max-height: 50px; /* 设置一个合适的最大高度 */
+    max-height: 64px; /* 设置一个合适的最大高度 */
     opacity: 1;
     margin-top: 4px;
 }
@@ -1971,24 +2038,24 @@ input[type="checkbox"] {
     align-items: center;
     gap: 4px;
     padding: 4px 8px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
-    background: white;
-    color: #666;
+    background: var(--bg-primary);
+    color: var(--text-secondary);
     cursor: pointer;
     font-size: 12px;
     transition: all 0.2s ease;
 }
 
 .filter-button:hover {
-    background: #f5f5f5;
-    border-color: #ccc;
+    background: var(--bg-tertiary);
+    border-color: var(--border-hover);
 }
 
 .filter-button.active {
-    background: #e8f5e9;
-    border-color: #4CAF50;
-    color: #2e7d32;
+    background: var(--success-bg);
+    border-color: var(--primary-color);
+    color: var(--success-text);
 }
 
 /* 筛选下拉菜单 */
@@ -1997,8 +2064,8 @@ input[type="checkbox"] {
     top: 100%;
     left: 0;
     margin-top: 4px;
-    background: white;
-    border: 1px solid #ddd;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     z-index: 101;
@@ -2023,21 +2090,21 @@ input[type="checkbox"] {
 }
 
 .filter-option:hover {
-    background: #f5f5f5;
+    background: var(--bg-tertiary);
 }
 
 .filter-option.active {
-    background: #e3f2fd;
-    color: #1976d2;
+    background: var(--action-light);
+    color: var(--action-color);
 }
 
 .filter-option.active svg {
-    color: #1976d2;
+    color: var(--action-color);
 }
 
 .filter-badge {
-    background: #1976d2;
-    color: white;
+    background: var(--action-color);
+    color: var(--text-fifth);
     font-size: 11px;
     padding: 2px 6px;
     border-radius: 10px;
@@ -2045,8 +2112,8 @@ input[type="checkbox"] {
 }
 
 .filter-option.active .filter-badge {
-    background: white;
-    color: #1976d2;
+    background: var(--bg-primary);
+    color: var(--action-color);
 }
 
 /* 筛选菜单 */
@@ -2054,14 +2121,14 @@ input[type="checkbox"] {
     position: absolute;
     left: calc(100% - 1px); /* 减去边框宽度，使边框对齐 */
     top: -1px; /* 对齐顶部边框 */
-    background: white;
+    background: var(--bg-primary);
     border-radius: 4px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-lg);
     z-index: 101;
     width: 180px; /* 减小宽度 */
     display: none;
     flex-direction: column;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     overflow: hidden; /* 防止内容溢出 */
 }
 
@@ -2072,11 +2139,11 @@ input[type="checkbox"] {
 /* 筛选菜单头部 */
 .filter-menu-header {
     padding: 4px 10px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--bg-border-light);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #f8f9fa;
+    background: var(--bg-secondary);
     border-radius: 4px 4px 0 0;
     position: sticky; /* 固定在顶部 */
     top: 0;
@@ -2089,7 +2156,7 @@ input[type="checkbox"] {
 .filter-menu-title {
     font-size: 13px;
     font-weight: 500;
-    color: #333;
+    color: var(--text-primary);
     flex: 1;
     white-space: nowrap;
     overflow: hidden;
@@ -2100,11 +2167,11 @@ input[type="checkbox"] {
 /* 筛选菜单底部 */
 .filter-menu-footer {
     padding: 3px 10px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--bg-border-light);
     display: flex;
     justify-content: flex-end;
     gap: 8px;
-    background: #f8f9fa;
+    background: var(--bg-secondary);
     border-radius: 0 0 4px 4px;
     position: sticky; /* 固定在底部 */
     bottom: 0;
@@ -2119,7 +2186,7 @@ input[type="checkbox"] {
     overflow-y: auto;
     max-height: 260px;
     scrollbar-width: thin;
-    scrollbar-color: #ccc transparent;
+    scrollbar-color: var(--bg-scrollbar-thumb) transparent;
     position: relative;
     z-index: 1;
 }
@@ -2134,7 +2201,7 @@ input[type="checkbox"] {
 }
 
 .filter-menu-content::-webkit-scrollbar-thumb {
-    background-color: #ccc;
+    background-color: var(--bg-scrollbar-thumb);
     border-radius: 3px;
 }
 
@@ -2155,14 +2222,14 @@ input[type="checkbox"] {
     justify-content: space-between;
     user-select: none;
     font-size: 12px;
-    color: #333;
+    color: var(--text-primary);
     position: relative;
     padding-left: 32px;
     padding: 4px 8px 4px 28px; /* 减小内边距，但保持复选框位置 */
 }
 
 .filter-item:hover {
-    background: #f5f5f5;
+    background: var(--bg-tertiary);
 }
 
 /* 复选框样式调整 */
@@ -2172,7 +2239,7 @@ input[type="checkbox"] {
     left: 6px;
     width: 14px;
     height: 14px;
-    border: 2px solid #ddd;
+    border: 2px solid var(--border-dark);
     border-radius: 3px;
     transition: all 0.2s;
     box-sizing: border-box;
@@ -2180,8 +2247,8 @@ input[type="checkbox"] {
 
 /* 选中状态的复选框 */
 .filter-item.selected::before {
-    border-color: #4CAF50;
-    background-color: #4CAF50;
+    border-color: var(--primary-color);
+    background-color: var(--primary-color);
 }
 
 /* 复选框对勾 */
@@ -2192,7 +2259,7 @@ input[type="checkbox"] {
     top: 7px;
     width: 4px;
     height: 7px;
-    border: solid white;
+    border: solid var(--text-fifth);
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
 }
@@ -2211,31 +2278,31 @@ input[type="checkbox"] {
 }
 
 .filter-menu-footer .secondary-button {
-    border: 1px solid #ddd;
-    background: white;
-    color: #666;
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    color: var(--text-secondary);
 }
 
 .filter-menu-footer .secondary-button:hover {
-    background: #f5f5f5;
-    border-color: #ccc;
+    background: var(--bg-tertiary);
+    border-color: var(--border-hover);
 }
 
 .filter-menu-footer .primary-button {
-    border: 1px solid #4CAF50;
-    background: #4CAF50;
-    color: white;
+    border: 1px solid var(--primary-color);
+    background: var(--primary-color);
+    color: var(--text-fifth);
 }
 
 .filter-menu-footer .primary-button:hover {
-    background: #43a047;
-    border-color: #43a047;
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
 }
 
 .filter-count {
     font-size: 12px;
-    color: #666;
-    background: #eee;
+    color: var(--text-secondary);
+    background: var(--bg-fourth);
     padding: 2px 6px;
     border-radius: 10px;
     min-width: 20px;
@@ -2243,16 +2310,16 @@ input[type="checkbox"] {
 }
 
 .filter-item.selected .filter-count {
-    background: rgba(25, 118, 210, 0.1);
-    color: #1976d2;
+    background: var(--action-light);
+    color: var(--action-color);
 }   
 
 .filter-item:hover .filter-count {
-    background: rgba(25, 118, 210, 0.08);
+    background: var(--bg-sixth);
 }
 
 .filter-item.selected:hover .filter-count {
-    background: rgba(25, 118, 210, 0.15);
+    background: var(--action-light-hover);
 }
 
 /* 添加媒体查询，在较窄的侧边栏下调整布局 */
@@ -2287,14 +2354,14 @@ input[type="checkbox"] {
     padding: 4px 8px;
     border: none;
     background: none;
-    color: #666;
+    color: var(--text-secondary);
     cursor: pointer;
     border-radius: 4px;
     box-sizing: border-box;
 }
 
 .sort-button:hover {
-    background: #f5f5f5;
+    background: var(--bg-tertiary);
 }
 
 .sort-button .sort-icon {
@@ -2321,8 +2388,8 @@ input[type="checkbox"] {
     top: 100%;
     left: 0;
     margin-top: 4px;
-    background: white;
-    border: 1px solid #ddd;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     z-index: 101;
@@ -2345,7 +2412,7 @@ input[type="checkbox"] {
     cursor: pointer;
     border-radius: 6px;
     font-size: 13px;
-    color: #666;
+    color: var(--text-secondary);
     white-space: nowrap;
 }
 
@@ -2357,8 +2424,8 @@ input[type="checkbox"] {
 }
 
 .sort-option:hover {
-    background: #f5f5f5;
-    color: #1976d2;
+    background: var(--bg-tertiary);
+    color: var(--action-color);
 }
 
 .edit-filter-button {
@@ -2367,15 +2434,15 @@ input[type="checkbox"] {
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    color: #666;
+    color: var(--text-secondary);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .edit-filter-button:hover {
-    background: #f5f5f5;
-    color: #1976d2;
+    background: var(--bg-tertiary);
+    color: var(--action-color);
 }
 
 /* 视图切换按钮组 */
@@ -2389,22 +2456,22 @@ input[type="checkbox"] {
     align-items: center;
     padding: 4px;
     margin: 0px 2px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
-    background: white;
-    color: #666;
+    background: var(--bg-primary);
+    color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .view-mode-button:hover {
-    background: #f5f5f5;
+    background: var(--bg-tertiary);
 }
 
 .view-mode-button.active {
-    background: #e3f2fd;
-    border-color: #1976d2;
-    color: #1976d2;
+    background: var(--action-light);
+    border-color: var(--action-color);
+    color: var(--action-color);
 }
 
 .view-mode-button:not(.active) {
@@ -2421,7 +2488,7 @@ input[type="checkbox"] {
 .view-mode-switch:hover .view-mode-button:not(.active) {
     opacity: 1;
     width: 26px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     padding: 4px;
     margin: 0px 2px;
     pointer-events: auto;
@@ -2432,8 +2499,8 @@ input[type="checkbox"] {
     margin: 6px 0;
     padding: 0;
     overflow: hidden;
-    background: #fff;
-    border: 1px solid #e0e4e8; /* 调整边框颜色为更柔和的色调 */
+    background: var(--bg-primary);
+    border: 1px solid var(--bg-border-light); /* 调整边框颜色为更柔和的色调 */
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     transition: all 0.2s ease;
@@ -2442,14 +2509,14 @@ input[type="checkbox"] {
 .bookmarks-group:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     transform: translateY(-1px);
-    border-color: #d0d4d8; /* 加深边框颜色 */
+    border-color: var(--bg-border-hover); /* 加深边框颜色 */
 }
 
 .group-header {
     display: flex;
     align-items: center;
     padding: 12px 16px;
-    background: #f8f9fa;
+    background: var(--bg-secondary);
     border-bottom: none; /* 移除底部边框，由 group-content 提供 */
     cursor: pointer;
     user-select: none;
@@ -2457,7 +2524,7 @@ input[type="checkbox"] {
 }
 
 .group-header:hover {
-    background: #f1f3f4;
+    background: var(--bg-fifth);
 }
 
 .group-title {
@@ -2466,15 +2533,15 @@ input[type="checkbox"] {
     gap: 8px;
     font-size: 13px;
     font-weight: 500;
-    color: #1976d2;
+    color: var(--info-color);
 }
 
 .group-count {
     margin-left: 8px;
     font-size: 12px;
-    color: #666;
+    color: var(--info-color);
     font-weight: normal;
-    background: rgba(25, 118, 210, 0.1);
+    background: var(--action-light);
     padding: 2px 8px;
     border-radius: 12px;
 }
@@ -2482,7 +2549,7 @@ input[type="checkbox"] {
 .group-toggle {
     margin-right: 8px;
     transition: transform 0.2s;
-    color: #1976d2;
+    color: var(--info-color);
     opacity: 0.7;
 }
 
@@ -2496,19 +2563,18 @@ input[type="checkbox"] {
     padding: 4px 0px;
     overflow-y: auto;
     transition: all 0.2s;
-    border-top: 1px solid #edf0f4; /* 添加顶部分隔线 */
-    background: linear-gradient(to bottom,
-        rgba(249, 250, 251, 0.8) 0%,
-        rgba(255, 255, 255, 1) 100%
-    ); /* 添加渐变背景 */
+    border-top: 1px solid var(--bg-border); /* 添加顶部分隔线 */
+    background: var(--bg-primary); /* 添加渐变背景 */
     
     /* 内部阴影效果 */
     box-shadow: 
-        inset 0 4px 6px -4px rgba(0, 0, 0, 0.05),
-        inset 0 -4px 6px -4px rgba(0, 0, 0, 0.05);
+        var(--shadow-group-content),
+        var(--shadow-group-content-bottom);
     
     /* 滚动条样式优化 */
     scrollbar-gutter: auto;
+    scrollbar-width: thin;
+
     &::-webkit-scrollbar {
         width: 4px;
         background: transparent;
@@ -2519,40 +2585,13 @@ input[type="checkbox"] {
     }
     
     &::-webkit-scrollbar-thumb {
-        background-color: rgba(0, 0, 0, 0.1);
+        background-color: var(--bg-scrollbar-thumb);
         border-radius: 2px;
     }
     
     &::-webkit-scrollbar-thumb:hover {
-        background-color: rgba(0, 0, 0, 0.2);
+        background-color: var(--bg-scrollbar-thumb-hover);
     }
-}
-
-/* Firefox滚动条样式 */
-.group-content {
-    scrollbar-width: none;  /* 默认隐藏 */
-}
-
-.group-content:hover {
-    scrollbar-width: thin;  /* 悬浮时显示 */
-}
-
-/* 自定义滚动条样式 */
-.group-content::-webkit-scrollbar {
-    width: 4px;
-}
-
-.group-content::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.group-content::-webkit-scrollbar-thumb {
-    background-color: #ccc;
-    border-radius: 2px;
-}
-
-.group-content::-webkit-scrollbar-thumb:hover {
-    background-color: #999;
 }
 
 .group-content.collapsed {
@@ -2564,16 +2603,16 @@ input[type="checkbox"] {
 .group-empty {
     padding: 24px 16px;
     text-align: center;
-    color: #666;
+    color: var(--text-secondary);
     font-size: 13px;
     font-style: italic;
-    background: #f8f9fa;
+    background: var(--bg-secondary);
     border-radius: 0 0 8px 8px;
 }
 
 /* 组内书签项样式优化 */
 .group-content .bookmark-item {
-    border-bottom: 1px solid #f0f2f5; /* 更柔和的分隔线 */
+    border-bottom: 1px solid var(--bg-border-light); /* 更柔和的分隔线 */
     margin: 0 8px; /* 添加左右间距 */
     padding: 10px 8px; /* 调整内边距 */
 }
@@ -2594,8 +2633,8 @@ input[type="checkbox"] {
 
 .add-custom-group-tip {
     padding: 12px;
-    background: #f8f9fa;
-    border: 1px dashed #d0d4d8;
+    background: var(--bg-secondary);
+    border: 2px dashed var(--bg-secondary-border);
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -2606,14 +2645,14 @@ input[type="checkbox"] {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    color: #666;
+    color: var(--text-secondary);
     font-size: 13px;
 }
 
 .add-custom-group-tip:hover {
-    background: #f0f2f5;
-    border-color: #b0b4b8;
-    color: #333;
+    background: var(--bg-fourth);
+    border-color: var(--bg-border-hover);
+    color: var(--text-primary);
 }
 
 .add-custom-group-tip svg {
@@ -2638,7 +2677,7 @@ input[type="checkbox"] {
 
 #save-page.editing:hover {
     background-color: rgba(26, 115, 232, 0.1);
-    color: #1565c0;
+    color: var(--action-color);
 }
 
 /* 对话框按钮样式优化 */
@@ -2661,14 +2700,14 @@ input[type="checkbox"] {
     padding: 6px 12px;
     border: none;
     border-radius: 4px;
-    background: #fff;
-    color: #d32f2f;
+    background: var(--bg-primary);
+    color: var(--danger-color);
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .danger-button:hover {
-    background: #ffebee;
+    background: var(--error-bg);
 }
 
 .danger-button svg {
@@ -2690,7 +2729,7 @@ input[type="checkbox"] {
 .loading-state .loading-spinner {
     width: 32px;
     height: 32px;
-    border: 3px solid var(--border-color);
+    border: 3px solid var(--bg-border-light);
     border-top: 3px solid var(--primary-color);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
@@ -2710,7 +2749,7 @@ input[type="checkbox"] {
     justify-content: center;
     padding: 2rem;
     text-align: center;
-    color: var(--error-color);
+    color: var(--error-text);
 }
 
 .error-state .error-message {

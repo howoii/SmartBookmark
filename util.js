@@ -57,6 +57,27 @@ function sendMessageSafely(message, callback = null) {
     });
 }
 
+function handleRuntimeError() {
+    const error = chrome.runtime.lastError;
+    if (error) {
+        throw new Error(error);
+    }
+}
+
+// 获取网站图标的辅函数
+async function getFaviconUrl(bookmarkUrl) {
+    try {
+        const url = new URL(chrome.runtime.getURL("/_favicon/"));
+        url.searchParams.set("pageUrl", bookmarkUrl);
+        url.searchParams.set("size", "32");
+
+        return url.toString();  
+    } catch (error) {
+        logger.error('获取网站图标失败:', error);
+        return 'icons/default_favicon.png'; // 返回默认图标
+    }
+}
+
 async function recordBookmarkChange(bookmarks, isDeleted = false, beginSync = true, onError = null) {
     sendMessageSafely({
         type: MessageType.SYNC_BOOKMARK_CHANGE,
@@ -71,7 +92,7 @@ async function recordBookmarkChange(bookmarks, isDeleted = false, beginSync = tr
 
 // 检查页面是否已收藏
 async function checkIfPageSaved(url) {
-    const result = await LocalStorageMgr.getBookmark(url);
+    const result = await LocalStorageMgr.getBookmark(url, true);
     return !!result;
 }
 
@@ -81,17 +102,19 @@ async function updateExtensionIcon(tabId, isSaved) {
         await chrome.action.setIcon({
             tabId: tabId,
             path: {
-                "32": `/icons/${isSaved ? 'saved' : 'unsaved'}_32.png`,
-                "48": `/icons/${isSaved ? 'saved' : 'unsaved'}_48.png`,
-                "128": `/icons/${isSaved ? 'saved' : 'unsaved'}_128.png`,
-            }
-        }, () => {
-            if (chrome.runtime.lastError) {
-                logger.error('更新图标失败:', chrome.runtime.lastError);
+                "16": `icons/${isSaved ? 'saved' : 'unsaved'}_16.png`,
+                "32": `icons/${isSaved ? 'saved' : 'unsaved'}_32.png`,
+                "48": `icons/${isSaved ? 'saved' : 'unsaved'}_48.png`,
+                "128": `icons/${isSaved ? 'saved' : 'unsaved'}_128.png`
             }
         });
     } catch (error) {
-        logger.error('更新图标失败:', error);
+        logger.error('更新图标失败:', {
+            error: error.message,
+            tabId: tabId,
+            isSaved: isSaved,
+            stack: error.stack
+        });
     }
 }
 
@@ -119,7 +142,7 @@ async function openOptionsPage(section = 'overview') {
 // 修改更新书签使用频率的函数
 async function updateBookmarkUsage(url) {
     try {
-        const data = await LocalStorageMgr.getBookmark(url);
+        const data = await LocalStorageMgr.getBookmark(url, true);
         if (data) {
             const bookmark = data;
 
@@ -397,6 +420,37 @@ function cleanTags(tags) {
         // 移除序号、星号和多余空格
         return tag.replace(/^\d+\.\s*\*+|\*+/g, '').trim();
     });
+}
+
+// 获取隐私模式设置
+async function determinePrivacyMode(tab) {
+    const autoPrivacyMode = await SettingsManager.get('privacy.autoDetect');
+    const manualPrivacyMode = await SettingsManager.get('privacy.enabled');
+    // 打印隐私模式设置的调试信息
+    logger.debug('隐私模式设置:', {
+        autoPrivacyMode,
+        manualPrivacyMode
+    });
+    
+    // 判断是否启用隐私模式
+    let isPrivate = false;
+    if (autoPrivacyMode) {
+        // 自动检测模式
+        isPrivate = await containsPrivateContent(tab.url);
+    } else {
+        // 手动控制模式
+        isPrivate = manualPrivacyMode;
+    }
+    return isPrivate;
+}
+
+async function isPrivacyModeManuallyDisabled() {
+    const autoPrivacyMode = await SettingsManager.get('privacy.autoDetect');
+    const manualPrivacyMode = await SettingsManager.get('privacy.enabled');
+    if (autoPrivacyMode) {
+        return false;
+    }
+    return !manualPrivacyMode;
 }
 
 // 检查URL是否包含隐私内容
@@ -1007,4 +1061,46 @@ function getFallbackTags(title, metadata) {
     });
 
     return Array.from(tags).slice(0, maxTags);
+}
+
+// 获取当前页面的文本内容
+async function getPageContent(tab) {
+    try {
+        const isPrivate = await determinePrivacyMode(tab);
+        if (isPrivate || !isContentFulUrl(tab.url)) {
+            logger.info('页面为隐私模式或URL无内容');
+            return {};
+        }
+        // 首先注 content script
+        await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            files: ["lib/Readability.js", "contentScript.js"]
+        });
+        
+        const response = await chrome.tabs.sendMessage(tab.id, { action: "getContent" });
+        
+        let content = response?.content;
+        // 清理内容
+        content = content
+            .replace(/\s+/g, ' ')           // 将多个空白字符替换为单个空格
+            .replace(/[\r\n]+/g, ' ')       // 将换行符替换为空格
+            .replace(/\t+/g, ' ')           // 将制表符替换为空格
+            .trim();                        // 去除首尾空白
+
+        // 如果提取失败，返回空字符串
+        if (!response || !content) {
+            logger.warn('内容提取失败');
+            return {};
+        }
+
+        return {
+            title: response.title,
+            content: content,
+            excerpt: response.excerpt,
+            metadata: response.metadata
+        };
+    } catch (error) {
+        logger.error('获取页面内容时出错:', error);
+        return {};
+    }
 }
