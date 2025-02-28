@@ -40,6 +40,10 @@
                 <i class="icon-import-export"></i>
                 <span>导入/导出</span>
             </a>
+            <a href="#about" class="nav-item" data-section="about">
+                <i class="icon-about"></i>
+                <span>关于</span>
+            </a>
         </nav>
         <div class="sidebar-footer">
             <div class="footer-links">
@@ -104,23 +108,41 @@
                     <div class="settings-grid">
                         <div class="setting-item-card">
                             <div class="form-group">
-                                <label for="max-search-results">最大搜索结果数量</label>
+                                <label for="max-search-results">
+                                    搜索结果数量
+                                    <div class="tooltip-icon" data-tooltip="最多显示多少个搜索结果（1-100）">
+                                        <svg width="16" height="16" viewBox="0 0 24 24">
+                                            <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                        </svg>
+                                    </div>
+                                </label>
                                 <input type="number" id="max-search-results" min="1" max="100" value="50">
-                                <p class="setting-description">设置搜索时最多显示多少个结果（1-100之间）</p>
                             </div>
                         </div>
                         <div class="setting-item-card">
                             <div class="form-group">
                                 <label for="omnibox-search-limit">
                                     地址栏搜索结果数量
-                                    <div class="tooltip-icon" data-tooltip="在浏览器地址栏输入 'sb' 后按空格或 Tab 键，即可使用地址栏快速搜索书签">
+                                    <div class="tooltip-icon" data-tooltip="在浏览器地址栏（Omnibox）搜索时显示的最大结果数量（1-9）">
                                         <svg width="16" height="16" viewBox="0 0 24 24">
                                             <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
                                         </svg>
                                     </div>
                                 </label>
                                 <input type="number" id="omnibox-search-limit" min="1" max="9" value="5">
-                                <p class="setting-description">设置在浏览器地址栏（Omnibox）搜索时显示的结果数量（1-9之间）</p>
+                            </div>
+                        </div>
+                        <!-- 添加搜索历史设置 -->
+                        <div class="setting-item-card">
+                            <div class="form-group">
+                                <label class="switch-label">
+                                    <span class="switch-text">搜索历史</span>
+                                    <div class="switch-container">
+                                        <input type="checkbox" id="show-search-history" checked>
+                                        <span class="switch-slider"></span>
+                                    </div>
+                                </label>
+                                <p class="setting-description">是否显示最近的搜索记录</p>
                             </div>
                         </div>
                         <!-- 添加网站显示设置 -->
@@ -135,7 +157,7 @@
                                     </div>
                                 </label>
                                 <div class="quick-search-sites-row">
-                                    <label for="quick-search-sites-display">快捷访问显示：</label>
+                                    <label for="quick-search-sites-display">显示类型：</label>
                                     <select id="quick-search-sites-display">
                                         <option value="none">隐藏</option>
                                         <option value="pinned">固定网站</option>
@@ -148,7 +170,6 @@
                                     <label for="sites-display-count">显示数量：</label>
                                     <input type="number" id="sites-display-count" min="1" max="50" value="10">
                                 </div>
-                                <p class="setting-description">设置搜索面板顶部显示的快捷访问网站类型及数量</p>
                             </div>
                         </div>
                     </div>
@@ -191,7 +212,7 @@
                     <div class="settings-grid">
                         <div class="setting-item-card">
                             <div class="form-group">
-                                <label>显示模式</label>
+                                <label>主题</label>
                                 <div class="theme-selector">
                                     <div class="theme-option" data-theme="light">
                                         <div class="theme-preview">
@@ -428,7 +449,11 @@
                     <div class="dialog-content">
                         <div class="dialog-header">
                             <h3>导入浏览器书签</h3>
-                            <button class="close-dialog-btn">×</button>
+                            <button class="close-dialog-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24">
+                                    <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                </svg>
+                            </button>
                         </div>
                         <div class="import-progress-body">
                             <div class="progress-status">正在导入...</div>
@@ -455,7 +480,11 @@
                     <div class="dialog-content large">
                         <div class="dialog-header">
                             <h3>选择要导入的书签</h3>
-                            <button class="close-dialog-btn">×</button>
+                            <button class="close-dialog-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24">
+                                    <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                </svg>
+                            </button>
                         </div>
                         <div class="dialog-body">
                             <!-- 导入选项 -->
@@ -529,6 +558,224 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 导出对话框 -->
+                <div id="export-dialog" class="dialog">
+                    <div class="dialog-content">
+                        <div class="dialog-header">
+                            <h3>导出数据</h3>
+                            <button class="close-dialog-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24">
+                                    <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="dialog-body">
+                            <div class="export-options-container">
+                                <h4>选择要导出的内容</h4>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-container">
+                                        <input type="checkbox" id="export-bookmarks" checked>
+                                        <span class="checkmark"></span>
+                                        <div class="option-info">
+                                            <span class="option-title">书签数据</span>
+                                            <span class="option-desc">包括书签内容、标签、向量等</span>
+                                        </div>
+                                    </label>
+                                    <label class="checkbox-container">
+                                        <input type="checkbox" id="export-settings" checked>
+                                        <span class="checkmark"></span>
+                                        <div class="option-info">
+                                            <span class="option-title">设置项</span>
+                                            <span class="option-desc">搜索设置、显示设置、隐私设置等</span>
+                                        </div>
+                                    </label>
+                                    <label class="checkbox-container">
+                                        <input type="checkbox" id="export-filters" checked>
+                                        <span class="checkmark"></span>
+                                        <div class="option-info">
+                                            <span class="option-title">自定义标签</span>
+                                            <span class="option-desc">包括所有自定义的标签规则</span>
+                                        </div>
+                                    </label>
+                                    <label class="checkbox-container">
+                                        <input type="checkbox" id="export-api-services" checked>
+                                        <span class="checkmark"></span>
+                                        <div class="option-info">
+                                            <span class="option-title">API 服务设置</span>
+                                            <span class="option-desc">包括自定义服务配置和 API 密钥，⚠️请妥善保管</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dialog-footer">
+                            <div class="export-summary">
+                                <span class="summary-text">预计导出 <span id="export-count">0</span> 个书签</span>
+                            </div>
+                            <div class="footer-actions">
+                                <button class="secondary-btn" id="cancel-export-btn">取消</button>
+                                <button class="primary-btn" id="confirm-export-btn">
+                                    <span class="btn-text">导出</span>
+                                    <span class="loading-spinner"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 导入对话框 -->
+                <div id="import-dialog" class="dialog">
+                    <div class="dialog-content">
+                        <div class="dialog-header">
+                            <h3>导入数据</h3>
+                            <button class="close-dialog-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24">
+                                    <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="dialog-body">
+                            <div class="import-file-section">
+                                <div class="file-drop-zone" id="file-drop-zone">
+                                    <div class="drop-zone-content">
+                                        <svg viewBox="0 0 24 24" width="48" height="48">
+                                            <path fill="currentColor" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M12,12L16,16H13.5V19H10.5V16H8L12,12Z"/>
+                                        </svg>
+                                        <p class="drop-text">拖放文件到这里或点击选择文件<span class="drop-text-tip">（只支持本插件导出的文件）</span></p>
+                                        <input type="file" id="import-file-input" accept=".json" style="display: none;">
+                                        <button class="secondary-btn select-file-btn">选择文件</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="import-options-container">
+                                <h4>导入选项</h4>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-container">
+                                        <input type="checkbox" id="import-bookmarks" checked>
+                                        <span class="checkmark"></span>
+                                        <div class="option-info">
+                                            <span class="option-title">书签数据</span>
+                                            <span class="option-count">发现 <span id="bookmark-count">0</span> 个书签</span>
+                                        </div>
+                                    </label>
+                                    <label class="checkbox-container">
+                                        <input type="checkbox" id="import-settings" checked>
+                                        <span class="checkmark"></span>
+                                        <div class="option-info">
+                                            <span class="option-title">设置项</span>
+                                            <span class="option-desc">搜索设置、显示设置、隐私设置等</span>
+                                        </div>
+                                    </label>
+                                    <label class="checkbox-container">
+                                        <input type="checkbox" id="import-filters" checked>
+                                        <span class="checkmark"></span>
+                                        <div class="option-info">
+                                            <span class="option-title">自定义标签</span>
+                                            <span class="option-count">发现 <span id="filter-count">0</span> 个标签规则</span>
+                                        </div>
+                                    </label>
+                                    <label class="checkbox-container">
+                                        <input type="checkbox" id="import-api-services" checked>
+                                        <span class="checkmark"></span>
+                                        <div class="option-info">
+                                            <span class="option-title">API 服务设置</span>
+                                            <span class="option-count">发现 <span id="api-service-count">0</span> 个 API 服务</span>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="import-mode">
+                                    <h4>导入模式</h4>
+                                    <div class="radio-group">
+                                        <label class="radio-container">
+                                            <input type="radio" name="import-mode" value="merge" checked style="display: none;">
+                                            <span class="radio-mark"></span>
+                                            <div class="option-info">
+                                                <span class="option-title">合并</span>
+                                                <span class="option-desc">保留现有数据，仅添加新内容</span>
+                                            </div>
+                                        </label>
+                                        <label class="radio-container">
+                                            <input type="radio" name="import-mode" value="overwrite" style="display: none;">
+                                            <span class="radio-mark"></span>
+                                            <div class="option-info">
+                                                <span class="option-title">覆盖</span>
+                                                <span class="option-desc">完全替换现有数据</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dialog-footer">
+                            <div class="import-summary">
+                                <span class="summary-text">准备导入 <span id="import-count">0</span> 个项目</span>
+                            </div>
+                            <div class="footer-actions">
+                                <button class="secondary-btn" id="cancel-import-file-btn">取消</button>
+                                <button class="primary-btn" id="confirm-import-file-btn">
+                                    <span class="btn-text">导入</span>
+                                    <span class="loading-spinner"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 在settings-container中添加About内容区域 -->
+            <div class="settings-section" id="about-section">
+                <h2>关于</h2>
+                <div class="about-container">
+                    <!-- Logo和版本信息 -->
+                    <div class="about-header">
+                        <div class="about-logo">
+                            <img src="icons/saved_128.png" alt="Smart Bookmark Logo">
+                        </div>
+                        <div class="about-info">
+                            <h1>Smart Bookmark</h1>
+                            <div class="version-info">
+                                <span class="version">版本 <span id="current-version">1.0.0</span></span>
+                                <span class="update-date">最后更新：<span id="last-update-date">2024-02-26</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 扩展介绍 -->
+                    <div class="about-section">
+                        <h3>
+                            产品简介
+                        </h3>
+                        <p>Smart Bookmark 是一款智能书签管理工具，它能帮助你更高效地管理和搜索书签。通过AI技术，它可以自动分析网页内容，生成标签，让你的书签管理更轻松。</p>
+                    </div>
+                    
+                    <!-- 项目信息 -->
+                    <div class="about-section">
+                        <h3>
+                            项目信息
+                        </h3>
+                        <div class="project-links">
+                            <a href="https://github.com/howoii/SmartBookmark" target="_blank" class="project-link">
+                                <svg viewBox="0 0 24 24" width="20" height="20">
+                                    <path fill="currentColor" d="M12,2A10,10 0 0,0 2,12C2,16.42 4.87,20.17 8.84,21.5C9.34,21.58 9.5,21.27 9.5,21C9.5,20.77 9.5,20.14 9.5,19.31C6.73,19.91 6.14,17.97 6.14,17.97C5.68,16.81 5.03,16.5 5.03,16.5C4.12,15.88 5.1,15.9 5.1,15.9C6.1,15.97 6.63,16.93 6.63,16.93C7.5,18.45 8.97,18 9.54,17.76C9.63,17.11 9.89,16.67 10.17,16.42C7.95,16.17 5.62,15.31 5.62,11.5C5.62,10.39 6,9.5 6.65,8.79C6.55,8.54 6.2,7.5 6.75,6.15C6.75,6.15 7.59,5.88 9.5,7.17C10.29,6.95 11.15,6.84 12,6.84C12.85,6.84 13.71,6.95 14.5,7.17C16.41,5.88 17.25,6.15 17.25,6.15C17.8,7.5 17.45,8.54 17.35,8.79C18,9.5 18.38,10.39 18.38,11.5C18.38,15.32 16.04,16.16 13.81,16.41C14.17,16.72 14.5,17.33 14.5,18.26C14.5,19.6 14.5,20.68 14.5,21C14.5,21.27 14.66,21.59 15.17,21.5C19.14,20.16 22,16.42 22,12A10,10 0 0,0 12,2Z"/>
+                                </svg>
+                                <span>GitHub</span>
+                            </a>
+                            <a href="mailto:zhw18868119485@gmail.com" class="project-link">
+                                <svg viewBox="0 0 24 24" width="20" height="20">
+                                    <path fill="currentColor" d="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z"/>
+                                </svg>
+                                <span>联系我们</span>
+                            </a>
+                            <a href="https://chromewebstore.google.com/detail/smart-bookmark/nlboajobccgidfcdoedphgfaklelifoa/reviews" target="_blank" class="project-link">
+                                <svg viewBox="0 0 24 24" width="20" height="20">
+                                    <path fill="currentColor" d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/>
+                                </svg>
+                                <span>评分反馈</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -563,7 +810,11 @@
                                 <path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"/>
                             </svg>
                         </button>
-                        <button class="close-dialog-btn">×</button>
+                        <button class="close-dialog-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
                 <div class="service-config-body">
@@ -614,7 +865,7 @@
                             <a class="model-pricing-link" target="_blank" title="查看模型定价">
                                 <span>查看定价</span>
                                 <svg viewBox="0 0 24 24" width="14" height="14">
-                                    <path fill="currentColor" d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"/>
+                                    <path fill="currentColor" d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,20V12H19V19Z"/>
                                 </svg>
                             </a>
                         </div>
@@ -648,7 +899,11 @@
             <div class="dialog-content filter-config">
                 <div class="dialog-header">
                     <h3>添加自定义标签</h3>
-                    <button class="close-dialog-btn">×</button>
+                    <button class="close-dialog-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                    </button>
                 </div>
                 
                 <div class="filter-config-body">
@@ -692,7 +947,11 @@
                                 <path fill="currentColor" d="M19,20H5V4H7V7H17V4H19M12,2A1,1 0 0,1 13,3A1,1 0 0,1 12,4A1,1 0 0,1 11,3A1,1 0 0,1 12,2M19,2H14.82C14.4,0.84 13.3,0 12,0C10.7,0 9.6,0.84 9.18,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"/>
                             </svg>
                         </button>
-                        <button class="close-dialog-btn">×</button>
+                        <button class="close-dialog-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
                 <div class="service-config-body">
@@ -747,7 +1006,7 @@
                         <div class="form-group">
                             <label for="custom-chat-model">
                                 Chat 模型
-                                <div class="tooltip-icon" data-tooltip="请配置你的API服务支持的对话模型（注意区分大小写）">
+                                <div class="tooltip-icon" data-tooltip="请配置你的API服务支持的对话模型，暂不支持推理模型">
                                     <svg width="14" height="14" viewBox="0 0 24 24">
                                         <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
                                     </svg>
@@ -821,9 +1080,10 @@
 
     <script src="consts.js"></script>
     <script src="common.js"></script>
-    <script src="logger.js"></script>
     <script src="env.js"></script>
+    <script src="logger.js"></script>
     <script src="models.js"></script>
+    <script src="i18n.js"></script>
     <script src="config.js"></script>
     <script src="storageManager.js"></script>
     <script src="settingsManager.js"></script>
@@ -832,6 +1092,7 @@
     <script src="api.js"></script>
     <script src="themeManager.js"></script>
     <script src="customFilter.js"></script>
+    <script src="importExport.js"></script>
     <script src="settings.js"></script>
 </body>
 </html> 

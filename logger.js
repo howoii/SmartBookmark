@@ -1,12 +1,4 @@
 let EnvIdentifier = 'default';
-// 定义日志级别常量
-const LOG_LEVELS = {
-    TRACE: 0,
-    DEBUG: 1,
-    INFO: 2,
-    WARN: 3,
-    ERROR: 4
-};
 
 // 格式化时间戳的辅助函数
 const formatTimestamp = () => {

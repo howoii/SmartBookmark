@@ -1,5 +1,5 @@
 // background.js
-importScripts('common.js', 'consts.js', 'logger.js', 'env.js', 'config.js', 'models.js', 'storageManager.js', 'settingsManager.js', 'statsManager.js',
+importScripts('common.js', 'consts.js', 'env.js', 'logger.js', 'i18n.js', 'config.js', 'models.js', 'storageManager.js', 'settingsManager.js', 'statsManager.js',
      'util.js', 'sync.js', 'api.js', 'search.js');
 
 EnvIdentifier = 'background';
@@ -20,6 +20,7 @@ async function updatePageState() {
         // 检查标签页是否仍然存在
         try {
             await chrome.tabs.get(tab.id);
+            handleRuntimeError();
         } catch (error) {
             logger.debug('标签页已不存在:', tab.id);
             return;
@@ -191,6 +192,7 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
     });
     try {
         const tab = await chrome.tabs.get(activeInfo.tabId);
+        handleRuntimeError();
         if (tab && tab.url) {
             updatePageState();
         }

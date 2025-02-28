@@ -13,7 +13,9 @@ class QuickSearchManager {
             status: document.getElementById('status'),
             dialogContent: document.querySelector('.dialog-content'),
             pinnedSites: document.getElementById('pinned-sites'),
-            dropZone: document.getElementById('drop-zone')
+            dropZone: document.getElementById('drop-zone'),
+            recentSearches: document.getElementById('recent-searches'),
+            settingsBtn: document.getElementById('settings-btn')
         };
 
         this.lastQuery = '';
@@ -24,6 +26,8 @@ class QuickSearchManager {
         this.draggedElementIndex = -1;
         this.sitesDisplayType = 'pinned';
         this.sitesDisplayCount = 10;
+        this.showSearchHistory = true;
+        this.isMouseInSearchHistory = false;
 
         this.init();
     }
@@ -37,6 +41,7 @@ class QuickSearchManager {
             const settings = await SettingsManager.getAll();
             this.sitesDisplayType = settings.search?.sitesDisplay || 'pinned';
             this.sitesDisplayCount = settings.search?.sitesDisplayCount || 10;
+            this.showSearchHistory = settings.search?.showSearchHistory;
 
             // 根据设置显示网站
             await this.renderSites();
@@ -438,7 +443,12 @@ class QuickSearchManager {
     }
 
     setupEventListeners() {
-        const { searchInput, clearSearchBtn, searchResults } = this.elements;
+        const { searchInput, clearSearchBtn, searchResults, recentSearches, settingsBtn } = this.elements;
+
+        // 设置按钮点击事件
+        settingsBtn.addEventListener('click', async () => {
+            await openOptionsPage('overview');
+        });
 
         // 搜索输入事件
         searchInput.addEventListener('input', (e) => {
@@ -447,10 +457,40 @@ class QuickSearchManager {
             
             // 清除选中状态
             this.clearSelected();
+            // 显示并过滤搜索历史
+            this.renderSearchHistory(query.toLowerCase());
         });
 
+        // 搜索框失去焦点事件
         searchInput.addEventListener('blur', () => {
+            // 清除选中状态
             this.clearSelected();
+            // 只有当鼠标不在搜索历史区域内时才隐藏
+            if (!this.isMouseInSearchHistory) {
+                this.hideSearchHistory();
+            }
+        });
+
+        // 跟踪鼠标是否在搜索历史区域内
+        recentSearches.addEventListener('mouseenter', () => {
+            logger.debug('鼠标进入搜索历史区域');
+            this.isMouseInSearchHistory = true;
+        });
+
+        recentSearches.addEventListener('mouseleave', () => {
+            logger.debug('鼠标离开搜索历史区域');
+            this.isMouseInSearchHistory = false;
+        });
+
+        // 搜索历史点击事件
+        recentSearches.addEventListener('click', async (e) => {
+            const item = e.target.closest('.recent-search-item');
+            if (item) {
+                const query = item.dataset.query;
+                searchInput.value = query;
+                this.hideSearchHistory();
+                await this.performSearch(query);
+            }
         });
 
         // 清除搜索按钮点击事件
@@ -498,6 +538,7 @@ class QuickSearchManager {
                         await this.openResult(url);
                     } else if (query) {
                         // 否则执行搜索
+                        this.hideSearchHistory();
                         this.performSearch(query);
                     }
                     break;
@@ -505,22 +546,24 @@ class QuickSearchManager {
                 case 'ArrowDown':
                     e.preventDefault();
                     this.moveSelection(1);
+                    this.hideSearchHistory();
                     break;
 
                 case 'ArrowUp':
                     e.preventDefault();
                     this.moveSelection(-1);
+                    this.hideSearchHistory();
                     break;
 
                 case 'Escape':
                     e.preventDefault();
-                    if (query) {
+                    if (query || this.isSearchHistoryVisible()) {
                         // 如果有搜索词，先清空搜索
                         searchInput.value = '';
                         clearSearchBtn.style.display = 'none';
                         this.clearResults();
+                        this.hideSearchHistory();
                     } else {
-                        // 如果已经是空的，关闭窗口
                         window.close();
                     }
                     break;
@@ -528,6 +571,57 @@ class QuickSearchManager {
         });
 
         document.addEventListener('dragend', this.handleGlobalDragEnd.bind(this));
+    }
+
+    isSearchHistoryVisible() {
+        const { recentSearches } = this.elements;
+        return recentSearches.classList.contains('show');
+    }
+
+    hideSearchHistory() {
+        const { recentSearches } = this.elements;
+        recentSearches.classList.remove('show');
+    }
+
+    // 渲染搜索历史
+    async renderSearchHistory(query) {
+        const { recentSearches } = this.elements;
+        if (!this.showSearchHistory) {
+            recentSearches.classList.remove('show');
+            return;
+        }
+
+        const wrapper = recentSearches.querySelector('.recent-searches-wrapper');
+        let history = await searchManager.searchHistoryManager.getHistory();
+
+        // 如果有搜索内容，则过滤历史记录
+        if (query) {
+            history = history.filter(item => item.query.toLowerCase().includes(query));
+        }
+        
+        // 如果历史记录为空，则不显示
+        if (history.length === 0) {
+            recentSearches.classList.remove('show');
+            return;
+        }
+
+        // 如果历史记录超过最大显示数量，则截断
+        if (history.length > searchManager.searchHistoryManager.MAX_HISTORY_SHOW_QUICK) {
+            history = history.slice(0, searchManager.searchHistoryManager.MAX_HISTORY_SHOW_QUICK);
+        }
+
+        // 清空容器并添加新的历史记录
+        wrapper.innerHTML = history.map(item => `
+            <div class="recent-search-item" data-query="${item.query}" title="${item.query}">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <span>${item.query}</span>
+            </div>
+        `).join('');
+        
+        recentSearches.classList.add('show');
     }
 
     showStatus(message, type = 'error', showClose = false) {

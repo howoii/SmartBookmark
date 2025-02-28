@@ -13,6 +13,8 @@
     --shadow-privacy-icon-hover-bottom: -2px -2px 6px rgba(184, 99, 27, 0.4);
     --privacy-text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.9);
     --privacy-text-shadow-bottom: -2px -2px 4px rgba(184, 99, 27, 0.3);
+    --tooltip-bg: #333;
+    --tooltip-text: #fff;
 }
 
 [data-theme="dark"] {
@@ -29,6 +31,8 @@
     --shadow-privacy-icon-hover-bottom: -2px -2px 6px rgba(50, 27, 8, 0.4);
     --privacy-text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
     --privacy-text-shadow-bottom: -2px -2px 4px rgba(50, 27, 8, 0.3);
+    --tooltip-bg: #fff;
+    --tooltip-text: #333;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -46,6 +50,8 @@
         --shadow-privacy-icon-hover-bottom: -2px -2px 6px rgba(50, 27, 8, 0.4);
         --privacy-text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
         --privacy-text-shadow-bottom: -2px -2px 4px rgba(50, 27, 8, 0.3);
+        --tooltip-bg: #fff;
+        --tooltip-text: #333;
     }   
 }
 
@@ -71,7 +77,7 @@ body {
 /* 确保主内容区域可以滚动 */
 .main-content {
     flex: 1;
-    padding: 8px;
+    padding: 0px 8px;
     display: flex;
     flex-direction: column;
     height: calc(100% - 48px);
@@ -119,10 +125,14 @@ body {
     color: var(--primary-color);
 }
 
+/* 修改搜索框包装器定位 */
 .search-input-wrapper {
     position: relative;
     display: flex;
     align-items: center;
+    gap: 8px;
+    width: 100%;
+    height: 100%;
 }
 
 .search-icon {
@@ -134,6 +144,7 @@ body {
 #search-input {
     width: 100%;
     padding: 8px 12px 8px 36px;
+    background: var(--bg-primary);
     border: 1px solid var(--border-color);
     border-radius: 6px;
     font-size: 14px;
@@ -328,12 +339,13 @@ mark {
     left: 0;
     right: 0;
     height: 100%;
-    padding: 8px 12px;
-    background: var(--bg-primary);
+    padding: 0px 12px;
+    /* background: var(--bg-primary); */
     opacity: 0;
     transform: translateX(100%);
     pointer-events: none;
     transition: all 0.3s ease;
+    z-index: 100;
 }
 
 .toolbar.searching .toolbar-normal {
@@ -346,14 +358,6 @@ mark {
     opacity: 1;
     transform: translateX(0);
     pointer-events: auto;
-}
-
-/* 搜索框包装器 */
-.search-input-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    height: 100%;
 }
 
 #search-input {
@@ -1241,27 +1245,51 @@ mark {
     margin-top: 4px; /* 与分隔线保持适当间距 */
     display: flex;
     flex-direction: column;
-    gap: 8px;
-}
-
-.settings-item {
-    display: flex;
-    align-items: flex-start; /* 改为顶部对齐 */
-    justify-content: space-between;
-    gap: 16px;
-    cursor: pointer;
-    padding: 12px 0;
-    width: 100%; /* 确保宽度充满容器 */
-    box-sizing: border-box;
+    gap: 0px;
 }
 
 input[type="checkbox"] {
     display: none;
 }
 
-.settings-item span {
+.settings-text span {
     font-size: 14px;
-    color: var(--text-primary);
+    color: var(--text-color);
+    flex: 1;
+    min-width: 0;
+    border-bottom: 1px dotted var(--text-primary);
+    display: inline-block;
+    position: relative;
+    width: fit-content;
+}
+
+.settings-text span:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    padding: 8px 12px;
+    background: var(--tooltip-bg);
+    color: var(--tooltip-text);
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: pre-wrap;
+    z-index: 1001;
+    box-shadow: var(--shadow-md);
+    max-width: 250px;
+    width: max-content;
+    line-height: 1.4;
+}
+
+.settings-text span:hover::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 16px;
+    border: 6px solid transparent;
+    border-bottom: none;
+    border-top: 6px solid var(--tooltip-bg);
+    z-index: 1001;
 }
 
 .toggle-switch {
@@ -1301,11 +1329,6 @@ input[type="checkbox"] {
 
 .toggle-switch input:checked + .switch-slider:before {
     transform: translateX(16px);
-}
-
-/* 悬停效果 */
-.toggle-switch:hover .switch-slider {
-    background-color: var(--bg-primary-hover);
 }
 
 .toggle-switch:hover input:checked + .switch-slider {
@@ -1362,36 +1385,14 @@ input[type="checkbox"] {
 /* 设置项样式优化 */
 .settings-item {
     display: flex;
-    align-items: flex-start; /* 改为顶部对齐 */
+    align-items: center; /* 改为顶部对齐 */
+    justify-content: space-between;
     gap: 16px;
     cursor: pointer;
     padding: 6px 0;
     min-height: 32px; /* 设置最小高度 */
     width: 100%; /* 确保宽度充满容器 */
     box-sizing: border-box;
-}
-
-/* 设置文本容器 */
-.settings-text {
-    flex: 1;
-    min-width: 0;
-}
-
-/* 设置项标题 */
-.settings-text span {
-    display: block;
-    font-size: 14px;
-    color: var(--text-primary);
-    margin-bottom: 1px;
-    font-weight: 500;
-}
-
-/* 设置项说明文字 */
-.settings-description {
-    margin: 0;
-    font-size: 12px;
-    color: var(--text-secondary);
-    line-height: 1.3;
 }
 
 .switch-container {
@@ -1413,20 +1414,10 @@ input[type="checkbox"] {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     padding-bottom: 4px; /* 添加底部内边距 */
-    border-bottom: 1px solid var(--bg-border-light); /* 添加底部分隔线 */
+    border-bottom: 1px solid var(--bg-border); /* 添加底部分隔线 */
     position: relative; /* 为可能的装饰元素做准备 */
-}
-
-/* 可选：添加左侧装饰线 */
-.settings-section h4::before {
-    content: '';
-    position: absolute;
-    left: -16px; /* 对应 settings-sections 的左内边距 */
-    top: 0;
-    bottom: -4px; /* 对应 padding-bottom */
-    width: 3px;
-    background: var(--primary-color);
-    border-radius: 0 2px 2px 0;
+    margin-bottom: 8px;
+    font-weight: 600;
 }
 
 /* 悬停效果优化 */
@@ -1827,9 +1818,10 @@ input[type="checkbox"] {
     display: none;
     flex-direction: column;
     height: 100%;
-    overflow: hidden;
+    overflow: visible;
     gap: 8px;
-    padding: 8px;
+    padding: 0px;
+    position: relative;
 }
 
 /* 搜索模式时显示搜索结果 */
@@ -1842,10 +1834,12 @@ input[type="checkbox"] {
     flex: 1;
     overflow-y: auto;
     display: block;
-    margin: 0;
+    position: relative;
     padding: 0;
     list-style: none;
     min-height: 0;
+    z-index: 1;
+    margin-top: 4px;
     
     
     /* 优化滚动条样式 */
@@ -1882,11 +1876,18 @@ input[type="checkbox"] {
 /* 最近搜索记录容器 */
 .recent-searches {
     display: none;
+    position: absolute;
+    top: 0px;
+    left: 4px;
+    right: 44px;
     background: var(--bg-primary);
-    border: 1px solid var(--bg-border-light);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
-    padding: 8px;
-    flex-shrink: 0;
+    box-shadow: var(--shadow-lg);
+    z-index: 101;
+    padding: 4px 0;
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 .recent-searches.show {
@@ -1896,72 +1897,69 @@ input[type="checkbox"] {
 /* 搜索记录项容器 */
 .recent-searches-wrapper {
     display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-/* 搜索记录标题 */
-.recent-searches-title {
-    font-size: 11px;
-    color: var(--text-secondary);
-    display: block;
+    flex-direction: column;
+    gap: 0;
 }
 
 /* 搜索记录项 */
 .recent-search-item {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    padding: 2px 8px;
-    background: var(--bg-tertiary);
-    border-radius: 12px;
+    width: 100%;
+    padding: 8px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
     cursor: pointer;
-    font-size: 12px;
-    color: var(--text-secondary);
-    gap: 4px;
-    transition: all 0.2s;
-    border: 1px solid var(--bg-border-light);
-}
-
-/* 搜索记录文本部分 */
-.recent-search-item span {
-    overflow: hidden;
-    text-overflow: ellipsis; /* 超出显示省略号 */
-    max-width: 90px; /* 添加最大宽度限制 */
-    white-space: nowrap; /* 防止文本换行 */
-    flex: 1;
-    min-width: 0; /* 确保flex子项可以正确收缩 */
+    font-size: 13px;
+    color: var(--text-primary);
+    gap: 8px;
+    transition: background-color 0.2s;
+    box-sizing: border-box;
 }
 
 .recent-search-item:hover {
-    background: var(--bg-tertiary-hover);
-    color: var(--text-primary);
+    background-color: var(--bg-tertiary);
 }
 
+/* 搜索记录文本样式 */
+.recent-search-item span {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: none; /* 移除最大宽度限制 */
+}
+
+/* 搜索记录图标样式 */
 .recent-search-item svg {
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
     color: var(--text-tertiary);
-    flex-shrink: 0; /* 防止图标被压缩 */
+    transition: opacity 0.2s;
 }
 
-/* 搜索记录头部样式 */
-.recent-searches-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
+/* 优化滚动条样式 */
+.recent-searches {
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-scrollbar-thumb) transparent;
 }
 
-.close-recent-searches {
-    width: 24px;
-    height: 24px;
-    padding: 4px;
-    color: var(--text-tertiary);
+.recent-searches::-webkit-scrollbar {
+    width: 4px;
 }
 
-.close-recent-searches:hover {
-    background: var(--bg-tertiary-hover);
-    color: var(--text-secondary);
+.recent-searches::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.recent-searches::-webkit-scrollbar-thumb {
+    background-color: var(--bg-scrollbar-thumb);
+    border-radius: 2px;
+}
+
+.recent-searches::-webkit-scrollbar-thumb:hover {
+    background-color: var(--bg-scrollbar-thumb-hover);
 }
 
 /* 搜索结果相关度样式 */
@@ -2502,14 +2500,13 @@ input[type="checkbox"] {
     background: var(--bg-primary);
     border: 1px solid var(--bg-border-light); /* 调整边框颜色为更柔和的色调 */
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
     transition: all 0.2s ease;
 }
 
 .bookmarks-group:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow-md);
     transform: translateY(-1px);
-    border-color: var(--bg-border-hover); /* 加深边框颜色 */
 }
 
 .group-header {
@@ -2524,7 +2521,7 @@ input[type="checkbox"] {
 }
 
 .group-header:hover {
-    background: var(--bg-fifth);
+    background: var(--bg-tertiary);
 }
 
 .group-title {
@@ -2544,6 +2541,10 @@ input[type="checkbox"] {
     background: var(--action-light);
     padding: 2px 8px;
     border-radius: 12px;
+}
+
+.group-header:hover .group-count {
+    background: var(--action-light-hover);
 }
 
 .group-toggle {
@@ -2755,4 +2756,63 @@ input[type="checkbox"] {
 .error-state .error-message {
     font-size: 0.9rem;
     line-height: 1.5;
+}
+
+#search-results .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    color: var(--text-tertiary);
+}
+
+#search-results .loading-state .loading-spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--text-fourth);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 12px;
+}
+
+#search-results .loading-state .loading-text {
+    font-size: 14px;
+}
+
+/* 搜索结果的空状态 */
+#search-results .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-tertiary);
+}
+
+#search-results .empty-state .empty-icon {
+    margin-bottom: 16px;
+    opacity: 0.6;
+}
+
+#search-results .empty-state .empty-message {
+    max-width: 300px;
+}
+
+#search-results .empty-state .empty-title {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+#search-results .empty-state .empty-detail {
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+#search-results .empty-state .empty-suggestion {
+    font-size: 13px;
+    color: var(--text-tertiary);
 }

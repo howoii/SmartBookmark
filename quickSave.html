@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>快速保存书签</title>
+    <title data-i18n="page_quick_save_title"></title>
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/quickSave.css">
 </head>
@@ -22,33 +22,34 @@
             <div class="page-excerpt"></div>
             <div class="tags-container">
                 <div class="recommended-tags">
-                    <div class="recommended-tags-title">推荐标签：</div>
+                    <div class="recommended-tags-title" data-i18n="ui_label_recommended_tags"></div>
                     <div class="recommended-tags-list"></div>
                 </div>
                 <div id="tags-list" class="tags-list"></div>
                 <div class="tag-input-container">
-                    <input type="text" id="new-tag-input" placeholder="输入标签按回车键添加...">
+                    <input type="text" id="new-tag-input" placeholder="" data-i18n="ui_input_tags">
                 </div>
             </div>
             <div class="dialog-buttons">
                 <div class="left-buttons">
-                    <button id="cancel-tags-btn">取消</button>
-                    <button id="save-tags-btn">保存</button>
+                    <button id="cancel-tags-btn" data-i18n="ui_button_cancel"></button>
+                    <button id="save-tags-btn" data-i18n="ui_button_save"></button>
                 </div>
                 <button id="delete-bookmark-btn" class="danger-button" style="display: none;">
                     <svg viewBox="0 0 24 24" width="16" height="16">
                         <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
                     </svg>
-                    删除
+                    <span data-i18n="action_delete_bookmark"></span>
                 </button>
             </div>
         </div>
     </div>
     <script src="consts.js"></script>
     <script src="common.js"></script>
-    <script src="logger.js"></script>
     <script src="env.js"></script>
+    <script src="logger.js"></script>
     <script src="models.js"></script>
+    <script src="i18n.js"></script>
     <script src="config.js"></script>
     <script src="storageManager.js"></script>
     <script src="settingsManager.js"></script>

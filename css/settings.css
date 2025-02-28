@@ -389,6 +389,10 @@ input:checked + .slider:before {
     background-image: url('../icons/nav-import-export.svg');
 }
 
+.icon-about {
+    background-image: url('../icons/nav-about.svg');
+}
+
 /* API 服务配置样式 */
 .api-service-selector {
     margin: 20px 0;
@@ -649,15 +653,6 @@ input:checked + .slider:before {
     margin: 0 0 0 44px;  /* 左边距等于 logo宽度(32px) + gap(12px) */
 }
 
-.service-status {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    display: flex;
-    gap: 12px;
-    align-items: center;
-}
-
 .status-toggle {
     width: 40px;
     height: 24px;
@@ -733,15 +728,6 @@ input:checked + .slider:before {
     margin: 0;
 }
 
-.close-dialog-btn {
-    background: none;
-    border: none;
-    font-size: 24px;
-    color: var(--text-secondary);
-    cursor: pointer;
-    padding: 0;
-}
-
 .service-config-body {
     padding: 20px;
 }
@@ -799,7 +785,7 @@ input:checked + .slider:before {
 /* 调整服务状态容器的样式 */
 .service-status {
     position: absolute;
-    top: 20px;
+    top: 22px;
     right: 20px;
     display: flex;
     gap: 12px;
@@ -1364,7 +1350,7 @@ select:disabled {
 }
 
 .dialog-footer {
-    padding: 12px 20px;
+    padding: 16px 20px;
     border-top: 1px solid var(--bg-border-light);
     display: flex;
     justify-content: flex-end;
@@ -1400,19 +1386,33 @@ select:disabled {
 }
 
 .close-dialog-btn {
-    background: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
     border: none;
-    font-size: 20px;
+    border-radius: 6px;
+    background: transparent;
     color: var(--text-secondary);
     cursor: pointer;
-    padding: 4px;
-    border-radius: 4px;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
 }
 
 .close-dialog-btn:hover {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
+    background-color: var(--bg-tertiary);
+    color: var(--danger-color);
+}
+
+.close-dialog-btn:active {
+    background-color: var(--bg-tertiary-hover);
+    transform: scale(0.95);
+}
+
+.close-dialog-btn svg {
+    width: 18px;
+    height: 18px;
 }
 
 .filter-config-body {
@@ -1596,14 +1596,6 @@ select:disabled {
     background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23f44336"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>');
 }
 
-.dialog-footer {
-    padding: 12px 20px;
-    border-top: 1px solid var(--bg-border-light);
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-}
-
 .dialog-footer button {
     padding: 6px 14px;
     border-radius: 6px;
@@ -1639,7 +1631,7 @@ select:disabled {
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
-    padding: 4px 8px;
+    padding: 0px 8px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
     min-height: 32px;
@@ -1919,7 +1911,7 @@ input[type="number"].condition-value-input {
 }
 
 /* 开关标签样式 */
-#custom-service-dialog .advanced-settings-group .switch-label {
+.switch-label {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1929,7 +1921,7 @@ input[type="number"].condition-value-input {
 }
 
 /* 开关文本样式 */
-#custom-service-dialog .advanced-settings-group .switch-label .switch-text {
+.switch-label .switch-text {
     order: 1;
     margin-right: 12px;
     font-size: 14px;
@@ -1937,7 +1929,7 @@ input[type="number"].condition-value-input {
 }
 
 /* checkbox 容器样式 */
-#custom-service-dialog .advanced-settings-group .switch-container {
+.switch-container {
     order: 2;
     position: relative;
     width: 36px;
@@ -1946,12 +1938,12 @@ input[type="number"].condition-value-input {
 }
 
 /* 隐藏原始 checkbox */
-#custom-service-dialog .advanced-settings-group .switch-label input[type="checkbox"] {
+.switch-label input[type="checkbox"] {
     display: none;
 }
 
 /* 开关滑块样式 */
-#custom-service-dialog .advanced-settings-group .switch-slider {
+.switch-container .switch-slider {
     position: absolute;
     cursor: pointer;
     top: 0;
@@ -1963,7 +1955,7 @@ input[type="number"].condition-value-input {
     border-radius: 20px;
 }
 
-#custom-service-dialog .advanced-settings-group .switch-slider:before {
+.switch-container .switch-slider:before {
     position: absolute;
     content: "";
     height: 16px;
@@ -1976,12 +1968,20 @@ input[type="number"].condition-value-input {
 }
 
 /* 选中状态样式 */
-#custom-service-dialog .advanced-settings-group input[type="checkbox"]:checked + .switch-slider {
-    background-color: var(--info-color);
+.switch-container input[type="checkbox"]:checked + .switch-slider {
+    background-color: var(--action-color);
 }
 
-#custom-service-dialog .advanced-settings-group input[type="checkbox"]:checked + .switch-slider:before {
+.switch-container input[type="checkbox"]:checked + .switch-slider:before {
     transform: translateX(16px);
+}
+
+.switch-label:hover .switch-container input:checked + .switch-slider {
+    background-color: var(--action-hover);
+}
+
+.switch-label:hover .switch-container .switch-slider {
+    background-color: var(--action-light-hover);
 }
 
 /* 调整表单组间距 */
@@ -2158,6 +2158,10 @@ input[type="number"].condition-value-input {
     font-size: 13px;
     color: var(--text-secondary);
     line-height: 1.5;
+}
+
+.service-config-body input::placeholder {
+    color: var(--text-fourth);
 }
 
 /* 自定义服务对话框特殊样式 */
@@ -2651,6 +2655,7 @@ input[type="number"].condition-value-input {
     min-height: 0;  /* 重要：允许flex子项收缩 */
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
 }
 
 .import-options {
@@ -2894,16 +2899,6 @@ input[type="number"].condition-value-input {
     color: var(--text-primary);
     white-space: nowrap;
 }
-
-.dialog-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    padding: 20px;
-    border-top: 1px solid var(--border-color);
-    flex-shrink: 0;  /* 防止底部按钮区域被压缩 */
-}
-
 /* 加载状态 */
 .loading-spinner {
     display: inline-block;
@@ -3117,7 +3112,7 @@ input[type="number"].condition-value-input {
     background: var(--bg-primary);
 }
 
-#bookmark-select-dialog .dialog-footer .footer-tip {
+.dialog-footer .footer-tip {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -3126,22 +3121,22 @@ input[type="number"].condition-value-input {
     max-width: 60%; /* 限制提示文本的最大宽度 */
 }
 
-#bookmark-select-dialog .dialog-footer .footer-tip .tip-icon {
+.dialog-footer .footer-tip .tip-icon {
     color: var(--warning-text); /* 警告色 */
     flex-shrink: 0;
 }
 
-#bookmark-select-dialog .dialog-footer .footer-tip a {
+.dialog-footer .footer-tip a {
     color: var(--text-link);
     text-decoration: none;
     white-space: nowrap;
 }
 
-#bookmark-select-dialog .dialog-footer .footer-tip a:hover {
+.dialog-footer .footer-tip a:hover {
     text-decoration: underline;
 }
 
-#bookmark-select-dialog .dialog-footer .footer-actions {
+.dialog-footer .footer-actions {
     display: flex;
     gap: 12px;
 }
@@ -3388,7 +3383,6 @@ input[type="number"].condition-value-input {
 }
 
 .appearance-settings-card h3 {
-    font-size: 16px;
     font-weight: 500;
     margin: 0 0 16px 0;
     color: var(--text-primary);
@@ -3444,4 +3438,498 @@ input[type="number"].condition-value-input {
     font-size: 14px;
     color: var(--text-primary);
     text-align: center;
+}
+
+/* 导入导出对话框样式 */
+#export-dialog .dialog-content,
+#import-dialog .dialog-content {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+#export-dialog .dialog-footer,
+#import-dialog .dialog-footer {
+    /* 保持原有样式 */
+    display: flex;
+    justify-content: space-between; /* 改为space-between以便在两端分布内容 */
+    align-items: center; /* 垂直居中对齐 */
+    gap: 12px;
+    padding: 16px 20px;
+    border-top: 1px solid var(--bg-border-light);
+    flex-shrink: 0;
+    background: var(--bg-primary);
+}
+
+/* 优化内容区域的滚动条样式 */
+.dialog-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dialog-body::-webkit-scrollbar-track {
+    background: var(--bg-scrollbar-track);
+    border-radius: 3px;
+}
+
+.dialog-body::-webkit-scrollbar-thumb {
+    background: var(--bg-scrollbar-thumb);
+    border-radius: 3px;
+}
+
+.dialog-body::-webkit-scrollbar-thumb:hover {
+    background: var(--bg-scrollbar-thumb-hover);
+}
+
+.export-options-container,
+.import-options-container {
+    margin: 0 0 16px;
+    padding: 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;  /* 防止选项区域被压缩 */
+}
+
+.import-options-container {
+    display: none;
+}
+
+.import-options-container.show {
+    display: block;
+}
+
+.export-options-container h4,
+.import-options-container h4 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+}
+
+.export-options-container .checkbox-container,
+.import-options-container .checkbox-container {
+    display: flex;
+    align-items: flex-start;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+
+.export-options-container .checkbox-container:hover,
+.import-options-container .checkbox-container:hover {
+    background-color: var(--primary-hover-bg);
+    border-color: var(--primary-color);
+}
+
+.export-options-container .checkbox-container.disabled:hover,
+.import-options-container .checkbox-container.disabled:hover {
+    background-color: var(--bg-fourth);
+    border-color: var(--bg-border);
+    cursor: not-allowed;
+}
+
+.export-options-container .checkbox-container input[type="checkbox"],
+.import-options-container .checkbox-container input[type="checkbox"] {
+    position: relative;
+    width: 16px;
+    height: 16px;
+    margin: 2px 0 0;
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.export-options-container .checkbox-container input[type="checkbox"]:checked,
+.import-options-container .checkbox-container input[type="checkbox"]:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.export-options-container .checkbox-container input[type="checkbox"]:checked::after,
+.import-options-container .checkbox-container input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 0px;
+    width: 4px;
+    height: 8px;
+    border: solid var(--text-fifth);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.export-options-container .checkbox-container input[type="checkbox"]:focus,
+.import-options-container .checkbox-container input[type="checkbox"]:focus {
+    outline: none;
+    box-shadow: var(--shadow-xs);
+}
+
+.import-file-section {
+    margin-bottom: 12px;
+}
+
+.option-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-left: 8px;
+    flex: 1;
+}
+
+.option-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.option-desc,
+.option-count {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.import-mode {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+.import-mode h4 {
+    margin-bottom: 12px;
+}
+
+.radio-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.radio-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border-color);
+}
+
+.radio-container:hover {
+    background-color: var(--primary-hover-bg);
+    border-color: var(--primary-color);
+}
+
+.radio-container input[type="radio"]:checked + .radio-mark + .option-info {
+    color: var(--primary-color);
+}
+
+.radio-mark {
+    position: relative;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    margin-top: 2px;
+    flex-shrink: 0;
+    transition: border-color 0.2s ease;
+}
+
+input[type="radio"]:checked + .radio-mark {
+    border-color: var(--primary-color);
+}
+
+input[type="radio"]:checked + .radio-mark::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: background-color 0.2s ease;
+}
+
+/* 优化文件拖放区域 */
+.file-drop-zone {
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    padding: 32px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+/* 添加文件已选择状态的样式 */
+.file-drop-zone.file-selected {
+    padding: 16px;
+    border-style: solid;
+    border-color: var(--primary-color);
+    background-color: var(--bg-secondary);
+}
+
+.file-drop-zone.file-selected .drop-zone-content {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.file-drop-zone.file-selected .drop-zone-content svg {
+    width: 24px;
+    height: 24px;
+    color: var(--primary-color);
+}
+
+.file-drop-zone.file-selected .drop-text {
+    margin: 0;
+    font-weight: 500;
+}
+
+.file-drop-zone.drag-over {
+    border-color: var(--action-color);
+    background-color: var(--action-hover);
+}
+
+.drop-zone-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.2s ease;
+}
+
+.drop-zone-content svg {
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+}
+
+.drop-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0;
+    transition: all 0.2s ease;
+}
+
+.drop-text .drop-text-tip {
+    display: block;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-top: 4px;
+}
+
+.select-file-btn {
+    min-width: 120px;
+}
+
+.export-summary,
+.import-summary {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+#export-count,
+#import-count {
+    display: inline-block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary-color);
+    padding: 2px;
+    text-align: center;
+}
+
+.primary-btn .loading-spinner {
+    display: none;
+    width: 12px;
+    height: 12px;
+    margin: 0;
+    border-top-color: var(--action-color);
+    flex-shrink: 0;
+}
+
+.primary-btn .loading-spinner.show {
+    display: inline-flex;
+}
+
+.recommend-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 8px 0px 0px 44px;
+}
+
+.recommend-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    line-height: 16px;
+    background-color: var(--tag-recommended-bg);
+    color: var(--tag-recommended-text);
+    border: 1px solid var(--tag-recommended-border);
+}
+
+/* About页面容器 */
+.about-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* About页面头部 */
+.about-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 40px;
+    padding: 20px;
+    background: var(--bg-primary);
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+}
+
+.about-logo {
+    width: 80px;
+    height: 80px;
+    margin-right: 24px;
+    flex-shrink: 0;
+}
+
+.about-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.about-logo img:hover {
+    transform: scale(1.1);
+}
+
+.about-info {
+    flex-grow: 1;
+}
+
+.about-info h1 {
+    margin: 0 0 8px 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.version-info {
+    display: flex;
+    gap: 16px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* About页面各个部分 */
+.about-section {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-md);
+}
+
+.about-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 24px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.about-section p {
+    margin: 0;
+    line-height: 1.8;
+    font-size: 15px;
+    color: var(--text-secondary);
+    letter-spacing: 0.3px;
+}
+
+/* 项目链接 */
+.project-links {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.project-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--bg-primary);
+    border-radius: 20px;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.project-link:hover {
+    background: var(--primary-color);
+    color: var(--text-fifth);
+    transform: translateY(-2px);
+}
+
+.project-link svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* 响应式布局 */
+@media (max-width: 768px) {
+    .about-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 16px;
+    }
+
+    .about-logo {
+        margin: 0 0 16px 0;
+    }
+
+    .version-info {
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .project-links {
+        justify-content: center;
+    }
+}
+
+/* 动画效果 */
+.about-section {
+    animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

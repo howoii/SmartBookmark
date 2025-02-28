@@ -148,14 +148,6 @@
             <div class="search-content">
                 <!-- 最近搜索记录 -->
                 <div id="recent-searches" class="recent-searches">
-                    <div class="recent-searches-header">
-                        <span class="recent-searches-title">最近搜索</span>
-                        <button class="close-recent-searches icon-button">
-                            <svg viewBox="0 0 24 24" width="16" height="16">
-                                <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
-                            </svg>
-                        </button>
-                    </div>
                     <div class="recent-searches-wrapper">
                         <!-- 搜索记录项将被动态插入到这里 -->
                     </div>
@@ -211,12 +203,11 @@
             </div>
             <div class="settings-sections">
                 <section class="settings-section">
-                    <h4>显示</h4>
+                    <h4>通用</h4>
                     <div class="settings-group">
                         <label class="settings-item toggle-switch">
                             <div class="settings-text">
-                                <span>显示系统书签</span>
-                                <p class="settings-description">在列表中显示 Chrome 浏览器的书签，方便统一管理和搜索</p>
+                                <span data-tooltip="在侧边栏列表中显示浏览器书签">显示浏览器书签</span>
                             </div>
                             <div class="switch-container">  
                                 <input type="checkbox" id="show-chrome-bookmarks">
@@ -225,8 +216,7 @@
                         </label>
                         <label class="settings-item toggle-switch" id="auto-focus-search-container">
                             <div class="settings-text">
-                                <span>打开时自动聚焦搜索框</span>
-                                <p class="settings-description">打开扩展时自动将光标定位到搜索框，方便快速搜索</p>
+                                <span data-tooltip="打开扩展时自动将光标定位到搜索框">打开时自动聚焦搜索框</span>
                             </div>
                             <div class="switch-container">
                                 <input type="checkbox" id="auto-focus-search">
@@ -235,8 +225,7 @@
                         </label>
                         <label class="settings-item toggle-switch">
                             <div class="settings-text">
-                                <span>保存时确认标签</span>
-                                <p class="settings-description">收藏页面时打开标签编辑窗口，可以修改标题和添加标签</p>
+                                <span data-tooltip="收藏书签时打开编辑窗口，可以修改标题和标签">启用书签编辑</span>
                             </div>
                             <div class="switch-container">
                                 <input type="checkbox" id="confirm-tags">
@@ -251,8 +240,7 @@
                     <div class="settings-group">
                         <label class="settings-item toggle-switch">
                             <div class="settings-text">
-                                <span>自动检测隐私页面</span>
-                                <p class="settings-description">自动识别隐私相关页面（如银行、邮箱等），并自动启用隐私模式</p>
+                                <span data-tooltip="自动识别隐私相关页面（如银行、邮箱等），并自动启用隐私模式">自动检测隐私页面</span>
                             </div>
                             <div class="switch-container">
                                 <input type="checkbox" id="auto-privacy-mode">
@@ -261,8 +249,7 @@
                         </label>
                         <label class="settings-item toggle-switch" id="manual-privacy-container">
                             <div class="settings-text">
-                                <span>启用隐私模式</span>
-                                <p class="settings-description">手动开启隐私模式，在此模式下不会记录页面内容和预览</p>
+                                <span data-tooltip="手动开启隐私模式，开启后不会访问页面内容">启用隐私模式</span>
                             </div>
                             <div class="switch-container">
                                 <input type="checkbox" id="manual-privacy-mode">
@@ -333,9 +320,10 @@
 
     <script src="consts.js"></script>
     <script src="common.js"></script>
-    <script src="logger.js"></script>
     <script src="env.js"></script>
+    <script src="logger.js"></script>
     <script src="models.js"></script>
+    <script src="i18n.js"></script>
     <script src="config.js"></script>
     <script src="storageManager.js"></script>
     <script src="settingsManager.js"></script>

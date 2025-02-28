@@ -20,6 +20,10 @@ class BaseSettingsTab {
             this.section.style.display = 'none';
         }
     }
+
+    cleanup() {
+        // 清理工作（如果需要）
+    }
 }
 
 function showToast(message, error = false) {
@@ -50,6 +54,7 @@ class OverviewSettingsTab extends BaseSettingsTab {
         this.quickSearchSitesDisplay = document.getElementById('quick-search-sites-display');
         this.sitesDisplayCount = document.getElementById('sites-display-count');
         this.sitesDisplayCountContainer = document.getElementById('sites-display-count-container');
+        this.showSearchHistory = document.getElementById('show-search-history');
 
         // 添加快捷键相关元素
         this.quickSaveShortcut = document.getElementById('quickSave-shortcut');
@@ -67,6 +72,7 @@ class OverviewSettingsTab extends BaseSettingsTab {
         this.handleOmniboxSearchLimitChange = this.handleOmniboxSearchLimitChange.bind(this);
         this.handleSitesDisplayChange = this.handleSitesDisplayChange.bind(this);
         this.handleSitesDisplayCountChange = this.handleSitesDisplayCountChange.bind(this);
+        this.handleSearchHistoryChange = this.handleSearchHistoryChange.bind(this);
     }
 
     async initialize() {
@@ -79,13 +85,11 @@ class OverviewSettingsTab extends BaseSettingsTab {
     }
 
     async initializeSearchSettings() {
+        // 获取当前设置
         const settings = await SettingsManager.getAll();
-        if (settings?.search?.maxResults) {
-            this.maxSearchResults.value = settings.search.maxResults;
-        }
-        if (settings?.search?.omniboxSearchLimit) {
-            this.omniboxSearchLimit.value = settings.search.omniboxSearchLimit;
-        }
+        this.maxSearchResults.value = settings.search.maxResults || 50;
+        this.omniboxSearchLimit.value = settings.search.omniboxSearchLimit || 5;
+        this.showSearchHistory.checked = settings.search.showSearchHistory;
         const sitesDisplay = settings.search.sitesDisplay || 'pinned';
         this.quickSearchSitesDisplay.value = sitesDisplay;
         this.sitesDisplayCount.value = settings.search.sitesDisplayCount || 10;
@@ -140,6 +144,7 @@ class OverviewSettingsTab extends BaseSettingsTab {
     setupEventListeners() {
         this.maxSearchResults.addEventListener('change', this.handleMaxSearchResultsChange);
         this.omniboxSearchLimit.addEventListener('change', this.handleOmniboxSearchLimitChange);
+        this.showSearchHistory.addEventListener('change', this.handleSearchHistoryChange);
         this.editShortcutsBtn.addEventListener('click', () => this.handleEditShortcuts());
 
         // 添加网站显示设置的事件监听
@@ -325,6 +330,21 @@ class OverviewSettingsTab extends BaseSettingsTab {
             showToast('设置已保存');
         } catch (error) {
             logger.error('保存显示数量设置失败:', error);
+            showToast('保存设置失败: ' + error.message, true);
+        }
+    }
+
+    async handleSearchHistoryChange() {
+        try {
+            const showSearchHistory = this.showSearchHistory.checked;
+            await SettingsManager.update({
+                search: {
+                    showSearchHistory: showSearchHistory
+                }
+            });
+            showToast('设置已保存');
+        } catch (error) {
+            logger.error('保存搜索历史显示设置失败:', error);
             showToast('保存设置失败: ' + error.message, true);
         }
     }
@@ -689,6 +709,19 @@ class ServicesSettingsTab extends BaseSettingsTab {
                     </svg>
                 </button>
             ` : ''}`;
+
+        // 添加推荐标签
+        if (service.recommendTags && service.recommendTags.length > 0) {
+            const tagsContainer = document.createElement('div');
+            tagsContainer.className = 'recommend-tags';
+            service.recommendTags.forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'recommend-tag';
+                tagElement.textContent = tag;
+                tagsContainer.appendChild(tagElement);
+            });
+            card.appendChild(tagsContainer);
+        }
         
         card.querySelector('.delete-service-btn')?.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -1372,6 +1405,7 @@ class FilterSettingsTab extends BaseSettingsTab {
             { value: 'url', label: '链接', isNumber: false },
             { value: 'tag', label: '标签', isNumber: false },
             { value: 'create', label: '创建时间', isNumber: true, unit: '天' },
+            { value: 'lastUse', label: '上次使用', isNumber: true, unit: '天' },
             { value: 'use', label: '使用次数', isNumber: true, unit: '次' }
         ];
         
@@ -1798,6 +1832,7 @@ class FilterSettingsTab extends BaseSettingsTab {
             url: '链接',
             tag: '标签',
             create: '创建时间',
+            lastUse: '上次使用时间',
             use: '使用次数'
         }[condition.field];
         
@@ -2734,19 +2769,21 @@ class ImportExportSettingsTab extends BaseSettingsTab {
     }
 
     async handleExportLocal() {
-        // todo 导出本地书签
-        showToast('功能暂未实现, 敬请期待', false);
+        importExportManager.showExportDialog();
     }
 
     async handleImportLocal() {
-        // todo 导入本地书签
-        showToast('功能暂未实现, 敬请期待', false);
+        importExportManager.showImportDialog();
     }
 
     handleEscKey(e) {
-        if (e.key === 'Escape' && this.bookmarkSelectDialog.classList.contains('show')) {
+        if (this.bookmarkSelectDialog.classList.contains('show')) {
             this.bookmarkSelectDialog.classList.remove('show');
         }
+        if (this.importProgressDialog.classList.contains('show')) {
+            this.importProgressDialog.classList.remove('show');
+        }
+        importExportManager.handleEscKey(e);
     }
 
     cleanup() {
@@ -2770,6 +2807,30 @@ class ImportExportSettingsTab extends BaseSettingsTab {
     }
 }
 
+class AboutSettingsTab extends BaseSettingsTab {
+    constructor() {
+        super();
+        this.section = document.getElementById('about-section');
+    }
+
+    async initialize() {
+        await this.updateVersionInfo();
+    }
+
+    async updateVersionInfo() {
+        // 获取manifest.json中的版本号
+        const manifest = chrome.runtime.getManifest();
+        const versionElement = document.getElementById('current-version');
+        if (versionElement) {
+            versionElement.textContent = manifest.version;
+        }
+    }
+
+    cleanup() {
+        // 清理工作（如果需要）
+    }
+}
+
 class SettingsUI {
     constructor() {
         this.navItems = document.querySelectorAll('.nav-item');
@@ -2781,6 +2842,7 @@ class SettingsUI {
             filters: new FilterSettingsTab(),
             'import-export': new ImportExportSettingsTab(),
             privacy: new PrivacySettingsTab(),
+            about: new AboutSettingsTab() // 添加About页签
         };
     }
 

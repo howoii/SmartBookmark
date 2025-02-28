@@ -33,21 +33,24 @@ class QuickSaveManager {
             // 获取当前标签页信息
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
             if (!tab) {
-                throw new Error('无法获取当前标签页信息');
+                throw new Error(i18n.M('msg_error_quary_tab'));
             }
 
             this.currentTab = tab;
 
-            // 检查是否是不可标记的URL
-            if (isNonMarkableUrl(tab.url)) {
-                this.showStatus('基于隐私安全保护，不支持保存此页面', 'error', true);
-                this.hideMainContent();
-                return;
-            }
-
             // 检查页面是否加载完成
             if (tab.status !== 'complete') {
-                this.showStatus('页面正在加载中，请等待加载完成后再试', 'warning', true);
+                logger.debug('页面正在加载中，不访问页面内容', tab);
+                if (!tab.title || !tab.url) {
+                    this.showStatus(i18n.M('msg_status_page_loading'), 'warning', true);
+                    this.hideMainContent();
+                    return;
+                }
+            }
+
+            // 检查是否是不可标记的URL
+            if (isNonMarkableUrl(tab.url)) {
+                this.showStatus(i18n.M('msg_status_page_unsupported'), 'error', true);
                 this.hideMainContent();
                 return;
             }
@@ -65,7 +68,7 @@ class QuickSaveManager {
             this.setupEventListeners();
         } catch (error) {
             logger.error('初始化失败:', error);
-            this.showStatus('初始化失败: ' + error.message, 'error', true);
+            this.showStatus(i18n.M('msg_error_init_failed', [error.message]), 'error', true);
             this.hideMainContent();
         }
     }
@@ -89,7 +92,7 @@ class QuickSaveManager {
         let html = message;
         if (showClose) {
             html += `
-                <button class="close-status" title="关闭">
+                <button class="close-status" data-i18n-title="ui_button_close">
                     <svg viewBox="0 0 24 24" width="16" height="16">
                         <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
                     </svg>
@@ -97,6 +100,7 @@ class QuickSaveManager {
             `;
         }
         status.innerHTML = html;
+        i18n.updateNodeText(status);
 
         // 如果不显示关闭按钮，3秒后自动隐藏
         if (!showClose) {
@@ -159,9 +163,10 @@ class QuickSaveManager {
         const { tagsList } = this.elements;
         tagsList.innerHTML = `
             <div class="loading-spinner"></div>
-            <span>正在生成标签...</span>
+            <span data-i18n="ui_label_tags_loading">正在生成标签...</span>
         `;
         tagsList.classList.add('loading');
+        i18n.updateNodeText(tagsList);
     }
 
     hideTagsLoading() {
@@ -172,13 +177,18 @@ class QuickSaveManager {
 
     async setupPageContentAndTags() {
         try {
-            // 使用 getPageContent 获取页面内容
-            this.pageContent = await getPageContent(this.currentTab);
-            logger.debug("获取页面内容", {
-                tab: this.currentTab,
-                pageContent: this.pageContent,
-                isEditMode: this.isEditMode
-            });
+            if (this.currentTab.status !== 'complete') {
+                this.pageContent = {};  
+                logger.debug('页面正在加载中，不访问页面内容', this.currentTab);
+            } else {
+                // 使用 getPageContent 获取页面内容
+                this.pageContent = await getPageContent(this.currentTab);
+                logger.debug("获取页面内容", {
+                    tab: this.currentTab,
+                    pageContent: this.pageContent,
+                    isEditMode: this.isEditMode
+                });
+            }
             
             // 设置页面摘要
             const excerpt = this.pageContent.excerpt?.trim();
@@ -193,6 +203,7 @@ class QuickSaveManager {
             }
 
             // 如果不是编辑模式，生成并显示标签
+            const unclassifiedTag = i18n.M('ui_tag_unclassified');
             if (!this.isEditMode) {
                 this.showTagsLoading();
                 try {
@@ -212,20 +223,20 @@ class QuickSaveManager {
                             await LocalStorageMgr.setTags(this.currentTab.url, tags);
                             logger.debug('缓存标签:', tags);
                         } else {
-                            this.renderTags(['未分类']);
+                            this.renderTags([unclassifiedTag]);
                         }
                     }
                 } catch (error) {
                     logger.error('生成标签失败:', error);
                     this.hideTagsLoading();
-                    this.renderTags(['未分类']);
+                    this.renderTags([unclassifiedTag]);
                 }
             }
         } catch (error) {
             logger.error('获取页面内容失败:', error);
             if (!this.isEditMode) {
                 this.hideTagsLoading();
-                this.renderTags(['未分类']);
+                this.renderTags([unclassifiedTag]);
             }
         }
     }
@@ -345,14 +356,14 @@ class QuickSaveManager {
         saveTagsBtn.disabled = true;
         
         try {
-            this.showStatus('正在保存书签...', 'success');
+            this.showStatus(i18n.M('msg_status_saving_bookmark'), 'success');
             
             const title = this.elements.pageTitle.textContent.trim();
 
             // 生成嵌入向量
             let embedding = null;
             if (!this.isEditMode) {
-                this.showStatus('正在生成向量...', 'success');
+                this.showStatus(i18n.M('msg_status_generating_embedding'), 'success');
                 embedding = await getEmbedding(makeEmbeddingText(this.pageContent, this.currentTab, tags));
             }
 
@@ -379,7 +390,7 @@ class QuickSaveManager {
                 after: pageInfo
             });
 
-            this.showStatus('正在保存到本地...', 'success');
+            this.showStatus(i18n.M('msg_status_saving_bookmark'), 'success');
             await LocalStorageMgr.setBookmark(this.currentTab.url, pageInfo);
             await recordBookmarkChange(pageInfo, false, true);
             await updateExtensionIcon(this.currentTab.id, true);
@@ -389,11 +400,11 @@ class QuickSaveManager {
                 source: 'quickSave'
             });
             
-            this.showStatus('保存成功', 'success');
+            this.showStatus(i18n.M('msg_status_save_success'), 'success');
             setTimeout(() => window.close(), 500);
         } catch (error) {
             logger.error('保存书签失败:', error);
-            this.showStatus('保存失败: ' + error.message, 'error');
+            this.showStatus(i18n.M('msg_error_save_failed', [error.message]), 'error');
             saveTagsBtn.disabled = false;
         }
     }
@@ -401,7 +412,7 @@ class QuickSaveManager {
     async handleDelete() {
         if (!this.currentTab) return;
         
-        const confirmation = confirm('确定要删除此书签吗？');
+        const confirmation = confirm(i18n.M('msg_confirm_delete_bookmark'));
         if (confirmation) {
             try {
                 const bookmark = await LocalStorageMgr.getBookmark(this.currentTab.url, true);

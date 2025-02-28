@@ -1,3 +1,11 @@
+const LOG_LEVELS = {
+    TRACE: 0,
+    DEBUG: 1,
+    INFO: 2,
+    WARN: 3,
+    ERROR: 4
+};
+
 const ENV = {
     // 通过修改这个值来切换环境
     current: 'development', // 或 'production'

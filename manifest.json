@@ -1,8 +1,9 @@
 {
     "manifest_version": 3,
-    "name": "Smart Bookmark",
-    "version": "1.1.7",
-    "description": "A smart bookmark manager with auto-tagging and natural language search.",
+    "name": "__MSG_extName__",
+    "version": "1.1.8",
+    "description": "__MSG_extDescription__",
+    "default_locale": "zh_CN",
     "icons": {
         "16": "icons/saved_16.png",
         "32": "icons/saved_32.png",
@@ -59,14 +60,14 @@
                 "default": "Ctrl+K",
                 "mac": "Command+K"
             },
-            "description": "搜索书签"
+            "description": "__MSG_cmd_quick_search__"
         },
         "quick-save": {
             "suggested_key": {
                 "default": "Ctrl+B",
                 "mac": "Command+B"
             },
-            "description": "添加书签"
+            "description": "__MSG_cmd_quick_save__"
         }
     },
     "externally_connectable": {

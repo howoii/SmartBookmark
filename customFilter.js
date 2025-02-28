@@ -129,6 +129,65 @@ class CustomFilter {
         return rules;
     }
 
+    async getExportData() {
+        if (!this.initialized) {
+            await this.init();
+        }
+        return {
+            rules: this.rules || [],
+            orderedIds: this.orderedIds || []
+        };
+    }
+
+    async importFilters(filters, overwrite = false) {
+        try {
+            // 确保初始化完成
+            if (!this.initialized) {
+                await this.init();
+            }
+    
+            // 验证导入的数据格式
+            if (!Array.isArray(filters.rules) || !Array.isArray(filters.orderedIds)) {
+                logger.error('导入的筛选规则格式无效');
+                return;
+            }
+    
+            const newRules = filters.rules.filter(rule => {
+                // 验证规则格式
+                if (!rule.id || !rule.name || !Array.isArray(rule.conditions)) {
+                    logger.warn(`跳过无效的规则: ${rule}`);
+                    return false;
+                }
+                return true;
+            });
+            // 根据模式处理规则导入
+            if (!overwrite) {
+                // 合并模式：保留现有规则，添加新规则
+                const existingIds = new Set(this.rules.map(rule => rule.id));
+                const filteredRules = newRules.filter(rule => {
+                    return !existingIds.has(rule.id);
+                });
+                
+                this.rules = [...this.rules, ...filteredRules];
+                this.orderedIds = filters.orderedIds || [];
+            } else {
+                // 覆盖模式：完全替换现有规则
+                this.rules = newRules;
+                this.orderedIds = filters.orderedIds || [];
+            }
+    
+            // 保存更新
+            await chrome.storage.sync.set({
+                [this.STORAGE_KEY]: this.rules,
+                [this.STORAGE_KEY_ORDER]: this.orderedIds
+            });
+    
+        } catch (error) {
+            logger.error('导入筛选规则失败:', error);
+            throw error;
+        }
+    }
+
     // 根据规则筛选书签
     async filterBookmarks(bookmarks, rule) {
         if (!rule) return bookmarks;
@@ -160,6 +219,11 @@ class CustomFilter {
             case 'create':
                 const createDays = this.getDaysDifference(new Date(bookmark.savedAt));
                 return this.evaluateNumberCondition(createDays, operator, value);
+                
+            case 'lastUse':
+                const lastUse = bookmark.lastUsed ? new Date(bookmark.lastUsed) : new Date(bookmark.savedAt);
+                const lastUseDays = this.getDaysDifference(lastUse);
+                return this.evaluateNumberCondition(lastUseDays, operator, value);
                 
             case 'use':
                 return this.evaluateNumberCondition(bookmark.useCount || 0, operator, value);

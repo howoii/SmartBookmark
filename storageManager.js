@@ -59,6 +59,11 @@ class LocalStorageMgr {
         return result[key];
     }
 
+    static async batchGet(...keys) {
+        const result = await chrome.storage.local.get(keys);
+        return result;
+    }
+
     static async set(key, value) {
         await this.setObject({ [key]: value })
     }
@@ -71,19 +76,32 @@ class LocalStorageMgr {
         await chrome.storage.local.remove(keys);
     }
 
+    static async getAllKeys() {
+        try {
+            // 优先使用新版API（Chrome 130+）
+            if (chrome.storage.local.getKeys) {
+                logger.debug('使用新版API获取所有键名');
+                return await chrome.storage.local.getKeys();
+            }
+            logger.debug('使用旧版API获取所有键名');
+            const allData = await chrome.storage.local.get(null);
+            return Object.keys(allData);
+        } catch (error) {
+            logger.error('获取所有键名失败:', error);
+            return [];
+        }
+    }
+
     static async getKeysByPrefix(prefix) {
-        const allData = await chrome.storage.local.get(null);
-        return Object.entries(allData)
-            .filter(([key]) => key.startsWith(prefix))
-            .reduce((obj, [key, value]) => {
-                obj[key] = value;
-                return obj;
-            }, {});
+        const allKeys = await this.getAllKeys();
+        const keys = allKeys.filter(key => key.startsWith(prefix));
+        const allData = await chrome.storage.local.get(keys);
+        return allData;
     }
 
     static async removeKeysByPrefix(prefix) {
-        const allData = await chrome.storage.local.get(null);
-        const keysToRemove = Object.keys(allData).filter(key => key.startsWith(prefix));
+        const allKeys = await this.getAllKeys();
+        const keysToRemove = allKeys.filter(key => key.startsWith(prefix));
         if (keysToRemove.length > 0) {
             await chrome.storage.local.remove(keysToRemove);
         }
@@ -104,6 +122,11 @@ class LocalStorageMgr {
         logger.debug('书签缓存未命中', Date.now()/1000);
         this._bookmarksCache = bookmarks;
         return bookmarks;
+    }
+
+    static async getBookmarksList() {
+        const bookmarks = await this.getBookmarks();
+        return Object.values(bookmarks);
     }
 
     static async getBookmark(url, withoutCache = false) {

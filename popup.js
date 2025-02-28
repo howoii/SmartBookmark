@@ -712,11 +712,6 @@ class BookmarkManager {
                     return;
                 }
 
-                if (tab.status !== 'complete') {
-                    updateStatus('页面正在加载中，请等待加载完成后再试', true);
-                    return;
-                }
-
                 await this.processAndShowTags(tab);
             } else {
                 updateStatus('基于隐私安全保护，不支持保存此页面', false);
@@ -744,8 +739,18 @@ class BookmarkManager {
     }
 
     async processAndShowTags(tab) {
-        this.pageContent = await getPageContent(tab);
-        logger.debug('pageContent:', this.pageContent);
+        if (tab.status !== 'complete') {
+            if (tab.title && tab.url) {
+                this.pageContent = {};
+                logger.debug('页面正在加载中，不访问页面内容', tab);
+            } else {
+                updateStatus('页面正在加载中，请等待加载完成后再试', true);
+                return;
+            }
+        } else {
+            this.pageContent = await getPageContent(tab);
+            logger.debug('获取页面内容:', this.pageContent);
+        }
 
         // 检查是否有缓存的标签
         if (this.tagCache.url === tab.url && this.tagCache.tags.length > 0) {
@@ -949,10 +954,28 @@ class BookmarkManager {
     }
 }
 
-function displaySearchResults(results) {
+function displaySearchResults(results, query) {
     const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = '';
-    const searchInput = document.getElementById('search-input').value.toLowerCase().trim();
+
+    // 如果没有搜索结果，显示空状态
+    if (results.length === 0) {
+        resultsContainer.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <svg viewBox="0 0 24 24" width="48" height="48">
+                        <path fill="currentColor" d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" />
+                    </svg>
+                </div>
+                <div class="empty-message">
+                    <div class="empty-title">未找到相关书签</div>
+                    <div class="empty-detail">没有找到与"${query}"相关的书签</div>
+                    <div class="empty-suggestion">建议尝试其他关键词</div>
+                </div>
+            </div>
+        `;
+        return;
+    }
 
     // 将结果处理包装在异步函数中
     const createResultElement = async (result) => {
@@ -966,8 +989,8 @@ function displaySearchResults(results) {
 
         // 高亮显示匹配的文本
         const highlightText = (text) => {
-            if (!text || !searchInput) return text;
-            const regex = new RegExp(`(${searchInput})`, 'gi');
+            if (!text || !query) return text;
+            const regex = new RegExp(`(${query})`, 'gi');
             return text.replace(regex, '<mark>$1</mark>');
         };
 
@@ -1067,14 +1090,6 @@ function displaySearchResults(results) {
                 if (result.source === BookmarkSource.EXTENSION) {
                     await updateBookmarkUsage(result.url);
                 }
-                // 如果是按住 Ctrl 键点击或中键点击，使用默认行为（在新标签页打开）
-                if (e.ctrlKey || e.metaKey || e.button === 1) {
-                    return; // 不阻止默认行为，让浏览器处理
-                }
-                
-                // 普通点击，在当前标签页打开
-                e.preventDefault();
-                chrome.tabs.update({ url: result.url });
             }
         });
 
@@ -1116,13 +1131,14 @@ async function deleteBookmark(bookmark) {
             // 如果在搜索模式，更新搜索结果
             const searchInput = document.getElementById('search-input');
             if (searchInput.value) {
+                const query = searchInput.value.trim().toLowerCase();
                 const includeChromeBookmarks = await SettingsManager.get('display.showChromeBookmarks');
-                const results = await searchManager.search(searchInput.value, {
+                const results = await searchManager.search(query, {
                     debounce: false,
                     includeUrl: true,
                     includeChromeBookmarks: includeChromeBookmarks
                 });
-                displaySearchResults(results);
+                displaySearchResults(results, query);
             }
             updateStatus('书签已成功删除', false);
         }
@@ -1255,18 +1271,13 @@ function openSearching(skipAnimation = false) {
         requestAnimationFrame(() => {
             toolbar.classList.remove('no-transition');
         });
+        renderSearchHistory();
     } else {
         toolbar.classList.add('searching');
         setTimeout(() => {
             searchInput.focus();
         }, 300);
     }
-    // 渲染搜索历史
-    renderSearchHistory().then(() => {
-        logger.debug('搜索历史渲染完成');
-    }).catch(error => {
-        logger.error('搜索历史渲染失败:', error);
-    });
 }
 
 // 关闭搜索框
@@ -1281,6 +1292,10 @@ function closeSearching() {
     const searchResults = document.getElementById('search-results');
     if (searchResults) {
         searchResults.innerHTML = '';
+    }
+    const recentSearches = document.getElementById('recent-searches');
+    if (recentSearches) {
+        recentSearches.classList.remove('show');
     }
 }
 
@@ -1665,13 +1680,6 @@ class BookmarkRenderer {
                     // 更新使用频率
                     await updateBookmarkUsage(bookmark.url);
                 }
-                // 根据点击方式决定打开方式
-                if (e.ctrlKey || e.metaKey || e.button === 1) {
-                    return;
-                }
-
-                e.preventDefault(); // 阻止默认的新标签页打开
-                chrome.tabs.update({ url: bookmark.url });
             }
         });
     }
@@ -2177,20 +2185,24 @@ class SyncButtonManager {
     }   
 }
 
-// 在文件开头添加变量来跟踪搜索记录的显示状态
-let shouldShowRecentSearches = true;
-
 async function handleSearch() {
     const searchInput = document.getElementById('search-input');
+    const searchResults = document.getElementById('search-results');
     const query = searchInput.value.trim().toLowerCase();
     
     if (!query) {
-        document.getElementById('search-results').innerHTML = '';
+        searchResults.innerHTML = '';
         return;
     }
 
     try {
-        StatusManager.startOperation('正在搜索');
+        // 显示加载状态
+        searchResults.innerHTML = `
+            <div class="loading-state">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">正在搜索...</div>
+            </div>
+        `;
         
         const includeChromeBookmarks = await SettingsManager.get('display.showChromeBookmarks');
         const results = await searchManager.search(query, {
@@ -2198,26 +2210,38 @@ async function handleSearch() {
             includeUrl: true,
             includeChromeBookmarks: includeChromeBookmarks
         });
-        
-        displaySearchResults(results);
-        await renderSearchHistory();
-        
-        StatusManager.endOperation('搜索完成');
+        displaySearchResults(results, query);
     } catch (error) {
         logger.error('搜索失败:', error);
         StatusManager.endOperation('搜索失败: ' + error.message, true);
     }
 }
 
-async function renderSearchHistory() {
+async function renderSearchHistory(query) {
     const container = document.getElementById('recent-searches');
-    const wrapper = container.querySelector('.recent-searches-wrapper');
-    const history = await searchManager.searchHistoryManager.getHistory();
-    
-    // 如果历史记录为空或者用户已关闭搜索记录，则不显示
-    if (history.length === 0 || !shouldShowRecentSearches) {
+    const showHistory = await SettingsManager.get('search.showSearchHistory');
+    if (!showHistory) {
         container.classList.remove('show');
         return;
+    }
+    
+    const wrapper = container.querySelector('.recent-searches-wrapper');
+    let history = await searchManager.searchHistoryManager.getHistory();
+
+    // 如果有搜索内容，则过滤历史记录与搜索内容不匹配的
+    if (query) {
+        history = history.filter(item => item.query.includes(query));
+    }
+    
+    // 如果历史记录为空，则不显示
+    if (history.length === 0) {
+        container.classList.remove('show');
+        return;
+    }
+
+    // 如果历史记录超过最大显示数量，则截断
+    if (history.length > searchManager.searchHistoryManager.MAX_HISTORY_SHOW) {
+        history = history.slice(0, searchManager.searchHistoryManager.MAX_HISTORY_SHOW);
     }
 
     // 清空容器
@@ -2317,7 +2341,6 @@ async function initializeSearch() {
     const closeSearch = document.getElementById('close-search');
     const searchInput = document.getElementById('search-input');
     const recentSearches = document.getElementById('recent-searches');
-    const closeRecentSearchesBtn = document.querySelector('.close-recent-searches');
 
     // 检查是否需要自动聚焦搜索框
     const autoFocusSearch = await SettingsManager.get('display.autoFocusSearch');
@@ -2332,6 +2355,40 @@ async function initializeSearch() {
     toggleSearch.title = `搜索书签 ${quickSearchKey}`;
     searchInput.placeholder = `搜索书签 ${quickSearchKey}`;
     
+    let isMouseInSearchHistory = false;
+    
+    // 搜索框焦点事件
+    searchInput?.addEventListener('focus', async () => {
+        await renderSearchHistory();
+    });
+
+    // 跟踪鼠标是否在搜索历史区域内
+    recentSearches?.addEventListener('mouseenter', () => {
+        isMouseInSearchHistory = true;
+    });
+
+    recentSearches?.addEventListener('mouseleave', () => {
+        isMouseInSearchHistory = false;
+    });
+
+    // 搜索框失去焦点事件
+    searchInput?.addEventListener('blur', () => {
+        logger.debug('搜索框失去焦点', {
+            isMouseInSearchHistory: isMouseInSearchHistory
+        });
+        // 只有当鼠标不在搜索历史区域内时才隐藏
+        if (!isMouseInSearchHistory) {
+            recentSearches.classList.remove('show');
+        }
+    });
+
+    // 添加输入框内容变化事件
+    searchInput?.addEventListener('input', () => {
+        logger.debug('搜索框内容变化', searchInput.value);
+        const query = searchInput.value.trim().toLowerCase();
+        renderSearchHistory(query);
+    });
+
     // ESC 键关闭搜索
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && toolbar?.classList.contains('searching')) {
@@ -2343,6 +2400,7 @@ async function initializeSearch() {
     searchInput?.addEventListener('keypress', async (event) => {
         if (event.key === 'Enter') {
             await handleSearch();
+            recentSearches.classList.remove('show');
         }
     });
 
@@ -2352,15 +2410,9 @@ async function initializeSearch() {
         if (item) {
             const query = item.dataset.query;
             searchInput.value = query;
+            recentSearches.classList.remove('show');
             await handleSearch();
         }
-    });
-
-    // 关闭最近搜索按钮事件
-    closeRecentSearchesBtn?.addEventListener('click', (e) => {
-        e.stopPropagation(); // 防止事件冒泡
-        shouldShowRecentSearches = false;
-        recentSearches.classList.remove('show');
     });
 }
 

@@ -26,7 +26,8 @@ class SettingsManager {
             maxResults: 50,
             omniboxSearchLimit: 9,
             sitesDisplay: 'pinned',
-            sitesDisplayCount: 10
+            sitesDisplayCount: 10,
+            showSearchHistory: true  // 是否显示搜索历史，默认开启
         }
     };
 

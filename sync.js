@@ -31,14 +31,18 @@ class SyncManager {
         // 支持单个书签或书签数组
         const bookmarkArray = Array.isArray(bookmarks) ? bookmarks : [bookmarks];
 
+        logger.debug('记录书签变更', {
+            bookmarks: bookmarkArray,
+            isDeleted: isDeleted,
+            beginSync: beginSync
+        });
+        
         const lastSyncVersion = await this.getSyncVersion();
         if (lastSyncVersion == 0 && beginSync) {
             await this.syncAllLocalBookmarks();
         } else {
             // 批量添加变更
-            for (const bookmark of bookmarkArray) {
-                await this.changeManager.addChange(bookmark, isDeleted);
-            }
+            await this.changeManager.addChange(bookmarkArray, isDeleted);
             // 一次性同步所有变更
             if (beginSync) {
                 await this.syncChange();
@@ -435,21 +439,36 @@ class LocalChangeManager {
     }
 
     // 添加一个变更到列表
-    async addChange(bookmark, isDeleted = false) {
-        const change = {
-            timestamp: Date.now(),
-            change: this.syncManager.convertToServerFormat(bookmark, isDeleted)
-        };
+    async addChange(bookmarks, isDeleted = false) {
+        // 统一转换为数组处理
+        const bookmarkArray = Array.isArray(bookmarks) ? bookmarks : [bookmarks];
+        
+        // 如果是空数组则直接返回
+        if (bookmarkArray.length === 0) return;
+        
+        // 生成所有变更记录
+        const changeEntries = bookmarkArray.map(bookmark => {
+            const change = {
+                timestamp: Date.now(),
+                change: this.syncManager.convertToServerFormat(bookmark, isDeleted)
+            };
+            return [bookmark.url, change];
+        });
 
         if (this.syncManager.isSyncing) {
             // 如果正在同步，添加到临时队列
-            this.tempQueue.set(bookmark.url, change);
-            logger.info('同步进行中，变更已添加到临时队列:', bookmark.url);
+            changeEntries.forEach(([url, change]) => {
+                this.tempQueue.set(url, change);
+            });
+            logger.info('同步进行中，批量变更已添加到临时队列，数量:', bookmarkArray.length);
         } else {
             // 如果没有同步，直接添加到存储
             const changes = await this.getPendingChanges();
-            changes[bookmark.url] = change;
+            changeEntries.forEach(([url, change]) => {
+                changes[url] = change;
+            });
             await LocalStorageMgr.set(this.STORAGE_KEY, changes);
+            logger.info('批量变更已保存到存储，数量:', bookmarkArray.length);
         }
     }
 

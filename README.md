@@ -21,14 +21,33 @@ Smart Bookmark 是一款基于 AI 的智能书签管理插件，专注于解决�
 - [x] 支持导入浏览器书签
 - [x] 支持书签收藏、搜索快捷键
 - [x] 增加深色模式
-- [ ] 支持书签导入导出功能  
+- [x] 支持书签导入导出功能  
+- [x] 支持Ollama本地模型
 - [ ] 增加webdav同步功能
-- [ ] 支持Ollama本地模型
 - [ ] 增加多语言支持
-- [ ] 支持Edge浏览器
+- [ ] 上架Edge浏览器商店
 
-### **反馈交流群**  
-![wechat](pic/wechat.jpg)  
+### FAQ
+#### 如何接入Ollama本地模型？
+<details>
+<summary>点击查看</summary>
+
+1. 安装 [Ollama](https://ollama.com/)
+2. 设置允许跨域并启动</br>
+    macOS：命令行执行 `launchctl setenv OLLAMA_ORIGINS "*"`，再启动 App。</br>
+    Windows：控制面板 - 系统属性 - 环境变量 - 用户环境变量新建 2 个环境变量：变量名`OLLAMA_HOST`变量值`0.0.0.0`，变量名`OLLAMA_ORIGINS`变量值`*`，再启动 App。</br>
+    Linux：命令行执行 `OLLAMA_ORIGINS="*" ollama serve`。
+3. API 自定义服务配置<br>
+    API 接口地址：`http://localhost:11434/v1`<br>
+    API Key：`ollama`<br>
+    模型：你本地安装的模型<br>
+</details>
+
+
+
+### **反馈交流群** 
+<img width="256" src="pic/wechat.jpg" />
+
 如二维码失效，请添加我的个人微信（zhw-super），并备注 “书签” 加入微信交流群
 
 ### **感谢**  

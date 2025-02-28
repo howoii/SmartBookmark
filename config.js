@@ -17,18 +17,19 @@ const API_SERVICES = {
             LOW: 0.2
         },
         getKeyUrl: 'https://platform.openai.com/api-keys',
-        pricingUrl: 'https://openai.com/api/pricing/'
+        pricingUrl: 'https://openai.com/api/pricing/',
+        recommendTags: []
     },
     GLM: {
         id: 'glm',
-        name: '智谱GLM',
+        name: '智谱AI',
         description: '智谱GLM大模型，由智谱AI提供',
         baseUrl: 'https://open.bigmodel.cn/api/paas/v4/',
         defaultEmbedModel: 'embedding-2',
         defaultChatModel: 'glm-4-flash',
         embedModel: 'embedding-2',
         chatModel: 'glm-4-flash',
-        logo: 'logo-glm.png',
+        logo: 'logo-glm.svg',
         similarityThreshold: {
             MAX: 0.7,
             HIGH: 0.55,
@@ -36,11 +37,12 @@ const API_SERVICES = {
             LOW: 0.2
         },
         getKeyUrl: 'https://open.bigmodel.cn/usercenter/apikeys',
-        pricingUrl: 'https://open.bigmodel.cn/pricing'
+        pricingUrl: 'https://open.bigmodel.cn/pricing',
+        recommendTags: ['免费模型']
     },
     DASHSCOPE: {
         id: 'dashscope',
-        name: '通义千问',
+        name: '阿里云百炼',
         description: '阿里云百炼大模型平台，它集成了通义系列大模型和第三方大模型',
         baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1/',
         defaultEmbedModel: 'text-embedding-v3',
@@ -55,7 +57,8 @@ const API_SERVICES = {
             LOW: 0.4
         },
         getKeyUrl: 'https://bailian.console.aliyun.com/?apiKey=1',
-        pricingUrl: 'https://help.aliyun.com/zh/model-studio/getting-started/models'
+        pricingUrl: 'https://help.aliyun.com/zh/model-studio/getting-started/models',
+        recommendTags: ['模型丰富', '稳定', '赠送Token']
     },
     SILICONFLOW: {
         id: 'siliconflow',
@@ -66,7 +69,7 @@ const API_SERVICES = {
         defaultChatModel: 'Qwen/Qwen2.5-7B-Instruct',
         embedModel: 'BAAI/bge-m3',
         chatModel: 'Qwen/Qwen2.5-7B-Instruct',
-        logo: 'logo-siliconflow.png',
+        logo: 'logo-siliconflow.svg',
         similarityThreshold: {
             MAX: 0.85,
             HIGH: 0.60,
@@ -74,7 +77,8 @@ const API_SERVICES = {
             LOW: 0.4
         },
         getKeyUrl: 'https://cloud.siliconflow.cn/account/ak',
-        pricingUrl: 'https://cloud.siliconflow.cn/models'
+        pricingUrl: 'https://cloud.siliconflow.cn/models',
+        recommendTags: ['免费模型', '模型丰富']
     },
     HUNYUAN: {
         id: 'hunyuan',
@@ -85,7 +89,7 @@ const API_SERVICES = {
         defaultChatModel: 'hunyuan-standard-256K',
         embedModel: 'hunyuan-embedding',
         chatModel: 'hunyuan-standard-256K',
-        logo: 'logo-hunyuan.png',
+        logo: 'logo-hunyuan.svg',
         similarityThreshold: {
             MAX: 0.85,
             HIGH: 0.60,
@@ -93,7 +97,8 @@ const API_SERVICES = {
             LOW: 0.35
         },
         getKeyUrl: 'https://console.cloud.tencent.com/hunyuan/api-key',
-        pricingUrl: 'https://cloud.tencent.com/document/product/1729/97731'
+        pricingUrl: 'https://cloud.tencent.com/document/product/1729/97731',
+        recommendTags: []
     }
 };
 
@@ -123,6 +128,37 @@ class ConfigManager {
         CUSTOM_SERVICES: 'customServices',
         PINNED_SITES: 'pinnedSites'
     };
+
+    static async getServiceExportData() {
+        const exportKeys = [
+            this.STORAGE_KEYS.ACTIVE_SERVICE,
+            this.STORAGE_KEYS.API_KEYS,
+            this.STORAGE_KEYS.BUILTIN_SERVICES_SETTINGS,
+            this.STORAGE_KEYS.CUSTOM_SERVICES
+        ];
+        try {
+            const data = await this.STORAGE.get(exportKeys);
+            logger.debug('获取服务导出数据:', data);
+            return data;
+        } catch (error) {
+            logger.error('获取服务导出数据失败:', error);
+            return {};
+        }
+    }
+
+    static async getConfigExportData() {
+        const exportKeys = [
+            this.STORAGE_KEYS.PINNED_SITES
+        ];
+        try {
+            const data = await this.STORAGE.get(exportKeys);
+            logger.debug('获取配置导出数据:', data);
+            return data;
+        } catch (error) {
+            logger.error('获取配置导出数据失败:', error);
+            return {};
+        }
+    }
 
     // 通过API_SERVICES的id获取服务对象
     static findBuiltinServiceById(serviceId) {
@@ -541,6 +577,123 @@ class ConfigManager {
         } catch (error) {
             logger.error('检查常用网站状态失败:', error);
             return false;
+        }
+    }
+
+    static async importServiceData(data, isOverwrite = false) {
+        try {
+            // 验证数据
+            const validKeys = [
+                this.STORAGE_KEYS.ACTIVE_SERVICE,
+                this.STORAGE_KEYS.API_KEYS,
+                this.STORAGE_KEYS.BUILTIN_SERVICES_SETTINGS,
+                this.STORAGE_KEYS.CUSTOM_SERVICES
+            ];
+            const importData = {};
+
+            // 检查并处理每个key
+            for (const key of validKeys) {
+                if (data[key]) {
+                    if (key === this.STORAGE_KEYS.CUSTOM_SERVICES) {
+                        // 处理自定义服务
+                        const customServices = data[key];
+                        if (!isOverwrite) {
+                            // 合并模式：获取现有服务
+                            const currentServices = await this.getCustomServices();
+                            importData[key] = { ...currentServices, ...customServices };
+                        } else {
+                            importData[key] = customServices;
+                        }
+                        
+                        // 检查数量限制
+                        const serviceEntries = Object.entries(importData[key]);
+                        if (serviceEntries.length > MAX_CUSTOM_SERVICES) {
+                            logger.warn(`自定义服务数量超过限制(${MAX_CUSTOM_SERVICES})，仅导入前${MAX_CUSTOM_SERVICES}个`);
+                            importData[key] = Object.fromEntries(serviceEntries.slice(0, MAX_CUSTOM_SERVICES));
+                        }
+                    } else if (key === this.STORAGE_KEYS.API_KEYS) {
+                        // 处理API Keys
+                        if (!isOverwrite) {
+                            // 合并模式：获取现有API Keys
+                            const currentData = await this.STORAGE.get(key);
+                            const currentApiKeys = currentData[key] || {};
+                            importData[key] = { ...currentApiKeys, ...data[key] };
+                        } else {
+                            importData[key] = data[key];
+                        }
+                    } else if (key === this.STORAGE_KEYS.BUILTIN_SERVICES_SETTINGS) {
+                        // 处理内置服务设置
+                        if (!isOverwrite) {
+                            // 合并模式：获取现有设置
+                            const currentSettings = await this.getBuiltinServiceSettings();
+                            importData[key] = { ...currentSettings, ...data[key] };
+                        } else {
+                            importData[key] = data[key];
+                        }
+                    } else if (key === this.STORAGE_KEYS.ACTIVE_SERVICE) {
+                        importData[key] = data[key];
+                    }
+                }
+            }
+
+            // 保存数据
+            if (Object.keys(importData).length > 0) {
+                await this.STORAGE.set(importData);
+                return true;
+            }
+            return false;
+        } catch (error) {
+            logger.error('导入服务数据失败:', error);
+            throw error;
+        }
+    }
+
+    static async importConfigData(data, isOverwrite = false) {
+        if (!data) {
+            return;
+        }
+        try {
+            const validKeys = [
+                this.STORAGE_KEYS.PINNED_SITES
+            ];
+            const importData = {};
+
+            for (const key of validKeys) {
+                if (data[key]) {
+                    if (key === this.STORAGE_KEYS.PINNED_SITES) {
+                        // 验证并处理固定网站数据
+                        let sites = data[key];
+                        if (!Array.isArray(sites)) {
+                            continue;
+                        }
+                        // 验证每个网站对象的格式
+                        sites = sites.filter(site => site && typeof site === 'object' && site.url && site.title);
+                        if (!isOverwrite) {
+                            // 合并模式：获取现有网站
+                            const currentSites = await this.getPinnedSites();
+                            // 去重合并
+                            const urlSet = new Set(currentSites.map(site => site.url));
+                            sites = [...currentSites, ...sites.filter(site => !urlSet.has(site.url))];
+                        }
+                        // 确保不超过最大限制
+                        if (sites.length > MAX_PINNED_SITES) {
+                            logger.warn(`固定网站数量超过限制(${MAX_PINNED_SITES})，仅保留前${MAX_PINNED_SITES}个`);
+                            sites = sites.slice(0, MAX_PINNED_SITES);
+                        }
+                        importData[key] = sites;
+                    }
+                }
+            }
+
+            // 保存数据
+            if (Object.keys(importData).length > 0) {
+                await this.STORAGE.set(importData);
+                return true;
+            }
+            return false;
+        } catch (error) {
+            logger.error('导入配置数据失败:', error);
+            throw error;
         }
     }
 }

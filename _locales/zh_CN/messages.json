@@ -1,0 +1,136 @@
+{
+    "extName": {
+        "message": "Smart Bookmark",
+        "description": "扩展名称"
+    },
+    "extDescription": {
+        "message": "智能书签管理器，AI驱动，自动生成标签，语义化搜索，告别繁琐管理。",
+        "description": "扩展描述"
+    },
+    "cmd_quick_search": {
+        "message": "搜索书签",
+        "description": "快捷搜索命令"
+    },
+    "cmd_quick_save": {
+        "message": "保存书签",
+        "description": "快捷保存命令"
+    },
+    "ui_button_save": {
+        "message": "保存",
+        "description": "保存按钮文本"
+    },
+    "ui_button_cancel": {
+        "message": "取消",
+        "description": "取消按钮文本"
+    },
+    "ui_input_search": {
+        "message": "搜索书签...",
+        "description": "搜索输入框占位符"
+    },
+    "ui_button_close": {
+        "message": "关闭",
+        "description": "关闭按钮文本"
+    },
+    "ui_label_tags": {
+        "message": "标签",
+        "description": "标签文本"
+    },
+    "ui_label_tags_loading": {
+        "message": "正在生成标签...",
+        "description": "正在生成标签提示文本"
+    },
+    "ui_label_recommended_tags": {
+        "message": "推荐标签：",
+        "description": "推荐标签提示文本"
+    },
+    "ui_tag_unclassified": {
+        "message": "未分类",
+        "description": "未分类标签文本"
+    },
+    "ui_input_tags": {
+        "message": "输入标签按回车键添加...",
+        "description": "添加标签输入框占位符"
+    },
+    "action_add_bookmark": {
+        "message": "添加",
+        "description": "添加书签操作文本"
+    },
+    "action_edit_bookmark": {
+        "message": "编辑",
+        "description": "编辑书签操作文本"
+    },
+    "action_delete_bookmark": {
+        "message": "删除",
+        "description": "删除书签操作文本"
+    },
+    "msg_error_quary_tab": {
+        "message": "无法获取当前标签页信息"
+    },
+    "msg_status_page_loading": {
+        "message": "页面正在加载中，请等待加载完成后再试"
+    },
+    "msg_status_page_unsupported": {
+        "message": "基于隐私安全保护，不支持保存此页面"
+    },
+    "msg_status_saving_bookmark": {
+        "message": "正在保存书签..."
+    },
+    "msg_status_generating_embedding": {
+        "message": "正在生成向量..."
+    },
+    "msg_status_save_success": {
+        "message": "保存成功"
+    },
+    "msg_error_init_failed": {
+        "message": "初始化失败: $error$",
+        "description": "初始化失败提示",
+        "placeholders": {
+            "error": {
+                "content": "$1",
+                "example": "无法获取当前标签页信息"
+            }
+        }
+    },
+    "msg_error_save_failed": {
+        "message": "保存失败：$error$",
+        "description": "保存失败提示",
+        "placeholders": {
+            "error": {
+                "content": "$1",
+                "example": "无法保存书签"
+            }
+        }
+    },
+    "msg_confirm_delete_bookmark": {
+        "message": "确定要删除此书签吗？",
+        "description": "删除书签确认提示"
+    },
+    "page_settings_title": {
+        "message": "设置",
+        "description": "设置页面标题"
+    },
+    "page_bookmark_list": {
+        "message": "我的书签",
+        "description": "书签列表页面标题"
+    },
+    "page_quick_save_title": {
+        "message": "快速保存书签",
+        "description": "快速保存页面标题"
+    },
+    "setting_general_language": {
+        "message": "语言",
+        "description": "语言设置标签"
+    },
+    "setting_general_theme": {
+        "message": "主题",
+        "description": "主题设置标签"
+    },
+    "prompt_generate_tags_user": {
+        "message": "请根据以下网页内容提取2-5个简短、具有区分度的关键词，用于分类和查找。\n网页信息：\n{{content}}\n\n关键词应符合以下要求：\n1. 简洁：中文关键词2-5字；英文不超过2个单词，去除无实质意义的修饰词。\n2. 输出语言：除专有名词、人名及习惯用法外，关键词应使用中文。\n3. 准确性：需精准反映网页的核心主题和关键信息。\n4. 多样性：要有辨识度，且必须涵盖以下四类信息（如有）：\n   - 网站名称或品牌信息。\n   - 网站标题核心内容。\n   - 网站涉及的领域（如科技、教育、金融等）。\n   - 页面具体内容的关键词（如技术名词、专业术语）。\n5. 避免重复：同义或重复的关键词只保留一个。\n6. 输出格式：仅返回关键词列表，关键词之间用竖线\"|\"分隔，无需其他说明或标点符号。\n\n例如：小红书|AI生成|内容分析|关键词优化|提示词设计",
+        "description": "生成标签提示词"
+    },
+    "prompt_generate_tags_sys": {
+        "message": "你是一个专业的网页内容分析专家，擅长提取文章的核心主题并生成准确的标签。",
+        "description": "生成标签系统提示词"
+    }
+} 

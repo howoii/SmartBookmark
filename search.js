@@ -229,20 +229,30 @@ class SearchManager {
 // 搜索历史管理器
 class SearchHistoryManager {
     constructor() {
-        this.MAX_HISTORY = 8;
+        this.MAX_HISTORY = 50;
+        this.MAX_HISTORY_SHOW = 8;
+        this.MAX_HISTORY_SHOW_QUICK = 4;
         this.MAX_CACHE_HISTORY = 125;
         this.STORAGE_KEY = 'recentSearches';
         this.VECTOR_CACHE_KEY = 'searchVectorCache';
+        this.historyCache = null;
     }
 
-    async getHistory() {
-        return await LocalStorageMgr.get(this.STORAGE_KEY) || [];
+    async getHistory(fromCache = true) {
+        if (fromCache && this.historyCache) {
+            logger.debug('搜索历史缓存命中');
+            return this.historyCache;
+        }
+        logger.debug('搜索历史缓存未命中', { fromCache });
+        const history = await LocalStorageMgr.get(this.STORAGE_KEY) || [];
+        this.historyCache = history;
+        return history;
     }
 
     async addSearch(query) {
         if (!query) return;
 
-        let history = await this.getHistory();
+        let history = await this.getHistory(false);
         // 移除重复项
         history = history.filter(item => item.query !== query);
         // 添加到开头
@@ -253,6 +263,7 @@ class SearchHistoryManager {
         // 保持最大数量
         history = history.slice(0, this.MAX_HISTORY);
         await LocalStorageMgr.set(this.STORAGE_KEY, history);
+        this.historyCache = null;
     }
 
     async getVectorCache() {

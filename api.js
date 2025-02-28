@@ -8,14 +8,14 @@ function joinUrl(baseUrl, path) {
 function makeEmbeddingText(pageContent, tab, tags) {
     let text = "";
     if (pageContent && pageContent.title) {
-        text += pageContent.title ? `标题: ${pageContent.title};` : '';
-        text += tags.length > 0 ? `标签: ${tags.join(',')};` : '';
-        text += pageContent.excerpt ? `摘要: ${smartTruncate(pageContent.excerpt, 200)};` : '';
+        text += pageContent.title ? `title: ${pageContent.title};` : '';
+        text += tags.length > 0 ? `tags: ${tags.join(',')};` : '';
+        text += pageContent.excerpt ? `excerpt: ${smartTruncate(pageContent.excerpt, 200)};` : '';
     } else {
         const cleanUrl = tab.url.replace(/\?.+$/, '').replace(/[#&].*$/, '').replace(/\/+$/, '');
-        text += `标题: ${tab.title};`;
-        text += tags.length > 0 ? `标签: ${tags.join(',')};` : '';
-        text += `URL: ${cleanUrl};`;
+        text += `title: ${tab.title};`;
+        text += tags.length > 0 ? `tags: ${tags.join(',')};` : '';
+        text += `url: ${cleanUrl};`;
     }
     
     // 优化的文本清理
@@ -158,36 +158,17 @@ async function getChatCompletion(systemPrompt, userPrompt) {
     return null;
 }
 
-const SYSTEM_PROMPT = `你是一个专业的网页内容分析专家，擅长提取文章的核心主题并生成准确的标签。`;
-
-const USER_PROMPT = 
-`请根据以下网页内容提取2-5个简短、具有区分度的关键词，用于分类和查找。
-
-网页信息：
-{{content}}
-
-关键词应符合以下要求：
-1. 关键词长度：中文关键词2-5字；英文关键词不超过2个单词。
-2. 输出语言：除专有名词、人名及习惯用法外，关键词应使用中文。
-3. 准确性：关键词需精准反映网页的核心主题和关键信息。
-4. 多样性：必须涵盖以下四类信息（如有）：
-   - 网站名称或品牌信息。
-   - 网站标题核心内容。
-   - 网站涉及的领域（如科技、教育、金融等）。
-   - 页面具体内容的关键词（如技术名词、专业术语）。
-5. 避免重复：同义或重复的关键词只保留一个。
-6. 输出格式：仅返回关键词列表，关键词之间用竖线“|”分隔，无需其他说明或标点符号。
-
-例如：小红书|AI生成|内容分析|关键词优化|提示词设计`;
+const SYSTEM_PROMPT = i18n.M('prompt_generate_tags_sys');
+const USER_PROMPT = i18n.M('prompt_generate_tags_user');
 
 function makeChatPrompt(pageContent, tab) {
-    const { content, excerpt, metadata } = pageContent;
+    const { content, excerpt, isReaderable, metadata } = pageContent;
     const cleanUrl = tab.url.replace(/\?.+$/, '').replace(/[#&].*$/, '').replace(/\/+$/, '');
-    const formatContent =` 标题：${tab.title}
-URL：${cleanUrl}
-${excerpt ? `摘要：${smartTruncate(excerpt, 300)}` : ''}
-${metadata?.keywords ? `关键词：${metadata.keywords.slice(0, 300)}` : ''}
-${content ? `页面正文开头：${smartTruncate(content, 500)}` : ''}
+    const formatContent =` title: ${tab.title}
+url:${cleanUrl}
+${excerpt ? `excerpt: ${smartTruncate(excerpt, 300)}` : ''}
+${metadata?.keywords ? `keywords: ${metadata.keywords.slice(0, 300)}` : ''}
+${content && isReaderable ? `content: ${smartTruncate(content, 500)}` : ''}
 `;
 
     return USER_PROMPT.replace('{{content}}', formatContent);
@@ -227,5 +208,5 @@ async function generateTags(pageContent, tab) {
     }
 
     tags = cleanTags(tags);
-    return tags.length > 0 ? tags : ['未分类'];
+    return tags.length > 0 ? tags : [i18n.M('ui_tag_unclassified')];
 }

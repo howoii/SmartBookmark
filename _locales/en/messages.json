@@ -1,0 +1,108 @@
+{
+    "extName": {
+        "message": "Smart Bookmark"
+    },
+    "extDescription": {
+        "message": "AI-powered bookmark manager with automatic tag generation and semantic search—eliminate tedious management."
+    },
+    "cmd_quick_search": {
+        "message": "Search Bookmarks"
+    },
+    "cmd_quick_save": {
+        "message": "Save Bookmark"
+    },
+    "ui_button_save": {
+        "message": "Save"
+    },
+    "ui_button_cancel": {
+        "message": "Cancel"
+    },
+    "ui_input_search": {
+        "message": "Search bookmarks..."
+    },
+    "ui_button_close": {
+        "message": "Close"
+    },
+    "ui_label_tags": {
+        "message": "Tags"
+    },
+    "ui_label_tags_loading": {
+        "message": "Generating tags..."
+    },
+    "ui_label_recommended_tags": {
+        "message": "Recommended tags:"
+    },
+    "ui_tag_unclassified": {
+        "message": "Unclassified"
+    },
+    "ui_input_tags": {
+        "message": "Type tags and press Enter to add..."
+    },
+    "action_add_bookmark": {
+        "message": "Add"
+    },
+    "action_edit_bookmark": {
+        "message": "Edit"
+    },
+    "action_delete_bookmark": {
+        "message": "Delete"
+    },
+    "msg_error_quary_tab": {
+        "message": "Unable to retrieve current tab information"
+    },
+    "msg_status_page_loading": {
+        "message": "The page is loading. Please try again once it has loaded."
+    },
+    "msg_status_page_unsupported": {
+        "message": "Saving this page is not supported due to privacy and security restrictions."
+    },
+    "msg_status_saving_bookmark": {
+        "message": "Saving bookmark..."
+    },
+    "msg_status_generating_embedding": {
+        "message": "Generating embedding..."
+    },
+    "msg_status_save_success": {
+        "message": "Saved successfully"
+    },
+    "msg_error_init_failed": {
+        "message": "Initialization failed: $error$",
+        "placeholders": {
+            "error": {
+                "content": "$1"
+            }
+        }
+    },
+    "msg_error_save_failed": {
+        "message": "Save failed: $error$",
+        "placeholders": {
+            "error": {
+                "content": "$1"
+            }
+        }
+    },
+    "msg_confirm_delete_bookmark": {
+        "message": "Are you sure you want to delete this bookmark?"
+    },
+    "page_settings_title": {
+        "message": "Settings"
+    },
+    "page_bookmark_list": {
+        "message": "My Bookmarks"
+    },
+    "page_quick_save_title": {
+        "message": "Quick Save Bookmark"
+    },
+    "setting_general_language": {
+        "message": "Language"
+    },
+    "setting_general_theme": {
+        "message": "Theme"
+    },
+    "prompt_generate_tags_user": {
+        "message": "Extract 2-5 concise and distinctive keywords from the following webpage content for classification and search.\n\nWebpage content:\n{{content}}\n\nRequirements:\n1. Language: All keywords must be in English, except for proper nouns and brand names.\n2. Concise: Keywords should be no more than two words, avoiding unnecessary modifiers.\n3. Accuracy: Keywords must accurately reflect the core topic and key information of the webpage.\n4. Diversity: Include distinctive keywords covering the following aspects (if applicable):\n   - Website or brand name.\n   - Core topic from the webpage title.\n   - Specific content keywords (e.g., technical terms, professional jargon).\n5. No redundancy: Retain only one version of synonymous or repetitive keywords.\n6. Output format: Return only a list of keywords separated by a vertical bar \"|\", without additional text or punctuation.\n\nExample: NYTimes|Politics|Economic Policy|Live News|Global Affairs"
+    },
+    "prompt_generate_tags_sys": {
+        "message": "You are a professional web content analysis expert specializing in extracting core themes from articles and generating accurate tags."
+    }
+}

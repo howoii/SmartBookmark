@@ -6,15 +6,23 @@
     window[INIT_FLAG] = true;
     // ... 其余代码
 
+    const SB_DEBUG = true;
+
     const logger = {
         log: (...args) => {
-            console.log('%c[Content Script]', 'color: blue; font-weight: bold;', ...args);
+            if (SB_DEBUG) {
+                console.log('%c[Content Script]', 'color: blue; font-weight: bold;', ...args);
+            }
         },
         error: (...args) => {
-            console.log('%c[Content Script]', 'color: red; font-weight: bold;', ...args);
+            if (SB_DEBUG) {
+                console.log('%c[Content Script]', 'color: red; font-weight: bold;', ...args);
+            }
         },
         info: (...args) => {
-            console.log('%c[Content Script]', 'color: green; font-weight: bold;', ...args);
+            if (SB_DEBUG) {
+                console.log('%c[Content Script]', 'color: green; font-weight: bold;', ...args);
+            }
         }
     };
 
@@ -43,12 +51,23 @@
         });
     }
 
+    function cleanContent(content) {
+        return content
+            .replace(/\s+/g, ' ')           // 将多个空白字符替换为单个空格
+            .replace(/[\r\n]+/g, ' ')       // 将换行符替换为空格
+            .replace(/\t+/g, ' ')           // 将制表符替换为空格
+            .trim();                        // 去除首尾空白
+    }
+
     async function extractContent() {
         try {
             logger.info('开始提取页面内容...');
 
             const documentClone = document.cloneNode(true);
             logger.log('文档克隆完成');
+
+            const isReaderable = isProbablyReaderable(documentClone);
+            logger.log('isReaderable:', isReaderable);
 
             const article = new Readability(documentClone).parse();
             logger.log('Readability 解析结果:', article);
@@ -63,9 +82,10 @@
 
             const result = {
                 title: article.title || document.title,
-                content: article.textContent,
-                excerpt: article.excerpt,
+                content: cleanContent(article.textContent),
+                excerpt: cleanContent(article.excerpt),
                 siteName: article.siteName,
+                isReaderable: isReaderable,
                 metadata: metadata
             };
 

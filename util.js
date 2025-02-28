@@ -125,12 +125,11 @@ async function openOptionsPage(section = 'overview') {
     });
 
     if (tabs.length > 0) {
-        chrome.runtime.openOptionsPage(() => {
-            sendMessageSafely({
-                type: MessageType.SWITCH_TO_TAB,
-                tab: section
-            });
+        sendMessageSafely({
+            type: MessageType.SWITCH_TO_TAB,
+            tab: section
         });
+        await chrome.runtime.openOptionsPage();
     } else {
         // 如果没有找到settings页面，创建新页面
         await chrome.tabs.create({
@@ -1074,31 +1073,18 @@ async function getPageContent(tab) {
         // 首先注 content script
         await chrome.scripting.executeScript({
             target: { tabId: tab.id },
-            files: ["lib/Readability.js", "contentScript.js"]
+            files: ["lib/Readability-readerable.js", "lib/Readability.js", "contentScript.js"]
         });
         
         const response = await chrome.tabs.sendMessage(tab.id, { action: "getContent" });
         
-        let content = response?.content;
-        // 清理内容
-        content = content
-            .replace(/\s+/g, ' ')           // 将多个空白字符替换为单个空格
-            .replace(/[\r\n]+/g, ' ')       // 将换行符替换为空格
-            .replace(/\t+/g, ' ')           // 将制表符替换为空格
-            .trim();                        // 去除首尾空白
-
         // 如果提取失败，返回空字符串
-        if (!response || !content) {
+        if (!response) {
             logger.warn('内容提取失败');
             return {};
         }
 
-        return {
-            title: response.title,
-            content: content,
-            excerpt: response.excerpt,
-            metadata: response.metadata
-        };
+        return response;
     } catch (error) {
         logger.error('获取页面内容时出错:', error);
         return {};
