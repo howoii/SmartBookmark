@@ -442,6 +442,22 @@
                             </button>
                         </div>
                     </div>
+                    
+                    <!-- 从文本导入卡片 -->
+                    <div class="import-export-card">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" width="32" height="32">
+                                <path fill="currentColor" d="M14,17H7V15H14M17,13H7V11H17M17,9H7V7H17M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3Z"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <h3>从文本导入</h3>
+                            <p>从文本格式导入书签数据</p>
+                            <button id="import-text-btn" class="primary-btn">
+                                开始导入
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 导入进度对话框 -->
@@ -715,6 +731,49 @@
                                 <button class="secondary-btn" id="cancel-import-file-btn">取消</button>
                                 <button class="primary-btn" id="confirm-import-file-btn">
                                     <span class="btn-text">导入</span>
+                                    <span class="loading-spinner"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 文本导入对话框 -->
+                <div id="text-import-dialog" class="dialog">
+                    <div class="dialog-content">
+                        <div class="dialog-header">
+                            <h3>从文本导入书签</h3>
+                            <button class="close-dialog-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24">
+                                    <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="dialog-body">
+                            <div class="text-import-instructions">
+                                <p>请按照 <code>URL | 标题</code> 格式输入书签，每行一个。例如：</p>
+                                <pre>https://www.pa55w0rd.online/ | Pa55w0rd 's Blog</pre>
+                                <p>如果没有提供标题（没有使用 | 分隔符），URL将被用作标题。</p>
+                            </div>
+                            <div class="text-import-options">
+                                <label class="checkbox-container" title="开启后将不导入已存在的书签">
+                                    <input type="checkbox" id="skip-existing-text" checked>
+                                    <span class="checkmark"></span>
+                                    跳过已存在的书签
+                                </label>
+                            </div>
+                            <div class="text-area-container">
+                                <textarea 
+                                    id="bookmark-text-area" 
+                                    placeholder="粘贴您的书签列表，每行一个，格式为: URL | 标题"
+                                    rows="10"></textarea>
+                            </div>
+                        </div>
+                        <div class="dialog-footer">
+                            <div class="footer-actions">
+                                <button class="secondary-btn" id="cancel-text-import-btn">取消</button>
+                                <button class="primary-btn" id="confirm-text-import-btn">
+                                    <span class="btn-text">开始导入</span>
                                     <span class="loading-spinner"></span>
                                 </button>
                             </div>

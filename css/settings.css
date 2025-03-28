@@ -2447,7 +2447,7 @@ input[type="number"].condition-value-input {
     content: '';
     width: 20px;
     height: 20px;
-    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%234CAF50" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>');
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%234CAF50" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L18 9l-8 8z"/></svg>');
     background-size: contain;
     background-repeat: no-repeat;
     transition: background-image 0.3s ease;
@@ -3932,4 +3932,58 @@ input[type="radio"]:checked + .radio-mark::after {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* 文本导入对话框样式 */
+.text-import-instructions {
+    margin-bottom: 15px;
+    color: var(--text-color);
+}
+
+.text-import-instructions code {
+    background-color: var(--code-bg-color);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: monospace;
+    color: var(--code-text-color);
+}
+
+.text-import-instructions pre {
+    background-color: var(--code-bg-color);
+    padding: 10px;
+    border-radius: 4px;
+    font-family: monospace;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    color: var(--code-text-color);
+    margin: 10px 0;
+    line-height: 1.4;
+}
+
+.text-area-container {
+    margin-top: 15px;
+}
+
+.text-area-container textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--input-bg-color);
+    color: var(--text-color);
+    font-size: 14px;
+    resize: vertical;
+    min-height: 150px;
+}
+
+.text-area-container textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+}
+
+.text-import-options {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 10px;
 }
