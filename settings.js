@@ -2155,8 +2155,10 @@ class ImportExportSettingsTab extends BaseSettingsTab {
         this.importBrowserBtn = document.getElementById('import-browser-btn');
         this.exportLocalBtn = document.getElementById('export-local-btn');
         this.importLocalBtn = document.getElementById('import-local-btn');
+        this.importTextBtn = document.getElementById('import-text-btn'); // 新增：文本导入按钮
         this.importProgressDialog = document.getElementById('import-progress-dialog');
         this.bookmarkSelectDialog = document.getElementById('bookmark-select-dialog');
+        this.textImportDialog = document.getElementById('text-import-dialog'); // 新增：文本导入对话框
         
         // 获取书签选择对话框中的元素
         this.bookmarkTree = document.getElementById('bookmark-tree');
@@ -2168,6 +2170,12 @@ class ImportExportSettingsTab extends BaseSettingsTab {
         this.estimatedEmbedTokens = document.getElementById('estimated-embed-tokens');
         this.cancelImportBtn = document.getElementById('cancel-import-btn');
         this.confirmImportBtn = document.getElementById('confirm-import-btn');
+        
+        // 获取文本导入对话框中的元素
+        this.bookmarkTextArea = document.getElementById('bookmark-text-area');
+        this.skipExistingText = document.getElementById('skip-existing-text');
+        this.cancelTextImportBtn = document.getElementById('cancel-text-import-btn');
+        this.confirmTextImportBtn = document.getElementById('confirm-text-import-btn');
         
         // 保存选中的书签
         this.selectedBookmarks = new Set();
@@ -2181,16 +2189,12 @@ class ImportExportSettingsTab extends BaseSettingsTab {
         this.handleImportBrowser = this.handleImportBrowser.bind(this);
         this.handleExportLocal = this.handleExportLocal.bind(this);
         this.handleImportLocal = this.handleImportLocal.bind(this);
+        this.handleImportText = this.handleImportText.bind(this); // 新增：绑定文本导入方法
         this.updateImportProgress = this.updateImportProgress.bind(this);
-        this.handleSelectAll = this.handleSelectAll.bind(this);
-        this.handleBookmarkSelect = this.handleBookmarkSelect.bind(this);
-        this.handleFolderSelect = this.handleFolderSelect.bind(this);
         this.handleConfirmImport = this.handleConfirmImport.bind(this);
         this.handleCloseImportProgress = this.handleCloseImportProgress.bind(this);
-        this.handleEscKey = this.handleEscKey.bind(this);
-        
-        // 添加导入统计数据
-        this.importStats = null;
+        this.handleSelectAll = this.handleSelectAll.bind(this);
+        this.handleConfirmTextImport = this.handleConfirmTextImport.bind(this); // 新增：绑定确认文本导入方法
     }
 
     // 重置导入统计
@@ -2240,15 +2244,24 @@ class ImportExportSettingsTab extends BaseSettingsTab {
         this.importBrowserBtn.addEventListener('click', this.handleImportBrowser);
         this.exportLocalBtn.addEventListener('click', this.handleExportLocal);
         this.importLocalBtn.addEventListener('click', this.handleImportLocal);
+        this.importTextBtn.addEventListener('click', this.handleImportText); // 新增：绑定文本导入按钮事件
         
         // 绑定书签选择对话框的事件
         this.selectAllCheckbox.addEventListener('change', this.handleSelectAll);
         this.cancelImportBtn.addEventListener('click', () => this.bookmarkSelectDialog.classList.remove('show'));
         this.confirmImportBtn.addEventListener('click', this.handleConfirmImport);
         
+        // 绑定文本导入对话框的事件
+        this.cancelTextImportBtn.addEventListener('click', () => this.textImportDialog.classList.remove('show'));
+        this.confirmTextImportBtn.addEventListener('click', this.handleConfirmTextImport);
+        
         // 绑定对话框关闭按钮
         this.bookmarkSelectDialog.querySelector('.close-dialog-btn').addEventListener('click', () => {
             this.bookmarkSelectDialog.classList.remove('show');
+        });
+        
+        this.textImportDialog.querySelector('.close-dialog-btn').addEventListener('click', () => {
+            this.textImportDialog.classList.remove('show');
         });
         
         // 添加关闭按钮事件监听
@@ -2791,9 +2804,12 @@ class ImportExportSettingsTab extends BaseSettingsTab {
         this.importBrowserBtn.removeEventListener('click', this.handleImportBrowser);
         this.exportLocalBtn.removeEventListener('click', this.handleExportLocal);
         this.importLocalBtn.removeEventListener('click', this.handleImportLocal);
+        this.importTextBtn.removeEventListener('click', this.handleImportText); // 新增：移除文本导入按钮事件
         this.selectAllCheckbox.removeEventListener('change', this.handleSelectAll);
         this.cancelImportBtn.removeEventListener('click', () => this.bookmarkSelectDialog.classList.remove('show'));
         this.confirmImportBtn.removeEventListener('click', this.handleConfirmImport);
+        this.cancelTextImportBtn.removeEventListener('click', () => this.textImportDialog.classList.remove('show'));
+        this.confirmTextImportBtn.removeEventListener('click', this.handleConfirmTextImport);
         
         // 移除关闭按钮事件监听
         const closeBtn = this.importProgressDialog.querySelector('.close-dialog-btn');
@@ -2804,6 +2820,152 @@ class ImportExportSettingsTab extends BaseSettingsTab {
     handleCloseImportProgress() {
         this.importCancelled = true;
         this.importProgressDialog.classList.remove('show');
+    }
+
+    // 处理文本导入书签
+    async handleImportText() {
+        try {
+            // 显示文本导入对话框
+            this.textImportDialog.classList.add('show');
+            
+            // 清空文本框
+            this.bookmarkTextArea.value = '';
+            
+            // 启用确认按钮
+            this.confirmTextImportBtn.disabled = false;
+            this.confirmTextImportBtn.querySelector('.loading-spinner').classList.remove('show');
+            
+        } catch (error) {
+            logger.error('打开文本导入对话框失败:', error);
+            showToast('打开文本导入对话框失败: ' + error.message, true);
+        }
+    }
+    
+    // 处理确认文本导入
+    async handleConfirmTextImport() {
+        logger.debug('开始导入文本书签');
+        try {
+            // 禁用确认按钮并显示加载动画
+            this.confirmTextImportBtn.disabled = true;
+            this.confirmTextImportBtn.querySelector('.loading-spinner').classList.add('show');
+            
+            // 重置取消标志
+            this.importCancelled = false;
+            
+            const apiKey = await ConfigManager.getActiveAPIKey();
+            if (!apiKey) {
+                throw new Error('请先配置API服务');
+            }
+
+            // 获取文本内容
+            const text = this.bookmarkTextArea.value.trim();
+            if (!text) {
+                throw new Error('请输入书签数据');
+            }
+            
+            // 解析文本内容 - 格式为 "URL | 标题"
+            const lines = text.split('\n');
+            const bookmarks = [];
+            
+            for (const line of lines) {
+                const trimmedLine = line.trim();
+                if (!trimmedLine) continue;
+                
+                // 使用 | 分割URL和标题
+                const parts = trimmedLine.split('|').map(part => part.trim());
+                let url = parts[0];
+                const title = parts.length > 1 ? parts[1] : url;
+                
+                // 验证URL格式
+                try {
+                    // 确保URL包含协议
+                    if (!url.match(/^https?:\/\//i)) {
+                        url = 'https://' + url;
+                    }
+                    
+                    // 验证URL
+                    new URL(url);
+                    
+                    // 创建书签对象
+                    bookmarks.push({
+                        url,
+                        title,
+                        dateAdded: Date.now(),
+                        dateLastUsed: Date.now()
+                    });
+                } catch (error) {
+                    logger.error('无效的URL格式:', url);
+                    // 继续处理下一行
+                }
+            }
+            
+            if (bookmarks.length === 0) {
+                throw new Error('没有找到有效的书签数据');
+            }
+            
+            // 隐藏文本导入对话框，显示进度对话框
+            this.textImportDialog.classList.remove('show');
+            await this.showImportProgress('正在导入书签...');
+            
+            const existingBookmarks = await LocalStorageMgr.getBookmarks();
+            const existingUrls = new Set(Object.values(existingBookmarks).map(bookmark => bookmark.url));
+            
+            // 更新总数
+            this.updateImportProgress(0, bookmarks.length);
+            
+            // 开始导入
+            let currentIndex = 0;
+            for (const bookmark of bookmarks) {
+                // 检查是否已取消
+                if (this.importCancelled) {
+                    logger.info('导入已取消');
+                    showToast('已取消导入');
+                    break;
+                }
+
+                currentIndex++;
+                try {
+                    const {accessible, reason} = await checkUrlAccessibility(bookmark.url);
+                    if (!accessible) {
+                        throw new Error(`${reason}`);
+                    }
+                    if (this.skipExistingText.checked && existingUrls.has(bookmark.url)) {
+                        throw new Error(`书签已存在`);
+                    }
+                    
+                    // 使用空的父路径，因为文本导入没有文件夹结构
+                    await this.importBookmark(bookmark, []);
+                    this.addImportLog(bookmark, true);
+                } catch (error) {
+                    logger.error('导入书签失败:', error.message);
+                    this.addImportLog(bookmark, false, error.message);
+                } finally {
+                    this.updateImportProgress(currentIndex, bookmarks.length);
+                }
+            }
+            
+            // 导入完成后开始同步
+            if (this.importStats.imported > 0) {
+                logger.info(`成功导入${this.importStats.imported}个书签`);
+                sendMessageSafely({
+                    type: MessageType.BOOKMARKS_UPDATED,
+                    source: 'import_from_text'
+                });
+                sendMessageSafely({
+                    type: MessageType.AUTO_SYNC_BOOKMARK,
+                }, (response) => {
+                    if (response && response.error) {
+                        showToast('书签同步失败: ' + response.error, true);
+                    }
+                });
+            }
+        } catch (error) {
+            logger.error('导入失败:', error);
+            showToast('导入失败: ' + error.message, true);
+            // 重置确认按钮
+            this.confirmTextImportBtn.disabled = false;
+            this.confirmTextImportBtn.querySelector('.loading-spinner').classList.remove('show');
+        }
     }
 }
 
