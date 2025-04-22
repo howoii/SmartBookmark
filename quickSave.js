@@ -256,7 +256,14 @@ class QuickSaveManager {
     }
 
     setupEventListeners() {
-        const { tagsList, newTagInput, saveTagsBtn, cancelTagsBtn, deleteBookmarkBtn, recommendedTagsList } = this.elements;
+        const { pageTitle, tagsList, newTagInput, saveTagsBtn, cancelTagsBtn, deleteBookmarkBtn, recommendedTagsList } = this.elements;
+
+        pageTitle.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                pageTitle.blur();
+            }
+        });
 
         // 标签列表点击事件（删除标签）
         tagsList.addEventListener('click', (e) => {

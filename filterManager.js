@@ -183,7 +183,7 @@ class CustomTagFilter extends BookmarkFilter {
     }
 
     getName() {
-        return '自定义标签';
+        return '智能标签';
     }
 
     getIcon() {
@@ -305,7 +305,7 @@ class CustomTagFilter extends BookmarkFilter {
         // 添加编辑按钮
         const editButton = document.createElement('button');
         editButton.className = 'edit-filter-button';
-        editButton.title = '编辑自定义标签';
+        editButton.title = '编辑智能标签';
         editButton.innerHTML = `
             <svg viewBox="0 0 24 24" width="16" height="16">
                 <path fill="currentColor" d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" />

@@ -48,6 +48,9 @@ class QuickSearchManager {
             
             // 设置事件监听
             this.setupEventListeners();
+
+            // 初始化本地存储
+            await LocalStorageMgr.init();
             
             // 如果URL中有搜索参数，自动执行搜索
             const params = new URLSearchParams(window.location.search);
@@ -116,6 +119,13 @@ class QuickSearchManager {
                             pinIcon.title = '固定到常用网站';
                         }
                     }, 300);
+
+                    sendMessageSafely({
+                        type: MessageType.SCHEDULE_SYNC,
+                        data: {
+                            reason: ScheduleSyncReason.SETTINGS
+                        }
+                    });
                 } catch (error) {
                     logger.error('删除失败:', error);
                     this.showStatus('删除失败: ' + error.message, 'error');
@@ -220,6 +230,13 @@ class QuickSearchManager {
                 sites: sites,
             });
             await ConfigManager.savePinnedSites(sites);
+
+            sendMessageSafely({
+                type: MessageType.SCHEDULE_SYNC,
+                data: {
+                    reason: ScheduleSyncReason.SETTINGS
+                }
+            });
         } catch (error) {
             logger.error('保存常用网站顺序失败:', error);
             this.showStatus('保存顺序失败: ' + error.message, 'error');
@@ -402,6 +419,13 @@ class QuickSearchManager {
                         title: tab.title || '未命名网站'
                     });
                     await this.renderSites();
+
+                    sendMessageSafely({
+                        type: MessageType.SCHEDULE_SYNC,
+                        data: {
+                            reason: ScheduleSyncReason.SETTINGS
+                        }
+                    });
                 }
             } catch (error) {
                 logger.error('添加当前页面失败:', error);
@@ -431,6 +455,13 @@ class QuickSearchManager {
 
             // 重新渲染常用网站列表
             await this.renderSites(newSites);
+
+            sendMessageSafely({
+                type: MessageType.SCHEDULE_SYNC,
+                data: {
+                    reason: ScheduleSyncReason.SETTINGS
+                }
+            });
         } catch (error) {
             logger.error('切换常用网站状态失败:', error);
             this.showStatus(error.message, 'error');
@@ -527,22 +558,6 @@ class QuickSearchManager {
             const query = searchInput.value.trim();
             
             switch (e.key) {
-                case 'Enter':
-                    e.preventDefault();
-                    logger.debug('检测到回车键', {
-                        query: query,
-                    });
-                    if (this.selectedIndex >= 0 && this.resultItems[this.selectedIndex]) {
-                        // 如果有选中的结果，打开该结果
-                        const url = this.resultItems[this.selectedIndex].dataset.url;
-                        await this.openResult(url);
-                    } else if (query) {
-                        // 否则执行搜索
-                        this.hideSearchHistory();
-                        this.performSearch(query);
-                    }
-                    break;
-
                 case 'ArrowDown':
                     e.preventDefault();
                     this.moveSelection(1);
@@ -567,6 +582,26 @@ class QuickSearchManager {
                         window.close();
                     }
                     break;
+            }
+        });
+
+        // 输入事件处理
+        searchInput.addEventListener('keypress', async (e) => {
+            const query = searchInput.value.trim();
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                logger.debug('检测到回车键', {
+                    query: query,
+                });
+                if (this.selectedIndex >= 0 && this.resultItems[this.selectedIndex]) {
+                    // 如果有选中的结果，打开该结果
+                    const url = this.resultItems[this.selectedIndex].dataset.url;
+                    await this.openResult(url);
+                } else if (query) {
+                    // 否则执行搜索
+                    this.hideSearchHistory();
+                    this.performSearch(query);
+                }
             }
         });
 
@@ -618,8 +653,26 @@ class QuickSearchManager {
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
                 <span>${item.query}</span>
+                <svg class="delete-history-btn" viewBox="0 0 24 24" title="删除此搜索记录">
+                    <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+                </svg>
             </div>
         `).join('');
+        
+        // 添加删除按钮点击事件
+        wrapper.querySelectorAll('.delete-history-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation(); // 阻止冒泡，防止触发搜索项点击事件
+                const item = e.target.closest('.recent-search-item');
+                const itemQuery = item.dataset.query;
+                
+                // 删除此搜索历史
+                await searchManager.searchHistoryManager.removeSearch(itemQuery);
+                
+                // 重新渲染搜索历史
+                this.renderSearchHistory(query);
+            });
+        });
         
         recentSearches.classList.add('show');
     }

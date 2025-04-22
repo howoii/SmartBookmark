@@ -4,7 +4,7 @@
         "description": "扩展名称"
     },
     "extDescription": {
-        "message": "智能书签管理器，AI驱动，自动生成标签，语义化搜索，告别繁琐管理。",
+        "message": "智能书签管家，AI驱动，自动生成标签，语义化搜索，让整理和查找变得更简单。",
         "description": "扩展描述"
     },
     "cmd_quick_search": {

@@ -15,38 +15,36 @@ class SyncManager {
         this.isSyncing = false;
     }
 
+    async resetSyncCache() {
+        await LocalStorageMgr.remove(['lastSyncVersion']);
+    }
+
     // 初始化同步
-    async startSync(force = false) {
+    async startSync() {
         // 如果是第一次同步(版本号为0),则需要同步所有本地书签
         const lastSyncVersion = await this.getSyncVersion();
         if (lastSyncVersion === 0) {
-            await this.syncAllLocalBookmarks(force);
+            return await this.syncAllLocalBookmarks();
         }else {
-            await this.syncChange(force);
+            return await this.syncChange();
         }
     }
 
     // 记录书签变更
-    async recordBookmarkChange(bookmarks, isDeleted = false, beginSync = true) {
+    async recordBookmarkChange(bookmarks, isDeleted = false) {
         // 支持单个书签或书签数组
         const bookmarkArray = Array.isArray(bookmarks) ? bookmarks : [bookmarks];
+        const lastSyncVersion = await this.getSyncVersion();
 
         logger.debug('记录书签变更', {
             bookmarks: bookmarkArray,
             isDeleted: isDeleted,
-            beginSync: beginSync
+            lastSyncVersion: lastSyncVersion
         });
         
-        const lastSyncVersion = await this.getSyncVersion();
-        if (lastSyncVersion == 0 && beginSync) {
-            await this.syncAllLocalBookmarks();
-        } else {
+        if (lastSyncVersion !== 0) {
             // 批量添加变更
             await this.changeManager.addChange(bookmarkArray, isDeleted);
-            // 一次性同步所有变更
-            if (beginSync) {
-                await this.syncChange();
-            }
         }
     }
 
@@ -62,35 +60,26 @@ class SyncManager {
     }
 
     // 同步本地修改
-    async syncChange(force = false) {
+    async syncChange() {
         if (this.isSyncing) {
             throw new Error('同步正在进行中');
         }
-        
+        this.isSyncing = true;
+
         try {
             if (!await this.canSync()) {
                 logger.warn('无法同步: 离线或未登录');
-                if (force) {
-                    throw new Error('无法同步: 离线或未登录');
-                }else {
-                    return
-                }
+                throw new Error('未登录，请登录后重试');
+            }
+
+            const result = {
+                lastSync: new Date().getTime(),
+                lastSyncResult: 'success',
             }
 
             const pendingChanges = await this.changeManager.getPendingChanges();
             const changes = Object.values(pendingChanges).map(item => item.change);
-            
-            if (changes.length === 0 && !force) {
-                logger.info('没有待同步的变更');
-                return;
-            }
 
-            this.isSyncing = true;
-            if (!force) {
-                sendMessageSafely({
-                    type: MessageType.START_SYNC
-                });
-            }
             logger.info('开始同步变更, 变更数:', changes.length);
 
             const lastSyncVersion = await this.getSyncVersion();
@@ -108,44 +97,35 @@ class SyncManager {
             await this.changeManager.clearChanges();
 
             logger.info('同步变更完成, 服务器最新版本:', response.currentVersion);
+
+            return result;
         } catch (error) {
             logger.error('同步变更失败:', error);
             throw error;
         } finally {
             await this.changeManager.mergeTempQueueToStorage();
             this.isSyncing = false;
-            if (!force) {
-                sendMessageSafely({
-                    type: MessageType.FINISH_SYNC
-                });
-            }
         }
     }
 
     // 同步所有本地书签
-    async syncAllLocalBookmarks(force=false) {
+    async syncAllLocalBookmarks() {
         logger.info('同步本地书签');
 
         if (this.isSyncing) {
             logger.warn('同步正在进行中');
             throw new Error('同步正在进行中');
         }
+        this.isSyncing = true;
 
         try {
             if (!await this.canSync()) {
-                logger.warn('无法同步: 离线或未登录');
-                if (force) {
-                    throw new Error('无法同步: 离线或未登录');
-                }else {
-                    return
-                }
+                throw new Error('未登录，请登录后重试');
             }
 
-            this.isSyncing = true;
-            if (!force) {
-                sendMessageSafely({
-                    type: MessageType.START_SYNC
-                });
+            const result = {
+                lastSync: new Date().getTime(),
+                lastSyncResult: 'success',
             }
 
             // 获取所有本地书签
@@ -169,16 +149,13 @@ class SyncManager {
             
             await LocalStorageMgr.set('lastSyncVersion', Date.now());
             logger.info('同步本地书签完成, 服务器最新版本:', response.currentVersion);
+
+            return result;
         } catch (error) {
             logger.error('同步本地书签失败:', error);
             throw error;
         } finally {
             this.isSyncing = false;
-            if (!force) {
-                sendMessageSafely({
-                    type: MessageType.FINISH_SYNC
-                });
-            }
         }
     }
 

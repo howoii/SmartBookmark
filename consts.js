@@ -9,9 +9,10 @@ const MessageType = {
     // 同步相关
     FORCE_SYNC_BOOKMARK: 'FORCE_SYNC_BOOKMARK',
     SYNC_BOOKMARK_CHANGE: 'SYNC_BOOKMARK_CHANGE',
-    AUTO_SYNC_BOOKMARK: 'AUTO_SYNC_BOOKMARK',
-    START_SYNC: 'START_SYNC',
-    FINISH_SYNC: 'FINISH_SYNC',
+    EXECUTE_WEBDAV_SYNC: 'EXECUTE_WEBDAV_SYNC',
+    EXECUTE_CLOUD_SYNC: 'EXECUTE_CLOUD_SYNC',
+    SCHEDULE_SYNC: 'SCHEDULE_SYNC',
+    RESET_CLOUD_SYNC_CACHE: 'RESET_CLOUD_SYNC_CACHE',
 
     // 快捷键相关
     TOGGLE_SEARCH: 'TOGGLE_SEARCH',
@@ -27,6 +28,18 @@ const MessageType = {
 const ExternalMessageType = {
     LOGIN_SUCCESS: 'LOGIN_SUCCESS',
     CHECK_LOGIN_STATUS: 'CHECK_LOGIN_STATUS',
+}
+
+const ScheduleSyncReason = {
+    BOOKMARKS: 'bookmarks',
+    SETTINGS: 'settings',
+    FILTERS: 'filters',
+    SERVICES: 'services',
+}
+
+const SyncStatus = {
+    IDLE: 'idle',
+    SYNCING: 'syncing'
 }
 
 const MAX_PINNED_SITES = 10;

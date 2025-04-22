@@ -30,15 +30,16 @@ body {
     flex-shrink: 0;
     position: fixed;
     height: 100vh;
-    padding-bottom: 80px;
     box-sizing: border-box;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .logo-section {
     padding: 20px;
-    margin-bottom: 40px;
+    margin-bottom: 20px;
     text-align: center;
+    flex-shrink: 0;
 }
 
 .logo {
@@ -76,6 +77,28 @@ body {
     flex-direction: column;
     gap: 4px;
     padding: 0 8px;
+    overflow-y: auto;
+    flex-grow: 1;
+    margin-bottom: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.nav-menu::-webkit-scrollbar {
+    width: 4px;
+}
+
+.nav-menu::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.nav-menu::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.nav-menu::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.3);
 }
 
 .nav-item {
@@ -387,6 +410,10 @@ input:checked + .slider:before {
 
 .icon-import-export {
     background-image: url('../icons/nav-import-export.svg');
+}
+
+.icon-sync {
+    background-image: url('../icons/nav-sync.svg');
 }
 
 .icon-about {
@@ -986,13 +1013,11 @@ input:checked + .slider:before {
 
 /* 侧边栏底部样式 */
 .sidebar-footer {
-    position: fixed;
-    bottom: 0;
-    width: var(--sidebar-width);
     background-color: var(--sidebar-bg);
     padding: 16px;
     box-sizing: border-box;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
 }
 
 .footer-links {
@@ -1090,18 +1115,6 @@ input:checked + .slider:before {
     margin-bottom: 0;
 }
 
-/* 响应式调整 */
-@media (max-width: 768px) {
-    .api-security-notice {
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    .notice-icon {
-        text-align: center;
-    }
-}
-
 /* API 使用统计样式 */
 .api-usage-stats {
     margin: 24px 0;
@@ -1182,13 +1195,6 @@ input:checked + .slider:before {
 .stats-tokens .token-value {
     font-weight: 500;  /* 数值加粗 */
     color: var(--text-seventh);  /* 数值颜色更深一些 */
-}
-
-/* 响应式调整 */
-@media (max-width: 768px) {
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
 }
 
 /* 筛选规则部分样式 */
@@ -1423,7 +1429,18 @@ select:disabled {
     margin-bottom: 16px;
 }
 
+.form-group:last-child {
+    margin-bottom: 0;
+}
+
 .form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.form-group-label {
     display: block;
     margin-bottom: 6px;
     font-size: 14px;
@@ -1923,6 +1940,9 @@ input[type="number"].condition-value-input {
 /* 开关文本样式 */
 .switch-label .switch-text {
     order: 1;
+    display: flex;
+    gap: 2px;
+    align-items: center;
     margin-right: 12px;
     font-size: 14px;
     color: var(--text-primary);
@@ -2630,13 +2650,6 @@ input[type="number"].condition-value-input {
     justify-content: space-between;
     font-size: 12px;
     color: var(--text-secondary);
-}
-
-/* 响应式布局 */
-@media (max-width: 768px) {
-    .import-export-grid {
-        grid-template-columns: 1fr;
-    }
 }
 
 /* 书签选择对话框样式 */
@@ -3895,29 +3908,6 @@ input[type="radio"]:checked + .radio-mark::after {
     height: 20px;
 }
 
-/* 响应式布局 */
-@media (max-width: 768px) {
-    .about-header {
-        flex-direction: column;
-        text-align: center;
-        padding: 16px;
-    }
-
-    .about-logo {
-        margin: 0 0 16px 0;
-    }
-
-    .version-info {
-        flex-direction: column;
-        gap: 8px;
-        align-items: center;
-    }
-
-    .project-links {
-        justify-content: center;
-    }
-}
-
 /* 动画效果 */
 .about-section {
     animation: fadeInUp 0.5s ease;
@@ -3932,4 +3922,347 @@ input[type="radio"]:checked + .radio-mark::after {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* 同步服务容器 */
+.sync-services-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+/* 同步服务卡片 */
+.sync-service-card {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--bg-border-light);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
+}
+
+.sync-service-card:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+/* 服务卡片头部 */
+.sync-service-header {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+}
+
+.sync-service-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.sync-service-name { 
+    display: flex; 
+    align-items: center;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.sync-service-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    padding: 6px 12px;
+    border-radius: 6px;
+    box-sizing: border-box;
+    width: 100%;
+    border: 2px solid var(--border-color);
+}
+
+.sync-status-text {
+    flex: 1;
+}
+
+.sync-status-icon {
+    display: none;
+    align-items: center;
+}
+
+.sync-status-icon.show {
+    display: flex;
+}
+
+.sync-status-icon.success {
+    color: var(--success-text);
+}
+
+.sync-status-icon.error {
+    color: var(--error-text);
+}
+
+/* 成功状态样式 */
+.sync-service-status.success {
+    color: var(--success-text);
+    border-color: var(--success-border);
+}
+
+/* 错误状态样式 */
+.sync-service-status.error {
+    color: var(--error-text);
+    border-color: var(--error-border);
+}
+
+/* 服务卡片内容 */
+.sync-service-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sync-service-description {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.sync-service-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.sync-service-buttons button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 14px;
+}
+
+.sync-service-buttons button svg {
+    width: 16px;
+    height: 16px;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(-360deg);
+    }
+}
+
+.sync-now-btn.syncing svg {
+    animation: rotate 1s linear infinite;
+}
+
+/* WebDAV配置对话框 */
+#webdav-config-dialog .dialog-content {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 208px);
+    margin-top: 80px;
+}
+
+.config-section {
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.config-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.config-section h4 {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    margin-top: 0;
+}
+
+.config-section input::placeholder {
+    color: var(--text-tertiary);
+}
+
+.password-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-container input {
+    flex: 1;
+    padding-right: 40px;
+}
+
+.toggle-password-btn {
+    position: absolute;
+    right: 8px;
+    background: none;
+    border: none;
+    padding: 4px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.toggle-password-btn:hover {
+    opacity: 1;
+}
+
+.form-actions {
+    margin-top: 16px;
+}
+
+.sync-data-options {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.sync-interval-group {
+    margin-top: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sync-interval-group label {
+    margin-bottom: 0;
+}
+
+.sync-interval-group input {
+    width: 120px;
+}
+
+.sync-interval-group .help-text {
+    width: 100%;
+    margin-top: 6px;
+}
+
+.config-section .sync-strategy-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.test-connection-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.test-connection-btn svg {
+    display: none;
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.test-connection-btn.testing svg {
+    display: block;
+    animation: rotate 1s linear infinite;
+}
+/* 解决自动同步开关布局问题 */
+.form-group .switch-label {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.webdav-recommendations {
+    margin-top: 8px;
+    margin-bottom: 0px;
+    font-size: 13px;
+}
+
+.webdav-recommendations a {
+    color: var(--action-color);
+    text-decoration: none;
+}
+
+.webdav-recommendations a:hover {
+    text-decoration: underline;
+}
+
+/* 新增登录状态样式 */
+.login-status {
+    display: flex;
+    align-items: center;
+    margin-left: 8px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.login-status-text {
+    display: none;
+    color: var(--success-text);
+    font-style: normal;
+}
+
+.login-link {
+    color: var(--text-secondary);
+    font-style: italic;
+    /* text-decoration: none; */
+    font-weight: normal;
+    transition: color 0.2s;
+}
+
+.login-link:hover {
+    text-decoration: underline;
+    color: var(--action-color);
+}
+
+.login-status-icon {
+    display: none;
+    color: var(--success-text);
+}
+
+.logged-in-title .login-status-icon {
+    display: block;
+}
+
+.logged-in-title .login-status-text {
+    display: inline;
+}
+
+.logged-in-title .login-link {
+    display: none;
+}
+
+/* 对话框内的操作按钮样式 */
+.reset-cloud-cache-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: var(--warning-bg);
+    color: var(--warning-text);
+    border: 1px solid var(--warning-border);
+    transition: background-color 0.2s;
+}
+
+.reset-cloud-cache-btn:hover {
+    background-color: var(--warning-bg-hover);
+}
+
+.reset-cloud-cache-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+#clear-search-history {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    padding: 5px 12px;
 }

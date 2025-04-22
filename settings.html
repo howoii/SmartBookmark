@@ -30,7 +30,7 @@
             </a>
             <a href="#filters" class="nav-item" data-section="filters">
                 <i class="icon-filters"></i>
-                <span>自定义标签</span>
+                <span>智能标签</span>
             </a>
             <a href="#privacy" class="nav-item" data-section="privacy">
                 <i class="icon-privacy"></i>
@@ -39,6 +39,10 @@
             <a href="#import-export" class="nav-item" data-section="import-export">
                 <i class="icon-import-export"></i>
                 <span>导入/导出</span>
+            </a>
+            <a href="#sync" class="nav-item" data-section="sync">
+                <i class="icon-sync"></i>
+                <span>同步</span>
             </a>
             <a href="#about" class="nav-item" data-section="about">
                 <i class="icon-about"></i>
@@ -136,13 +140,20 @@
                         <div class="setting-item-card">
                             <div class="form-group">
                                 <label class="switch-label">
-                                    <span class="switch-text">搜索历史</span>
+                                    <span class="switch-text">
+                                        搜索历史
+                                        <div class="tooltip-icon" data-tooltip="设置是否显示最近的搜索记录">
+                                            <svg width="16" height="16" viewBox="0 0 24 24">
+                                                <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                            </svg>
+                                        </div>
+                                    </span>
                                     <div class="switch-container">
                                         <input type="checkbox" id="show-search-history" checked>
                                         <span class="switch-slider"></span>
                                     </div>
                                 </label>
-                                <p class="setting-description">是否显示最近的搜索记录</p>
+                                <button id="clear-search-history" class="secondary-btn">清除搜索历史</button>
                             </div>
                         </div>
                         <!-- 添加网站显示设置 -->
@@ -365,14 +376,14 @@
 
             <!-- 在 settings-container 中添加新的 section -->
             <div class="settings-section" id="filters-section">
-                <h2>自定义标签</h2>
+                <h2>智能标签</h2>
                 <div class="section-description">
-                    根据自定义的筛选规则自动匹配书签
+                    创建基于规则的智能标签，自动对符合条件的书签进行分类和组织
                 </div>
                 
                 <div class="filters-container">
                     <div class="filters-header">
-                        <h3>自定义标签列表</h3>
+                        <h3>智能标签列表</h3>
                         <button id="add-filter-btn" class="primary-btn">
                             <svg viewBox="0 0 24 24" width="16" height="16">
                                 <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
@@ -404,7 +415,7 @@
                         </div>
                         <div class="card-content">
                             <h3>导入浏览器书签</h3>
-                            <p>从Chrome浏览器导入现有书签</p>
+                            <p>从浏览器收藏夹导入现有书签</p>
                             <button id="import-browser-btn" class="primary-btn">
                                 开始导入
                             </button>
@@ -594,8 +605,8 @@
                                         <input type="checkbox" id="export-filters" checked>
                                         <span class="checkmark"></span>
                                         <div class="option-info">
-                                            <span class="option-title">自定义标签</span>
-                                            <span class="option-desc">包括所有自定义的标签规则</span>
+                                            <span class="option-title">智能标签</span>
+                                            <span class="option-desc">包括所有智能标签规则</span>
                                         </div>
                                     </label>
                                     <label class="checkbox-container">
@@ -671,7 +682,7 @@
                                         <input type="checkbox" id="import-filters" checked>
                                         <span class="checkmark"></span>
                                         <div class="option-info">
-                                            <span class="option-title">自定义标签</span>
+                                            <span class="option-title">智能标签</span>
                                             <span class="option-count">发现 <span id="filter-count">0</span> 个标签规则</span>
                                         </div>
                                     </label>
@@ -723,6 +734,127 @@
                 </div>
             </div>
 
+            <!-- 在about section之前 -->
+            <div class="settings-section" id="sync-section">
+                <h2>同步</h2>
+                <div class="section-description">
+                    配置数据同步服务以在不同设备间同步您的书签和个性化设置，建议仅启用单一同步服务以避免数据冲突
+                </div>
+                
+                <div class="sync-services-container">
+                    <!-- 云同步服务卡片 -->
+                    <div class="sync-service-card" id="cloud-sync-card">
+                        <div class="sync-service-header">
+                            <div class="sync-service-top">
+                                <div class="sync-service-name">
+                                    云同步
+                                    <div class="login-status">
+                                        <a href="#" class="login-link">去登录</a>
+                                        <svg class="login-status-icon" viewBox="0 0 24 24" width="16" height="16">
+                                            <path fill="currentColor" d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" />
+                                        </svg>
+                                        <span class="login-status-text">已登录</span>
+                                    </div>
+                                </div>
+                                <div class="sync-service-actions">
+                                    <label class="switch-label">
+                                        <div class="switch-container" title="开启/关闭同步">
+                                            <input type="checkbox" class="sync-toggle">
+                                            <span class="switch-slider"></span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="sync-service-status">
+                                <span class="sync-status-text">上次同步: 从未同步</span>
+                                <span class="sync-status-icon success">
+                                    <svg viewBox="0 0 24 24" width="16" height="16">
+                                        <path fill="currentColor" d="M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z"/>
+                                    </svg>
+                                </span>
+                                <span class="sync-status-icon error">
+                                    <svg viewBox="0 0 24 24" width="16" height="16">
+                                        <path fill="currentColor" d="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="sync-service-content">
+                            <div class="sync-service-description">
+                                官方提供的云同步服务，目前只支持同步书签数据
+                            </div>
+                            <div class="sync-service-buttons">
+                                <button class="secondary-btn sync-settings-btn">
+                                    <svg viewBox="0 0 24 24" width="16" height="16">
+                                        <path fill="currentColor" d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
+                                    </svg>
+                                    设置
+                                </button>
+                                <button class="primary-btn sync-now-btn">
+                                    <svg viewBox="0 0 24 24" width="16" height="16">
+                                        <path fill="currentColor" d="M12,18A6,6 0 0,1 6,12C6,11 6.25,10.03 6.7,9.2L5.24,7.74C4.46,8.97 4,10.43 4,12A8,8 0 0,0 12,20V23L16,19L12,15M12,4V1L8,5L12,9V6A6,6 0 0,1 18,12C18,13 17.75,13.97 17.3,14.8L18.76,16.26C19.54,15.03 20,13.57 20,12A8,8 0 0,0 12,4Z"/>
+                                    </svg>
+                                    立即同步
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WebDAV同步服务卡片 -->
+                    <div class="sync-service-card" id="webdav-sync-card">
+                        <div class="sync-service-header">
+                            <div class="sync-service-top">
+                                <div class="sync-service-name">WebDAV</div>
+                                <div class="sync-service-actions">
+                                    <label class="switch-label">
+                                        <div class="switch-container" title="开启/关闭同步">
+                                            <input type="checkbox" class="sync-toggle">
+                                            <span class="switch-slider"></span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="sync-service-status">
+                                <span class="sync-status-text">上次同步: 从未同步</span>
+                                <span class="sync-status-icon success">
+                                    <svg viewBox="0 0 24 24" width="16" height="16">
+                                        <path fill="currentColor" d="M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z"/>
+                                    </svg>
+                                </span>
+                                <span class="sync-status-icon error">
+                                    <svg viewBox="0 0 24 24" width="16" height="16">
+                                        <path fill="currentColor" d="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="sync-service-content">
+                            <div class="sync-service-description">
+                                使用WebDAV协议同步到您的私有存储空间
+                                <p class="webdav-recommendations">推荐云盘：
+                                    <a href="https://help.jianguoyun.com/?p=2064" target="_blank">坚果云</a>、
+                                    <a href="https://infini-cloud.net/" target="_blank">InfiniCLOUD</a>
+                                </p>
+                            </div>
+                            <div class="sync-service-buttons">
+                                <button class="secondary-btn sync-settings-btn">
+                                    <svg viewBox="0 0 24 24" width="16" height="16">
+                                        <path fill="currentColor" d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
+                                    </svg>
+                                    设置
+                                </button>
+                                <button class="primary-btn sync-now-btn">
+                                    <svg viewBox="0 0 24 24" width="16" height="16">
+                                        <path fill="currentColor" d="M12,18A6,6 0 0,1 6,12C6,11 6.25,10.03 6.7,9.2L5.24,7.74C4.46,8.97 4,10.43 4,12A8,8 0 0,0 12,20V23L16,19L12,15M12,4V1L8,5L12,9V6A6,6 0 0,1 18,12C18,13 17.75,13.97 17.3,14.8L18.76,16.26C19.54,15.03 20,13.57 20,12A8,8 0 0,0 12,4Z"/>
+                                    </svg>
+                                    立即同步
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 在settings-container中添加About内容区域 -->
             <div class="settings-section" id="about-section">
                 <h2>关于</h2>
@@ -735,8 +867,8 @@
                         <div class="about-info">
                             <h1>Smart Bookmark</h1>
                             <div class="version-info">
-                                <span class="version">版本 <span id="current-version">1.0.0</span></span>
-                                <span class="update-date">最后更新：<span id="last-update-date">2024-02-26</span></span>
+                                <span class="version">版本 <span id="current-version"></span></span>
+                                <span class="update-date">最后更新：<span id="last-update-date"></span></span>
                             </div>
                         </div>
                     </div>
@@ -898,7 +1030,7 @@
         <div id="filter-dialog" class="dialog">
             <div class="dialog-content filter-config">
                 <div class="dialog-header">
-                    <h3>添加自定义标签</h3>
+                    <h3>添加智能标签</h3>
                     <button class="close-dialog-btn">
                         <svg width="16" height="16" viewBox="0 0 24 24">
                             <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
@@ -1076,10 +1208,223 @@
                 </div>
             </div>
         </div>
+
+        <!-- WebDAV配置对话框 -->
+        <div id="webdav-config-dialog" class="dialog">
+            <div class="dialog-content">
+                <div class="dialog-header">
+                    <h3>WebDAV 同步设置</h3>
+                    <div class="dialog-header-actions">
+                        <button class="close-dialog-btn">
+                            <svg viewBox="0 0 24 24" width="24" height="24">
+                                <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="dialog-body">
+                    <!-- 服务器信息 -->
+                    <div class="config-section">
+                        <h4>服务器信息</h4>
+                        <div class="form-group">
+                            <label for="webdav-url">服务器地址</label>
+                            <input type="url" id="webdav-url" placeholder="https://example.com/dav/" required>
+                            <div class="help-text">WebDAV 服务器的完整 URL 地址</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="webdav-username">用户名</label>
+                            <input type="text" id="webdav-username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="webdav-password">密码</label>
+                            <div class="password-input-container">
+                                <input type="password" id="webdav-password" required>
+                                <button class="icon-btn toggle-password-btn" type="button">
+                                    <svg viewBox="0 0 24 24" width="20" height="20">
+                                        <path fill="currentColor" d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="webdav-folder">同步文件夹</label>
+                            <input type="text" id="webdav-folder" value="/bookmarks">
+                            <div class="help-text">服务器上存储数据的文件夹路径，请确保路径存在</div>
+                        </div>
+                        <div class="form-actions">
+                            <button class="secondary-btn test-connection-btn">
+                                <svg viewBox="0 0 24 24" width="16" height="16">
+                                    <path fill="currentColor" d="M12,18A6,6 0 0,1 6,12C6,11 6.25,10.03 6.7,9.2L5.24,7.74C4.46,8.97 4,10.43 4,12A8,8 0 0,0 12,20V23L16,19L12,15M12,4V1L8,5L12,9V6A6,6 0 0,1 18,12C18,13 17.75,13.97 17.3,14.8L18.76,16.26C19.54,15.03 20,13.57 20,12A8,8 0 0,0 12,4Z"/>
+                                </svg>
+                                <span>测试连接</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 同步数据 -->
+                    <div class="config-section">
+                        <h4>同步数据</h4>
+                        <div class="sync-data-options">
+                            <label class="switch-label">
+                                <span class="switch-text light">书签数据</span>
+                                <div class="switch-container">
+                                    <input type="checkbox" id="sync-bookmarks" checked>
+                                    <span class="switch-slider"></span>
+                                </div>
+                            </label>
+                            <label class="switch-label">
+                                <span class="switch-text light">设置选项</span>
+                                <div class="switch-container">
+                                    <input type="checkbox" id="sync-settings" checked>
+                                    <span class="switch-slider"></span>
+                                </div>
+                            </label>
+                            <label class="switch-label">
+                                <span class="switch-text light">智能标签</span>
+                                <div class="switch-container">
+                                    <input type="checkbox" id="sync-filters" checked>
+                                    <span class="switch-slider"></span>
+                                </div>
+                            </label>
+                            <label class="switch-label">
+                                <span class="switch-text light">API 服务配置 ⚠️</span>
+                                <div class="switch-container">
+                                    <input type="checkbox" id="sync-services" checked>
+                                    <span class="switch-slider"></span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 同步策略 -->
+                    <div class="config-section">
+                        <h4>同步行为</h4>
+                        <div class="form-group">
+                            <label class="switch-label">
+                                <span class="switch-text sync-strategy-label">自动同步</span>
+                                <div class="switch-container">
+                                    <input type="checkbox" id="auto-sync" checked>
+                                    <span class="switch-slider"></span>
+                                </div>
+                            </label>
+                            <div class="help-text">开启后，书签数据会定期同步到WebDAV服务器，以及在你修改本地数据30秒后同步到服务器</div>
+                        </div>
+                        <div class="form-group sync-interval-group">
+                            <label for="sync-interval" class="sync-strategy-label">同步间隔（分钟）</label>
+                            <input type="number" id="sync-interval" min="5" max="1440" value="30">
+                            <div class="help-text">设置自动同步的时间间隔，最短 5 分钟，最长 24 小时</div>
+                        </div>
+                        <!-- 书签向量同步开关 -->
+                        <div class="form-group">
+                            <label class="switch-label">
+                                <span class="switch-text sync-strategy-label">
+                                    同步书签向量
+                                    <div class="tooltip-icon" data-tooltip="建议新设备首次同步时开启，首次同步完成之后关闭此选项">
+                                        <svg width="16" height="16" viewBox="0 0 24 24">
+                                            <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                        </svg>
+                                    </div>
+                                </span>
+                                <div class="switch-container">
+                                    <input type="checkbox" id="sync-embeddings" checked>
+                                    <span class="switch-slider"></span>
+                                </div>
+                            </label>
+                            <div class="help-text">此选项用于决定是否同步书签索引向量，关闭后将大大减少同步数据量（但是需要在新设备上重新生成向量）</div>
+                        </div>
+                        <div class="sync-mechanism-group">
+                            <label class="form-group-label sync-strategy-label">冲突解决策略</label>
+                            <div class="radio-group">
+                                <label class="radio-container">
+                                    <input type="radio" name="sync-mechanism" value="merge" checked style="display: none;">
+                                    <span class="radio-mark"></span>
+                                    <div class="option-info">
+                                        <div class="option-title">合并</div>
+                                        <div class="option-desc">合并本地和服务器的数据（推荐）</div>
+                                    </div>
+                                </label>
+                                <label class="radio-container">
+                                    <input type="radio" name="sync-mechanism" value="local-first" style="display: none;">
+                                    <span class="radio-mark"></span>
+                                    <div class="option-info">
+                                        <div class="option-title">本地优先</div>
+                                        <div class="option-desc">使用本地数据完全覆盖服务器数据（⚠️ 建议先做好备份）</div>
+                                    </div>
+                                </label>
+                                <label class="radio-container">
+                                    <input type="radio" name="sync-mechanism" value="remote-first" style="display: none;">
+                                    <span class="radio-mark"></span>
+                                    <div class="option-info">
+                                        <div class="option-title">远程优先</div>
+                                        <div class="option-desc">使用服务器数据完全覆盖本地数据（⚠️ 建议先做好备份）</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dialog-footer">
+                    <button class="secondary-btn cancel-btn">取消</button>
+                    <button class="primary-btn save-btn">保存</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 云同步配置对话框 -->
+        <div id="cloud-config-dialog" class="dialog">
+            <div class="dialog-content">
+                <div class="dialog-header">
+                    <h3>云同步设置</h3>
+                    <div class="dialog-header-actions">
+                        <button class="close-dialog-btn">
+                            <svg viewBox="0 0 24 24" width="24" height="24">
+                                <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="dialog-body">
+                    <!-- 同步设置 -->
+                    <div class="config-section">
+                        <h4>同步选项</h4>
+                        <div class="form-group">
+                            <label class="switch-label">
+                                <span class="switch-text sync-strategy-label">自动同步</span>
+                                <div class="switch-container">
+                                    <input type="checkbox" id="cloud-auto-sync" checked>
+                                    <span class="switch-slider"></span>
+                                </div>
+                            </label>
+                            <div class="help-text">开启后，书签数据会定期同步到云端，以及在书签发生变更时自动同步</div>
+                        </div>
+                    </div>
+
+                    <!-- 云同步管理 -->
+                    <div class="config-section">
+                        <h4>同步管理</h4>
+                        <div class="form-actions">
+                            <label class="form-group-label sync-strategy-label">从头开始同步</label>
+                            <div class="help-text">重置本地同步缓存，下次同步时不会删除任何数据只是将服务器和本地书签合并在一起</div>
+                            <button class="secondary-btn reset-cloud-cache-btn">
+                                <svg viewBox="0 0 24 24" width="16" height="16">
+                                    <path fill="currentColor" d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"/>
+                                </svg>
+                                <span>重置缓存</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="dialog-footer">
+                    <button class="secondary-btn cancel-cloud-btn">取消</button>
+                    <button class="primary-btn save-cloud-btn">保存</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="consts.js"></script>
     <script src="common.js"></script>
+    <script src="version.js"></script>
     <script src="env.js"></script>
     <script src="logger.js"></script>
     <script src="models.js"></script>
@@ -1093,6 +1438,10 @@
     <script src="themeManager.js"></script>
     <script src="customFilter.js"></script>
     <script src="importExport.js"></script>
+    <script src="syncSettingManager.js"></script>
+    <script src="webdavClient.js"></script>
+    <script src="syncSettings.js"></script>
+    <script src="search.js"></script>
     <script src="settings.js"></script>
 </body>
 </html> 

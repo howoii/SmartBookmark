@@ -391,14 +391,15 @@ class ImportExportManager {
                     type: MessageType.BOOKMARKS_UPDATED,
                     source: 'import_from_file'
                 });
-                sendMessageSafely({
-                    type: MessageType.AUTO_SYNC_BOOKMARK,
-                }, (response) => {
-                    if (response && response.error) {
-                        showToast('书签同步失败: ' + response.error, true);
-                    }
-                });
             }
+
+            // 预定同步
+            sendMessageSafely({
+                type: MessageType.SCHEDULE_SYNC,
+                data: {
+                    reason: ScheduleSyncReason.BOOKMARKS
+                }
+            });
 
             this.hideImportDialog();
         } catch (error) {

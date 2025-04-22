@@ -223,4 +223,14 @@ class LocalStorageMgr {
             logger.error('缓存标签失败:', error);
         }
     }
+
+    // 获取上次显示的版本信息
+    static async getLastShownVersion() {
+        return await this.get('last_shown_version');
+    }
+
+    // 设置上次显示的版本信息
+    static async setLastShownVersion(version) {
+        await this.set('last_shown_version', version);
+    }
 }

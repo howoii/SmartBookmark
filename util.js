@@ -1,18 +1,4 @@
-// 添加 XML 转义函数
-function escapeXml(unsafe) {
-    if (!unsafe) return '';
-    return unsafe
-        .replace(/[<>&'"]/g, c => {
-            switch (c) {
-                case '<': return '&lt;';
-                case '>': return '&gt;';
-                case '&': return '&amp;';
-                case '\'': return '&apos;';
-                case '"': return '&quot;';
-                default: return c;
-            }
-        });
-}
+// 业务相关的辅助函数
 
 async function validateToken() {
     const token = await LocalStorageMgr.get('token');
@@ -38,54 +24,35 @@ async function validateToken() {
     }
 }
 
-// 安全地发送消息的辅助函数
-function sendMessageSafely(message, callback = null) {
-    message.env = EnvIdentifier;
-    chrome.runtime.sendMessage(message, (response) => {
-        // 检查是否有错误，但不做任何处理
-        // 这样可以防止未捕获的错误
-        const lastError = chrome.runtime.lastError;
-        if (lastError) {
-            logger.debug('消息处理失败:', {
-                error: lastError.message,
-                message: message
-            });
-        }
-        if (callback) {
-            callback(response);
-        }
-    });
-}
-
-function handleRuntimeError() {
-    const error = chrome.runtime.lastError;
-    if (error) {
-        throw new Error(error);
-    }
-}
-
-// 获取网站图标的辅函数
-async function getFaviconUrl(bookmarkUrl) {
-    try {
-        const url = new URL(chrome.runtime.getURL("/_favicon/"));
-        url.searchParams.set("pageUrl", bookmarkUrl);
-        url.searchParams.set("size", "32");
-
-        return url.toString();  
-    } catch (error) {
-        logger.error('获取网站图标失败:', error);
-        return 'icons/default_favicon.png'; // 返回默认图标
-    }
-}
-
 async function recordBookmarkChange(bookmarks, isDeleted = false, beginSync = true, onError = null) {
     sendMessageSafely({
         type: MessageType.SYNC_BOOKMARK_CHANGE,
-        data: { bookmarks, isDeleted, beginSync }
+        data: { bookmarks, isDeleted }
     }, (response) => {
         logger.debug("recordBookmarkChange response", response);
         if (!response.success && onError) {
             onError(response.error);
+        }
+    });
+    // 预定同步
+    if (beginSync) {
+        sendMessageSafely({
+            type: MessageType.SCHEDULE_SYNC,
+            data: {
+                reason: ScheduleSyncReason.BOOKMARKS
+            }
+        }, (response) => {
+            logger.debug("预定同步结果: ", response);
+        });
+    }
+}
+
+async function updateSettingsWithSync(updates) {
+    await SettingsManager.update(updates);
+    sendMessageSafely({
+        type: MessageType.SCHEDULE_SYNC,
+        data: {
+            reason: ScheduleSyncReason.SETTINGS
         }
     });
 }
@@ -94,28 +61,6 @@ async function recordBookmarkChange(bookmarks, isDeleted = false, beginSync = tr
 async function checkIfPageSaved(url) {
     const result = await LocalStorageMgr.getBookmark(url, true);
     return !!result;
-}
-
-// 更新扩展图标状态
-async function updateExtensionIcon(tabId, isSaved) {
-    try {
-        await chrome.action.setIcon({
-            tabId: tabId,
-            path: {
-                "16": `icons/${isSaved ? 'saved' : 'unsaved'}_16.png`,
-                "32": `icons/${isSaved ? 'saved' : 'unsaved'}_32.png`,
-                "48": `icons/${isSaved ? 'saved' : 'unsaved'}_48.png`,
-                "128": `icons/${isSaved ? 'saved' : 'unsaved'}_128.png`
-            }
-        });
-    } catch (error) {
-        logger.error('更新图标失败:', {
-            error: error.message,
-            tabId: tabId,
-            isSaved: isSaved,
-            stack: error.stack
-        });
-    }
 }
 
 async function openOptionsPage(section = 'overview') {
@@ -949,22 +894,6 @@ function smartTruncate(text, maxLength = 500) {
     }
 }
 
-// 添加辅助函数计算字符串的视觉长度
-function getStringVisualLength(str) {
-    let length = 0;
-    for (let i = 0; i < str.length; i++) {
-        // 中日韩文字计为2个单位长度
-        if (/[\u4e00-\u9fa5\u3040-\u30ff\u3400-\u4dbf]/.test(str[i])) {
-            length += 2;
-        }
-        // 其他字符计为1个单位长度
-        else {
-            length += 1;
-        }
-    }
-    return length;
-}
-
 // 获取备选标签的辅助函数
 function getFallbackTags(title, metadata) {
     const maxTags = 5;
@@ -1088,5 +1017,83 @@ async function getPageContent(tab) {
     } catch (error) {
         logger.error('获取页面内容时出错:', error);
         return {};
+    }
+}
+
+/**
+ * 获取当前设备信息
+ * @returns {Promise<string>} 设备信息字符串
+ */
+async function getDeviceInfo() {
+    try {
+        // 获取用户代理字符串
+        const userAgent = navigator.userAgent;
+        
+        // 提取操作系统信息
+        let osName = "未知系统";
+        
+        // 检测操作系统
+        if (userAgent.indexOf("Win") !== -1) osName = "Windows";
+        else if (userAgent.indexOf("Mac") !== -1) osName = "Mac OS";
+        else if (userAgent.indexOf("Linux") !== -1) osName = "Linux";
+        else if (userAgent.indexOf("Android") !== -1) osName = "Android";
+        else if (userAgent.indexOf("iOS") !== -1 || userAgent.indexOf("iPhone") !== -1 || userAgent.indexOf("iPad") !== -1) osName = "iOS";
+        
+        // 获取浏览器信息和版本
+        const browserInfo = (() => {
+            const ua = navigator.userAgent;
+            let browserName = "未知浏览器";
+            let version = "";
+            
+            // 检测Chrome浏览器
+            const chromeMatch = ua.match(/Chrome\/(\d+\.\d+)/i);
+            if (chromeMatch) {
+                browserName = "Chrome";
+                version = chromeMatch[1];
+            }
+            // 检测Firefox浏览器
+            else if (ua.indexOf("Firefox") !== -1) {
+                const firefoxMatch = ua.match(/Firefox\/(\d+\.\d+)/i);
+                browserName = "Firefox";
+                version = firefoxMatch ? firefoxMatch[1] : "";
+            }
+            // 检测Safari浏览器 (但不是Chrome或Firefox)
+            else if (ua.indexOf("Safari") !== -1) {
+                const safariMatch = ua.match(/Safari\/(\d+\.\d+)/i);
+                browserName = "Safari";
+                version = safariMatch ? safariMatch[1] : "";
+            }
+            // 检测Edge浏览器
+            else if (ua.indexOf("Edg") !== -1) {
+                const edgeMatch = ua.match(/Edg\/(\d+\.\d+)/i);
+                browserName = "Edge";
+                version = edgeMatch ? edgeMatch[1] : "";
+            }
+            
+            return {
+                name: browserName,
+                version: version
+            };
+        })();
+        
+        // 获取或创建设备随机ID
+        let deviceRandomId = await LocalStorageMgr.get('device_uuid');
+        if (!deviceRandomId) {
+            // 生成5位随机字符作为设备ID
+            const randomChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            const randomId = Array.from(
+                { length: 5 }, 
+                () => randomChars.charAt(Math.floor(Math.random() * randomChars.length))
+            ).join('');
+            
+            deviceRandomId = randomId;
+            await LocalStorageMgr.set('device_uuid', deviceRandomId);
+        }
+        
+        // 返回格式化的设备信息字符串
+        return `${osName} ${browserInfo.name} ${browserInfo.version}-${deviceRandomId}`;
+    } catch (error) {
+        // 出错时返回默认值
+        return "未知设备";
     }
 }

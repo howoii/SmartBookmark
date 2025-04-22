@@ -48,7 +48,7 @@ async function handlePrivacyIconClick(isPrivate) {
             if (!privacyDomains.includes(domain)) {
                 // 更新设置
                 const newDomains = [...privacyDomains, domain];
-                await SettingsManager.update({
+                await updateSettingsWithSync({
                     privacy: {
                         customDomains: newDomains
                     }
@@ -175,6 +175,326 @@ async function getBookmarkManager() {
     return window.bookmarkManagerInstance;
 }
 
+/**
+ * 同步状态弹窗类
+ * 负责显示和管理同步状态弹窗
+ */
+class SyncStatusDialog {
+    constructor() {
+        this.dialog = document.getElementById('sync-status-dialog');
+        this.servicesContainer = this.dialog.querySelector('.sync-services-container');
+        this.closeButton = this.dialog.querySelector('.close-dialog-btn');
+        this.syncServiceTemplate = document.getElementById('sync-service-template');
+        
+        this.listenOnSyncProcessChange = null;
+        this.refreshSyncStatus = this.refreshSyncStatus.bind(this);
+        
+        // 绑定事件处理函数到当前实例
+        this.bindEvents();
+    }
+    
+    /**
+     * 绑定事件
+     */
+    bindEvents() {
+        // 关闭按钮事件
+        this.closeButton.addEventListener('click', () => this.close());
+        
+        // 点击空白区域关闭弹窗
+        this.dialog.addEventListener('click', (e) => {
+            if (e.target === this.dialog) {
+                this.close();
+            }
+        });
+    }
+    
+    /**
+     * 打开弹窗并刷新同步状态
+     */
+    async open() {
+        this.dialog.classList.add('show');
+        await this.refreshSyncStatus();
+    }
+    
+    /**
+     * 关闭弹窗
+     */
+    close() {
+        this.dialog.classList.remove('show');
+        this.listenOnSyncProcessChange = null;
+    }
+
+    isOpen() {
+        return this.dialog.classList.contains('show');
+    }
+
+    onSyncProcessChange() {
+        if (!this.isOpen()) {
+            return;
+        }
+
+        if (this.listenOnSyncProcessChange) {
+            this.listenOnSyncProcessChange();
+        }
+    }
+    
+    /**
+     * 刷新同步状态
+     */
+    async refreshSyncStatus() {
+        if (!this.isOpen()) {
+            return;
+        }
+
+        try {
+            // 清空服务容器
+            this.servicesContainer.innerHTML = '';
+            this.listenOnSyncProcessChange = null;
+
+            // 添加loading图标
+            const loadingElement = document.createElement('div');
+            loadingElement.className = 'loading-state';
+            loadingElement.innerHTML = `
+                <div class="loading-spinner"></div>
+                <div class="loading-text">正在获取同步状态...</div>
+            `;
+            this.servicesContainer.appendChild(loadingElement);
+            
+            // 获取同步配置
+            const config = await SyncSettingsManager.getConfig();
+            const status = await SyncStatusManager.getStatus();
+            const isSyncing = await SyncStatusManager.isSyncing();
+            const syncProcess = await SyncStatusManager.getSyncProcess();
+            
+            // 检查是否有开启的同步服务
+            const enabledServices = [];
+
+            // 检查云同步是否开启
+            if (config.cloud && config.cloud.autoSync) {
+                const {valid} = await validateToken();
+                if (valid) {
+                    enabledServices.push({
+                        id: 'cloud',
+                        name: '云同步',
+                        status: status.cloud || {},
+                        isSyncing: isSyncing && syncProcess.service === 'cloud'
+                    });
+                }
+            }
+            
+            // 检查WebDAV同步是否开启
+            if (config.webdav && config.webdav.syncStrategy.autoSync) {
+                const valid = SyncSettingsManager.validateWebDAVConfig(config.webdav)
+                if (valid) {
+                    enabledServices.push({
+                        id: 'webdav',
+                        name: 'WebDAV同步',
+                        status: status.webdav || {},
+                        isSyncing: isSyncing && syncProcess.service === 'webdav'
+                    });
+                }
+            }
+
+            // 移除加载状态
+            this.servicesContainer.innerHTML = '';
+            
+            // 如果没有开启的同步服务，显示提示信息
+            if (enabledServices.length === 0) {
+                this.servicesContainer.innerHTML = `
+                    <div class="no-services-message">
+                        <p>您尚未配置任何同步服务，您可以前往设置页面开启同步功能，实现跨浏览器同步您的书签。</p>
+                        <a href="#" id="go-to-sync-settings" class="primary-button">配置同步服务</a>
+                    </div>
+                `;
+
+                const goToSyncSettingsBtn = document.getElementById('go-to-sync-settings');
+                // 绑定事件
+                if (goToSyncSettingsBtn) {
+                    goToSyncSettingsBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.close();
+                        openOptionsPage('sync');
+                    });
+                }
+                return;
+            }
+            
+            // 渲染每个开启的同步服务
+            for (const service of enabledServices) {
+                const serviceElement = this.createServiceElement(service);
+                this.servicesContainer.appendChild(serviceElement);
+            }
+
+            if (isSyncing) {
+                this.listenOnSyncProcessChange = this.refreshSyncStatus;
+            }
+        } catch (error) {
+            logger.error('刷新同步状态失败:', error);
+            updateStatus('获取同步状态失败', true);
+            this.close();
+        }
+    }
+    
+    /**
+     * 创建同步服务元素
+     * @param {Object} service - 同步服务对象
+     * @returns {HTMLElement} 服务元素
+     */
+    createServiceElement(service) {
+        // 克隆模板
+        const template = this.syncServiceTemplate.content.cloneNode(true);
+        const serviceItem = template.querySelector('.sync-service-item');
+        
+        // 设置服务名称
+        const nameElement = serviceItem.querySelector('.sync-service-name');
+        nameElement.textContent = service.name;
+        
+        // 设置服务状态
+        const statusElement = serviceItem.querySelector('.sync-service-status');
+        if (service.isSyncing) {
+            statusElement.textContent = '同步中';
+            statusElement.classList.add('syncing');
+        } else if (service.status.lastSyncResult && service.status.lastSyncResult !== 'success') {
+            statusElement.textContent = '同步失败';
+            statusElement.classList.add('error');
+        } else if (service.status.lastSync) {
+            statusElement.textContent = '已同步';
+            statusElement.classList.add('success');
+        } else {
+            statusElement.textContent = '未同步';
+        }
+        
+        // 设置上次同步时间
+        const timeContainer = serviceItem.querySelector('.sync-time-container');
+        const timeElement = serviceItem.querySelector('.sync-time');
+        
+        // 设置同步结果
+        const resultContainer = serviceItem.querySelector('.sync-result-container');
+        const resultElement = serviceItem.querySelector('.sync-result');
+        
+        const isError = service.status.lastSyncResult && service.status.lastSyncResult !== 'success';
+        const hasSuccessfulSync = service.status.lastSync && !isError;
+        
+        // 根据同步状态决定显示内容
+        if (hasSuccessfulSync) {
+            // 成功同步 - 显示时间，隐藏结果
+            timeContainer.classList.add('success-text');
+            const date = new Date(service.status.lastSync);
+            timeElement.textContent = date.toLocaleString();
+            timeContainer.style.display = 'flex';
+            resultContainer.style.display = 'none';
+        } else if (isError) {
+            // 同步失败 - 显示错误信息，隐藏时间
+            resultElement.textContent = service.status.lastSyncResult;
+            resultElement.classList.add('error-text');
+            timeContainer.style.display = 'none';
+            resultContainer.style.display = 'flex';
+        } else {
+            // 未同步过 - 显示默认提示
+            timeElement.textContent = '从未同步';
+            timeContainer.style.display = 'flex';
+            resultContainer.style.display = 'none';
+        }
+        
+        // 设置设置按钮
+        const settingsButton = serviceItem.querySelector('.sync-settings-button');
+        settingsButton.addEventListener('click', () => {
+            // 跳转到同步设置页面
+            openOptionsPage('sync');
+        });
+        
+        // 设置立即同步按钮
+        const syncButton = serviceItem.querySelector('.sync-now-button');
+        const buttonText = syncButton.querySelector('span');
+        if (service.isSyncing) {
+            syncButton.classList.add('syncing');
+            buttonText.textContent = '同步中...';
+        }
+        
+        // 添加同步按钮事件
+        syncButton.addEventListener('click', async () => {
+            if (service.isSyncing) return; // 如果正在同步中，不执行操作
+            
+            syncButton.classList.add('syncing');
+            buttonText.textContent = '同步中...';
+            
+            try {
+                // 根据服务类型执行不同的同步操作
+                let result;
+                if (service.id === 'webdav') {
+                    // 执行WebDAV同步
+                    result = await this.executeWebDAVSync();
+                } else if (service.id === 'cloud') {
+                    // 执行云同步
+                    result = await this.executeCloudSync();
+                }
+                
+                // 显示同步结果
+                if (result && result.success) {
+                    updateStatus('同步成功', false);
+                } else {
+                    updateStatus('同步失败: ' + (result?.error || '未知错误'), true);
+                }
+            } catch (error) {
+                logger.error(`${service.name}同步失败:`, error);
+                updateStatus('同步失败: ' + error.message, true);
+            } finally { 
+                await this.refreshSyncStatus(); 
+            }
+        });
+        
+        return serviceItem;
+    }
+    
+    /**
+     * 执行WebDAV同步
+     * @returns {Promise<Object>} 同步结果
+     */
+    async executeWebDAVSync() {
+        try {
+            return new Promise((resolve, reject) => {
+                chrome.runtime.sendMessage({
+                    type: MessageType.EXECUTE_WEBDAV_SYNC
+                }, (response) => {
+                    if (chrome.runtime.lastError) {
+                        reject(new Error(chrome.runtime.lastError.message));
+                        return;
+                    }
+                    
+                    resolve(response);
+                });
+            });
+        } catch (error) {
+            logger.error('执行WebDAV同步失败:', error);
+            throw error;
+        }
+    }
+    
+    /**
+     * 执行云同步
+     * @returns {Promise<Object>} 同步结果
+     */
+    async executeCloudSync() {
+        try {
+            return new Promise((resolve, reject) => {
+                chrome.runtime.sendMessage({
+                    type: MessageType.EXECUTE_CLOUD_SYNC
+                }, (response) => {
+                    if (chrome.runtime.lastError) {
+                        reject(new Error(chrome.runtime.lastError.message));
+                        return;
+                    }
+                    
+                    resolve(response);
+                });
+            });
+        } catch (error) {
+            logger.error('执行云同步失败:', error);
+            throw error;
+        }
+    }
+}
+
 // 书签管理器类
 class BookmarkManager {
     constructor() {
@@ -211,8 +531,7 @@ class BookmarkManager {
             }
         };
         this.alertDialog = null;
-        this.syncManager = null;
-        this.syncBadgeTimeoutId = null;
+        this.syncStatusDialog = null;
     }
 
     async initialize() {
@@ -261,15 +580,14 @@ class BookmarkManager {
             }
             
             this.alertDialog = new AlertDialog();
-            this.syncManager = new SyncButtonManager(this.alertDialog);
+            this.syncStatusDialog = new SyncStatusDialog();
 
             // 绑定核心事件处理器
             this.bindEvents();
             await Promise.all([
-                this.checkLoginRelatedDisplay(),
                 this.checkEmbeddingStatus(),
                 this.checkApiKeyConfig(true),
-                this.checkSyncBookmark()
+                this.updateSyncButtonState()
             ]);
                         
             this.isInitialized = true;
@@ -295,91 +613,48 @@ class BookmarkManager {
     }
 
     async handleSyncClick() {
-        this.syncManager.handleSync();
+        // 打开同步状态弹窗
+        await this.syncStatusDialog.open();
     }
 
     async handlePrivacyIconClick() {
         await handlePrivacyIconClick(this.elements.required.privacyIcon.dataset.isPrivate === 'true');
     }
 
-    async checkSyncBookmark() {
-        logger.debug('检查同步书签');
-        if (await this.syncManager.checkAutoSync()) {
-            await this.syncManager.handleSync(true);
-        }
-    }
+    async updateSyncButtonState() {
+        try {
+            const syncButton = this.elements.required.syncButton;
 
-    setSyncingState(isSyncing) {
-        const isSyncInProgress = this.syncManager.isSyncInProgress();
-        if (isSyncing && !isSyncInProgress) {
-            this.syncManager.setSyncingState(true);
-        } else if (!isSyncing && isSyncInProgress) {
-            this.syncManager.setSyncingState(false);
-        }
-    }
-
-    async checkLoginRelatedDisplay() {
-        const {valid} = await validateToken();
-        const syncButton = this.elements.required.syncButton;
-        syncButton.dataset.isLogin = valid;
-        
-        if (valid) {
-            syncButton.title = '同步书签';
-            syncButton.style.opacity = '0.6';
-        } else {
-            syncButton.title = '登录后可同步书签';
-            syncButton.style.opacity = '0.3';
-            this.syncManager.setSyncingState(false);
-            this.syncManager.setCoolDownState(false);
-        }   
-        // 添加检查未同步数量
-        await this.updateSyncBadge(0);
-    }
-    
-    // 更新同步徽章
-    async updateSyncBadge(delay = 0) {
-        if (delay > 0) {
-            if (this.syncBadgeTimeoutId) {
-                clearTimeout(this.syncBadgeTimeoutId);
+            // 获取同步状态
+            const isSyncing = await SyncStatusManager.isSyncing();
+            
+            let state = 'idle';
+            if (isSyncing) {
+                state = 'syncing';
+            } else {
+                const hasSyncError = await SyncStatusManager.hasSyncError();
+                if (hasSyncError) {
+                    state = 'error';
+                }
             }
-            this.syncBadgeTimeoutId = setTimeout(() => {
-                this.updateSyncBadge(0);
-            }, delay);
-            return;
-        }
-        const syncButton = this.elements.required.syncButton;
-        let badge = syncButton.querySelector('.sync-badge');
-        // 获取未同步的变更数量
-        const changeCount = await getLocalChangeCount();
-        const isLogin = syncButton.dataset.isLogin == 'true';
-        if (!isLogin || changeCount === 0) {
-            if (badge) {
-                badge.remove();
+            
+            // 移除所有状态类
+            syncButton.classList.remove('syncing', 'error');
+            switch (state) {
+                case 'syncing':
+                    syncButton.classList.add('syncing');
+                    syncButton.title = '同步中...';
+                    break;
+                case 'error':
+                    syncButton.classList.add('error');
+                    syncButton.title = '同步失败';
+                    break;
+                default:
+                    syncButton.title = '同步';
+                    break;
             }
-            return;
-        }
-        
-        if (!badge) {
-            badge = document.createElement('div');
-            badge.className = 'sync-badge';
-            syncButton.appendChild(badge);
-        }
-        
-        if (changeCount > 99) {
-            badge.textContent = '';
-            badge.classList.add('dot');
-        } else {
-            badge.textContent = changeCount.toString();
-            badge.classList.remove('dot');
-        }
-    }
-    
-    // 移除同步徽章
-    removeSyncBadge() {
-        const syncButton = this.elements.required.syncButton;
-        const badge = syncButton.querySelector('.sync-badge');
-        if (badge) {
-            badge.remove();
+        } catch (error) {
+            logger.error('更新同步按钮状态失败:', error);
         }
     }
 
@@ -399,7 +674,9 @@ class BookmarkManager {
             e.stopPropagation();
             e.preventDefault();
             dialog.classList.remove('show');
-            updateStatus('已取消保存');
+            if (!this.isEditMode) {
+                updateStatus('已取消保存');
+            }
             this.resetEditMode();
         };
 
@@ -486,11 +763,14 @@ class BookmarkManager {
                 },
                 
                 keydown: (e) => {
+                    if (e.key === 'Escape') {
+                        dialogTitle.textContent = dialogTitle.dataset.originalTitle;
+                        dialogTitle.blur();
+                    }
+                },
+                keypress: (e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
-                        dialogTitle.blur();
-                    } else if (e.key === 'Escape') {
-                        dialogTitle.textContent = dialogTitle.dataset.originalTitle;
                         dialogTitle.blur();
                     }
                 }
@@ -499,6 +779,7 @@ class BookmarkManager {
             dialogTitle.addEventListener('focus', handlers.focus);
             dialogTitle.addEventListener('blur', handlers.blur);
             dialogTitle.addEventListener('keydown', handlers.keydown);
+            dialogTitle.addEventListener('keypress', handlers.keypress);
         }
 
         const apiKeyLink = apiKeyNotice.querySelector('.api-key-link');
@@ -529,7 +810,7 @@ class BookmarkManager {
                         openOptionsPage('services');
                     },
                     onSecondary: async () => {
-                        await SettingsManager.update({
+                        await updateSettingsWithSync({
                             display: {
                                 skipApiKeyNotice: true
                             }
@@ -562,7 +843,7 @@ class BookmarkManager {
                 const count = Object.values(bookmarks).filter(bookmark => 
                     ConfigManager.isNeedUpdateEmbedding(bookmark, activeService)
                 ).length;
-                regenerateButton.title = `检测到API模型发生改变，需要更新 ${count} 个书签的向量`;
+                regenerateButton.title = `检测到 ${count} 个书签的索引向量已失效，需要更新`;
             }
         } catch (error) {
             logger.error('检查embedding状态时出错:', error);
@@ -627,7 +908,7 @@ class BookmarkManager {
                         LocalStorageMgr.setBookmarks(batchBookmarks);
                         // 批量记录变更
                         const isLast = updatedCount === needUpdateCount;
-                        recordBookmarkChange(batchBookmarks, false, isLast, onSyncError);
+                        await recordBookmarkChange(batchBookmarks, false, isLast, onSyncError);
                         // 清空当前批次
                         batchBookmarks = [];
                     }
@@ -661,12 +942,9 @@ class BookmarkManager {
                     this.checkEmbeddingStatus();
                 }
             } else if (areaName === 'local') {
-                if (changes['token']) {
-                    await this.checkLoginRelatedDisplay();
-                }
-                // 添加对未同步变更的监听
-                if (changes['pendingChanges'] || changes['lastSyncVersion']) {
-                    await this.updateSyncBadge(2000);
+                if (changes[SyncStatusManager.SYNC_PROCESS_KEY]) {
+                    this.updateSyncButtonState();
+                    this.syncStatusDialog.onSyncProcessChange();
                 }
             }
         });
@@ -760,7 +1038,7 @@ class BookmarkManager {
             // 没有缓存或URL不匹配，重新生成标签
             StatusManager.startOperation('正在生成标签');
             this.generatedTags = await generateTags(this.pageContent, tab);
-            StatusManager.endOperation('标签生成完成: ' + this.generatedTags.join(', '));
+            StatusManager.endOperation('标签生成完成');
         }   
 
         // 获取确认标签设置
@@ -1131,7 +1409,7 @@ async function deleteBookmark(bookmark) {
             // 如果在搜索模式，更新搜索结果
             const searchInput = document.getElementById('search-input');
             if (searchInput.value) {
-                const query = searchInput.value.trim().toLowerCase();
+                const query = searchInput.value.trim();
                 const includeChromeBookmarks = await SettingsManager.get('display.showChromeBookmarks');
                 const results = await searchManager.search(query, {
                     debounce: false,
@@ -1167,6 +1445,11 @@ const StatusManager = {
         status.textContent = message;
         status.className = 'status-message ' + (isError ? 'error' : 'success');
         
+        // 添加 show 类使 toast 显示
+        requestAnimationFrame(() => {
+            status.classList.add('show');
+        });
+        
         // 如果指定了持续时间，设置自动清除
         if (duration !== null) {
             this.timeoutId = setTimeout(() => {
@@ -1191,12 +1474,14 @@ const StatusManager = {
     clear() {
         const status = document.getElementById('status');
         if (status) {
-            status.textContent = '';
-            status.className = 'status-message';
-        }
-        if (this.timeoutId) {
-            clearTimeout(this.timeoutId);
-            this.timeoutId = null;
+            // 首先移除 show 类，触发隐藏动画
+            status.classList.remove('show');
+            
+            // 等待动画完成后再清空内容
+            if (this.timeoutId) {
+                clearTimeout(this.timeoutId);
+                this.timeoutId = null;
+            }
         }
     }
 };
@@ -1238,12 +1523,6 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         ]);
         const bookmarkMgr = await getBookmarkManager();
         await bookmarkMgr.checkEmbeddingStatus();
-    } else if (message.type === MessageType.START_SYNC) {
-        const bookmarkMgr = await getBookmarkManager();
-        bookmarkMgr.setSyncingState(true);
-    } else if (message.type === MessageType.FINISH_SYNC) {
-        const bookmarkMgr = await getBookmarkManager();
-        bookmarkMgr.setSyncingState(false);
     }
 });
 
@@ -1482,7 +1761,7 @@ async function initializeViewModeSwitch() {
             button.classList.add('active');
 
             // 保存视图模式设置
-            await SettingsManager.update({
+            await updateSettingsWithSync({
                 display: {
                     viewMode: mode
                 }
@@ -1791,7 +2070,7 @@ class GroupedBookmarkRenderer extends BookmarkRenderer {
                 <svg viewBox="0 0 24 24" width="16" height="16">
                     <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
                 </svg>
-                <span>添加自定义分组</span>
+                <span>添加分组</span>
             </div>
         `;
         
@@ -1957,7 +2236,7 @@ class SettingsDialog {
                 (acc, key) => ({ [key]: acc }), 
                 value
             );
-            await SettingsManager.update(updateObj);
+            await updateSettingsWithSync(updateObj);
             
             if (additionalAction) {
                 await additionalAction();
@@ -2040,155 +2319,10 @@ class AlertDialog {
     }
 }
 
-class SyncButtonManager {
-
-    constructor(dialog) {
-        this.syncButton = document.getElementById('sync-button');
-        this.lastSyncTime = 0;
-        this.dialog = dialog;
-        this.COOLDOWN_TIME = 5000; // 5秒冷却时间
-        this.AUTO_SYNC_INTERVAL = 8 * 60 * 60 * 1000; // 8小时
-        this.isSyncing = false; // 添加同步状态标记
-    }
-
-    // 添加同步状态管理方法
-    setSyncingState(isSyncing) {
-        this.isSyncing = isSyncing;
-        if (isSyncing) {
-            this.syncButton.classList.add('syncing');
-        } else {
-            this.syncButton.classList.remove('syncing');
-        }
-    }
-
-    setCoolDownState(isCoolDown) {
-        if (isCoolDown) {
-            this.syncButton.classList.add('cooldown');
-        } else {
-            this.syncButton.classList.remove('cooldown');
-        }
-    }   
-
-    // 添加检查是否需要自动同步的方法
-    async checkAutoSync() {
-        try {
-            // 检查登录状态
-            const {valid} = await validateToken();
-            logger.debug('检查自动同步状态', {
-                valid: valid
-            });
-            if (!valid) {
-                return false;
-            }
-
-            // 获取上次同步时间
-            const lastSync = await LocalStorageMgr.get('lastAutoSyncTime') || 0;
-            const now = Date.now();
-
-            logger.debug('检查自动同步状态', {
-                lastSync: lastSync,
-                now: now,
-            });
-            // 如果从未同步过或者距离上次同步超过24小时
-            if (!lastSync || (now - lastSync > this.AUTO_SYNC_INTERVAL)) {
-                logger.debug('需要自动同步:', {
-                    lastSync: new Date(lastSync),
-                    now: new Date(now),
-                    timeDiff: (now - lastSync) / 1000 / 60 / 60 + '小时'
-                });
-                return true;
-            }
-
-            return false;
-        } catch (error) {
-            logger.error('检查自动同步状态失败:', error);
-            return false;
-        }
-    }
-    
-    // 修改现有的handleSync方法，添加自动同步支持
-    async handleSync(isAutoSync = false) {
-        if (!this.syncButton) return;
-
-        // 如果已经在同步中，直接返回
-        if (this.isSyncInProgress()) {
-            logger.info('同步正在进行中...');
-            return;
-        }
-
-        try {
-            // 检查登录状态
-            const {valid} = await validateToken();
-            if (!valid) {
-                if (!isAutoSync) {
-                    this.dialog.show({
-                        title: '未登录',
-                        message: '登录后即可使用书签同步功能',
-                        primaryText: '去登录',
-                        secondaryText: '取消',
-                        onPrimary: () => {
-                            openOptionsPage('overview');
-                        },
-                    });
-                }
-                return;
-            }
-
-            // 手动同步时检查冷却时间
-            if (!isAutoSync && Date.now() - this.lastSyncTime < this.COOLDOWN_TIME) {
-                const remainingTime = Math.ceil((this.COOLDOWN_TIME - (Date.now() - this.lastSyncTime)) / 1000);
-                updateStatus(`请等待 ${remainingTime} 秒后再次同步`, true);
-                return;
-            }
-            
-            // 开始同步
-            this.setSyncingState(true);
-            if (!isAutoSync) {
-                StatusManager.startOperation('正在同步书签');
-            }
-            
-            // 发送同步消息
-            sendMessageSafely({
-                type: MessageType.FORCE_SYNC_BOOKMARK
-            }, async (response) => {
-                logger.debug("handleSync response", response);
-                // 更新UI状态
-                this.setSyncingState(false);
-                if (response.success) {
-                    // 更新最后同步时间
-                    await LocalStorageMgr.set('lastAutoSyncTime', Date.now());
-                    if (!isAutoSync) {
-                        StatusManager.endOperation('书签同步完成');
-                        this.setCoolDownState(true);
-                        this.lastSyncTime = Date.now();
-                        setTimeout(() => {
-                            this.setCoolDownState(false);
-                        }, this.COOLDOWN_TIME);
-                    }
-                } else {
-                    if (!isAutoSync) {
-                        StatusManager.endOperation('同步失败: ' + response.error, true);
-                    }
-                }
-            });
-        } catch (error) {
-            logger.error('同步失败:', error);
-            this.setSyncingState(false); 
-            if (!isAutoSync) {
-                StatusManager.endOperation('同步失败: ' + error.message, true);
-            }
-        }
-    }
-
-    isSyncInProgress() {
-        return this.isSyncing;
-    }   
-}
-
 async function handleSearch() {
     const searchInput = document.getElementById('search-input');
     const searchResults = document.getElementById('search-results');
-    const query = searchInput.value.trim().toLowerCase();
+    const query = searchInput.value.trim();
     
     if (!query) {
         searchResults.innerHTML = '';
@@ -2251,8 +2385,26 @@ async function renderSearchHistory(query) {
                 <path fill="currentColor" d="M13,3A9,9 0 0,0 4,12H1L4.89,15.89L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3Z" />
             </svg>
             <span>${item.query}</span>
+            <svg class="delete-history-btn" viewBox="0 0 24 24" title="删除此搜索记录">
+                <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+            </svg>
         </div>
     `).join('');
+    
+    // 添加删除按钮点击事件
+    wrapper.querySelectorAll('.delete-history-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.stopPropagation(); // 阻止冒泡，防止触发搜索项点击事件
+            const item = e.target.closest('.recent-search-item');
+            const itemQuery = item.dataset.query;
+            
+            // 删除此搜索历史
+            await searchManager.searchHistoryManager.removeSearch(itemQuery);
+            
+            // 重新渲染搜索历史
+            renderSearchHistory(query);
+        });
+    });
     
     container.classList.add('show');
 }
@@ -2307,7 +2459,7 @@ async function initializeSortDropdown() {
             updateSortButton(option);
             
             // 保存设置并刷新列表
-            await SettingsManager.update({
+            await updateSettingsWithSync({
                 sort: {
                     bookmarks: value
                 }
@@ -2416,6 +2568,91 @@ async function initializeSearch() {
     });
 }
 
+// 检查更新并显示更新提示
+async function checkForUpdates() {
+    try {
+        // 获取当前版本
+        const manifest = chrome.runtime.getManifest();
+        const currentVersion = manifest.version;
+        
+        // 获取上次显示的版本
+        const lastShownVersion = await LocalStorageMgr.getLastShownVersion();
+        
+        // 如果当前版本与上次显示的版本不同，显示更新提示
+        if (lastShownVersion !== currentVersion) {
+            await showUpdateNotification(currentVersion);
+        }
+    } catch (error) {
+        logger.error('检查更新失败:', error);
+    }
+}
+
+// 显示更新提示
+async function showUpdateNotification(version) {
+    // 获取更新内容
+    const updateContent = getUpdateContent(version);
+    if (!updateContent) {
+        return;
+    }
+
+    const container = document.getElementById('update-notification');
+
+    // 设置标题
+    const updateNotificationTitle = container.querySelector('.update-notification-header h3');
+    updateNotificationTitle.textContent = updateContent.title;
+    
+    // 设置更新内容
+    const updateNotificationBody = container.querySelector('.update-notification-body');
+    updateNotificationBody.innerHTML = updateContent.content;
+    
+    // 显示更新提示
+    container.classList.add('show');
+    
+    // 绑定关闭按钮事件
+    const closeButton = document.getElementById('close-update-notification');
+    closeButton.addEventListener('click', async () => {
+        container.classList.remove('show');
+        // 保存当前版本为已显示
+        await LocalStorageMgr.setLastShownVersion(version);
+    });
+    
+    // 绑定查看所有更新链接事件
+    const viewAllUpdatesLink = document.getElementById('view-all-updates');
+    viewAllUpdatesLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        // 打开更新日志页面
+        chrome.tabs.create({ url: `${SERVER_URL}/changelog` });
+    });
+
+    // 给content里的所有a标签添加点击事件
+    updateNotificationBody.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', (e) => {
+            e.preventDefault();
+            chrome.tabs.create({ url: a.href });
+        });
+    });
+}
+
+// 获取更新内容
+function getUpdateContent(version) {
+    // 这里可以根据不同版本返回不同的更新内容
+    const updateNotes = {
+        // 示例版本更新内容
+        '1.2.0': {
+            title: `v${version} 版本更新内容`,
+            content: `
+                <ul>
+                    <li>优化了同步功能，支持<a href="settings.html#sync">WebDAV同步</a></li>
+                    <li>支持删除搜索历史 <a href="settings.html#overview">去查看</a></li>
+                    <li>修复了一些已知问题</li>
+                </ul>
+            `
+        }
+    };
+    
+    return updateNotes[version];
+}
+
 // 主初始化函数
 async function initializePopup() {
     logger.info(`当前环境: ${ENV.current}, SERVER_URL: ${SERVER_URL}`);
@@ -2424,6 +2661,7 @@ async function initializePopup() {
         await Promise.all([
             LocalStorageMgr.init(),
             SettingsManager.init(),
+            SyncSettingsManager.init(),
         ]);
 
         const settingsDialog = new SettingsDialog();
@@ -2444,6 +2682,7 @@ async function initializePopup() {
             settingsDialog.initialize(),
             renderBookmarksList(),
             updateTabState(),
+            checkForUpdates(),
         ]);
 
         logger.info('弹出窗口初始化完成');

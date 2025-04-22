@@ -1,6 +1,6 @@
 // background.js
-importScripts('common.js', 'consts.js', 'env.js', 'logger.js', 'i18n.js', 'config.js', 'models.js', 'storageManager.js', 'settingsManager.js', 'statsManager.js',
-     'util.js', 'sync.js', 'api.js', 'search.js');
+importScripts('consts.js', 'common.js', 'env.js', 'logger.js', 'i18n.js', 'config.js', 'models.js', 'storageManager.js', 'settingsManager.js', 'statsManager.js',
+     'util.js', 'api.js', 'search.js', 'customFilter.js', 'syncSettingManager.js', 'sync.js', 'webdavClient.js', 'webdavSync.js', 'autoSync.js');
 
 EnvIdentifier = 'background';
 // ------------------------------ 辅助函数分割线 ------------------------------
@@ -42,7 +42,12 @@ async function initializeExtension() {
         await Promise.all([
             LocalStorageMgr.setupListener(),
             SettingsManager.init(),
+            SyncSettingsManager.init(),
         ]);
+        
+        // 初始化自动同步系统
+        await AutoSyncManager.initialize();
+        
         logger.info("扩展初始化完成");
     } catch (error) {
         logger.error("扩展初始化失败:", error);
@@ -97,18 +102,54 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
         return true;
     } else if (message.type === MessageType.SYNC_BOOKMARK_CHANGE) {
-        syncManager.recordBookmarkChange(message.data.bookmarks, message.data.isDeleted, message.data.beginSync)
+        syncManager.recordBookmarkChange(message.data.bookmarks, message.data.isDeleted)
             .then(() => sendResponse({ success: true }))
             .catch(error => {
                 logger.error('Error during sync:', error);
                 sendResponse({ success: false, error: error.message });
             });
         return true;
-    } else if (message.type === MessageType.AUTO_SYNC_BOOKMARK) {
-        syncManager.startSync()
-            .then(() => sendResponse({ success: true }))
+    } else if (message.type === MessageType.EXECUTE_WEBDAV_SYNC) {
+        // 执行WebDAV同步
+        AutoSyncManager.executeWebDAVSync()
+            .then(result => {
+                sendResponse({ success: result.success, result: result.result, error: result.error });
+            })
             .catch(error => {
-                logger.error('Error during sync:', error);
+                logger.error('WebDAV同步失败:', error);
+                sendResponse({ success: false, error: error.message });
+            });
+        return true;
+    } else if (message.type === MessageType.EXECUTE_CLOUD_SYNC) {
+        // 执行云同步
+        AutoSyncManager.executeCloudSync()
+            .then(result => {
+                sendResponse({ success: result.success, result: result.result, error: result.error });
+            })
+            .catch(error => {
+                logger.error('云同步失败:', error);
+                sendResponse({ success: false, error: error.message });
+            });
+
+        return true;
+    } else if (message.type === MessageType.SCHEDULE_SYNC) {
+        // 预定同步请求，由数据变更触发
+        AutoSyncManager.handleScheduledSync(message.data)
+            .then(() => {
+                sendResponse({ success: true });
+            })
+            .catch(error => {
+                logger.error('处理预定同步请求失败:', error);
+                sendResponse({ success: false, error: error.message });
+            });
+        return true;
+    } else if (message.type === MessageType.RESET_CLOUD_SYNC_CACHE) {
+        // 重置同步缓存
+        syncManager.resetSyncCache()
+            .then(() => {
+                sendResponse({ success: true });
+            }).catch(error => {
+                logger.error('重置同步缓存失败:', error);
                 sendResponse({ success: false, error: error.message });
             });
         return true;
@@ -132,7 +173,7 @@ chrome.runtime.onMessageExternal.addListener(async (message, sender, sendRespons
         const lastSyncVersion = await LocalStorageMgr.get('lastSyncVersion') || 0;
         if (lastUser && lastUser.id !== user.id && lastSyncVersion > 0) {
             // 如果用户发生变化，则需要重新同步全部书签
-            await LocalStorageMgr.remove(['lastSyncVersion', 'lastAutoSyncTime']);
+            await syncManager.resetSyncCache();
         }
             
         Promise.all([
@@ -364,3 +405,8 @@ if (chrome.omnibox) {
 } else {
     logger.error("Omnibox API 不可用");
 }
+
+// 监听闹钟触发事件
+chrome.alarms.onAlarm.addListener(async (alarm) => {
+    await AutoSyncManager.handleAlarm(alarm);
+});

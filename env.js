@@ -18,7 +18,7 @@ const ENV = {
     
     production: {
         SERVER_URL: 'https://smartbookmarks.cloud',
-        LOG_LEVEL: LOG_LEVELS.INFO,
+        LOG_LEVEL: LOG_LEVELS.ERROR,
         DEBUG: false,
     }
 };

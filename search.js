@@ -118,11 +118,12 @@ class SearchManager {
             similarity = Math.min(1, Math.max(0, similarity));
             
             // 检查关键词匹配
+            const searchInputLower = searchInput.toLowerCase();
             const keywordMatch = {
-                title: item.title?.toLowerCase().includes(searchInput) || false,
-                tags: item.tags?.some(tag => tag.toLowerCase().includes(searchInput)) || false,
-                excerpt: item.excerpt?.toLowerCase().includes(searchInput) || false,
-                url: includeUrl ? item.url?.toLowerCase().includes(searchInput) : false
+                title: item.title?.toLowerCase().includes(searchInputLower) || false,
+                tags: item.tags?.some(tag => tag.toLowerCase().includes(searchInputLower)) || false,
+                excerpt: item.excerpt?.toLowerCase().includes(searchInputLower) || false,
+                url: includeUrl ? item.url?.toLowerCase().includes(searchInputLower) : false
             };
             
             const hasKeywordMatch = Object.values(keywordMatch).some(match => match);
@@ -263,6 +264,22 @@ class SearchHistoryManager {
         // 保持最大数量
         history = history.slice(0, this.MAX_HISTORY);
         await LocalStorageMgr.set(this.STORAGE_KEY, history);
+        this.historyCache = null;
+    }
+
+    async removeSearch(query) {
+        if (!query) return;
+        
+        let history = await this.getHistory(false);
+        // 移除指定的搜索项
+        history = history.filter(item => item.query !== query);
+        await LocalStorageMgr.set(this.STORAGE_KEY, history);
+        this.historyCache = null;
+    }
+
+    async clearHistory() {
+        // 清除搜索历史
+        await LocalStorageMgr.remove(this.STORAGE_KEY);
         this.historyCache = null;
     }
 

@@ -55,6 +55,7 @@ class OverviewSettingsTab extends BaseSettingsTab {
         this.sitesDisplayCount = document.getElementById('sites-display-count');
         this.sitesDisplayCountContainer = document.getElementById('sites-display-count-container');
         this.showSearchHistory = document.getElementById('show-search-history');
+        this.clearSearchHistory = document.getElementById('clear-search-history');
 
         // 添加快捷键相关元素
         this.quickSaveShortcut = document.getElementById('quickSave-shortcut');
@@ -73,6 +74,7 @@ class OverviewSettingsTab extends BaseSettingsTab {
         this.handleSitesDisplayChange = this.handleSitesDisplayChange.bind(this);
         this.handleSitesDisplayCountChange = this.handleSitesDisplayCountChange.bind(this);
         this.handleSearchHistoryChange = this.handleSearchHistoryChange.bind(this);
+        this.handleClearSearchHistory = this.handleClearSearchHistory.bind(this);
     }
 
     async initialize() {
@@ -81,7 +83,6 @@ class OverviewSettingsTab extends BaseSettingsTab {
         await this.checkLoginStatus();
         await this.initializeShortcuts();
         this.setupEventListeners();
-        this.setupStorageListener();
     }
 
     async initializeSearchSettings() {
@@ -145,23 +146,12 @@ class OverviewSettingsTab extends BaseSettingsTab {
         this.maxSearchResults.addEventListener('change', this.handleMaxSearchResultsChange);
         this.omniboxSearchLimit.addEventListener('change', this.handleOmniboxSearchLimitChange);
         this.showSearchHistory.addEventListener('change', this.handleSearchHistoryChange);
+        this.clearSearchHistory.addEventListener('click', this.handleClearSearchHistory);
         this.editShortcutsBtn.addEventListener('click', () => this.handleEditShortcuts());
 
         // 添加网站显示设置的事件监听
         this.quickSearchSitesDisplay.addEventListener('change', this.handleSitesDisplayChange);
         this.sitesDisplayCount.addEventListener('change', this.handleSitesDisplayCountChange);
-    }
-
-    setupStorageListener() {
-        chrome.storage.onChanged.addListener((changes, areaName) => {
-            if (areaName === 'local') {  // 确保是监听sync storage
-                // 监听API Keys的变化
-                if (changes['token']) {
-                    logger.info('token changed');
-                    this.checkLoginStatus();
-                }
-            }
-        });
     }
 
     async checkLoginStatus() {
@@ -206,8 +196,7 @@ class OverviewSettingsTab extends BaseSettingsTab {
             const loginUrl = `${SERVER_URL}/login?return_url=${returnUrl}`;
             
             // 使用 window.open() 打开登录页面
-            const loginWindow = window.open(loginUrl, 'login', 
-                'width=500,height=600,resizable=yes,scrollbars=yes,status=yes');
+            const loginWindow = window.open(loginUrl, '_blank');
             
             // 可以存储引用以便后续使用
             this.loginWindow = loginWindow;
@@ -230,7 +219,7 @@ class OverviewSettingsTab extends BaseSettingsTab {
 
         const value = parseInt(this.maxSearchResults.value);
         if (value >= 1 && value <= 100) {
-            await SettingsManager.update({
+            await updateSettingsWithSync({
                 search: {
                     maxResults: value
                 }
@@ -246,7 +235,7 @@ class OverviewSettingsTab extends BaseSettingsTab {
 
         const value = parseInt(this.omniboxSearchLimit.value);
         if (value >= 1 && value <= 9) {
-            await SettingsManager.update({
+            await updateSettingsWithSync({
                 search: {
                     omniboxSearchLimit: value
                 }
@@ -294,7 +283,7 @@ class OverviewSettingsTab extends BaseSettingsTab {
             (displayType === 'pinned' || displayType === 'none') ? 'none' : 'flex';
 
         try {
-            await SettingsManager.update({
+            await updateSettingsWithSync({
                 search: {
                     sitesDisplay: displayType
                 }
@@ -322,7 +311,7 @@ class OverviewSettingsTab extends BaseSettingsTab {
         }
 
         try {
-            await SettingsManager.update({
+            await updateSettingsWithSync({
                 search: {
                     sitesDisplayCount: count
                 }
@@ -337,7 +326,7 @@ class OverviewSettingsTab extends BaseSettingsTab {
     async handleSearchHistoryChange() {
         try {
             const showSearchHistory = this.showSearchHistory.checked;
-            await SettingsManager.update({
+            await updateSettingsWithSync({
                 search: {
                     showSearchHistory: showSearchHistory
                 }
@@ -346,6 +335,18 @@ class OverviewSettingsTab extends BaseSettingsTab {
         } catch (error) {
             logger.error('保存搜索历史显示设置失败:', error);
             showToast('保存设置失败: ' + error.message, true);
+        }
+    }
+
+    async handleClearSearchHistory() {
+        try {
+            if (confirm('确定要清除所有搜索历史记录吗？此操作无法撤销。')) {
+                await searchManager.searchHistoryManager.clearHistory();
+                showToast('搜索历史已清除');
+            }
+        } catch (error) {
+            logger.error('清除搜索历史失败:', error);
+            showToast('清除搜索历史失败: ' + error.message, true);
         }
     }
 
@@ -440,7 +441,7 @@ class PrivacySettingsTab extends BaseSettingsTab {
                 throw new Error('该域名已存在');
             }
 
-            await SettingsManager.update({
+            await updateSettingsWithSync({
                 privacy: {
                     customDomains: [...customDomains, domain]
                 }
@@ -460,7 +461,7 @@ class PrivacySettingsTab extends BaseSettingsTab {
         
         const newDomains = customDomains.filter(d => d !== domain);
         
-        await SettingsManager.update({
+        await updateSettingsWithSync({
             privacy: {
                 customDomains: newDomains
             }
@@ -645,6 +646,13 @@ class ServicesSettingsTab extends BaseSettingsTab {
             logger.debug('change active service', e.target.value);
             await ConfigManager.setActiveService(e.target.value);
             this.updateActiveService(e.target.value);
+
+            sendMessageSafely({
+                type: MessageType.SCHEDULE_SYNC,
+                data: {
+                    reason: ScheduleSyncReason.SERVICES
+                }
+            });
         });
     }
 
@@ -831,7 +839,7 @@ class ServicesSettingsTab extends BaseSettingsTab {
         });
 
         // 添加输入框回车事件
-        chatModelInput.addEventListener('keydown', (e) => {
+        chatModelInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 chatModelInput.blur();
             }
@@ -866,6 +874,13 @@ class ServicesSettingsTab extends BaseSettingsTab {
                 this.updateActiveServiceUI(this.currentService.id);
             }
             this.closeServiceConfigDialog();
+
+            sendMessageSafely({
+                type: MessageType.SCHEDULE_SYNC,
+                data: {
+                    reason: ScheduleSyncReason.SERVICES
+                }
+            });
         } catch (error) {
             this.updateStatus(apiServiceStatus, error.message, 'error');
             verifyIcon.classList.add('error');
@@ -1012,6 +1027,13 @@ class ServicesSettingsTab extends BaseSettingsTab {
             const activeService = await ConfigManager.getActiveService();
             this.updateActiveServiceUI(activeService.id);
             await this.updateAddCustomServiceCard();
+
+            sendMessageSafely({
+                type: MessageType.SCHEDULE_SYNC,
+                data: {
+                    reason: ScheduleSyncReason.SERVICES
+                }
+            });
         } catch (error) {
             alert('删除服务失败: ' + error.message);
         }
@@ -1106,6 +1128,13 @@ class ServicesSettingsTab extends BaseSettingsTab {
             }
 
             await this.updateAddCustomServiceCard();
+
+            sendMessageSafely({
+                type: MessageType.SCHEDULE_SYNC,
+                data: {
+                    reason: ScheduleSyncReason.SERVICES
+                }
+            });
         } catch (error) {
             // 验证失败的错误已经在测试状态中显示了，这里不需要再显示 alert
             logger.error('保存自定义服务失败:', error);
@@ -1563,7 +1592,7 @@ class FilterSettingsTab extends BaseSettingsTab {
             input.placeholder = tags.length > 0 ? '' : '可输入多个并列的关键词';
         };
         
-        input.addEventListener('keydown', (e) => {
+        input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && input.value.trim()) {
                 e.preventDefault();
                 this.addTag(tagsContainer, input.value.trim());
@@ -1666,6 +1695,13 @@ class FilterSettingsTab extends BaseSettingsTab {
         
         // 保存规则
         await customFilter.saveRule(rule);
+
+        sendMessageSafely({
+            type: MessageType.SCHEDULE_SYNC,
+            data: {
+                reason: ScheduleSyncReason.FILTERS
+            }
+        });
         
         // 刷新规则列表
         await this.loadFiltersList();
@@ -1754,6 +1790,13 @@ class FilterSettingsTab extends BaseSettingsTab {
                     if (confirm('确定要删除这个标签吗？')) {
                         await customFilter.deleteRule(rule.id);
                         await this.loadFiltersList();
+
+                        sendMessageSafely({
+                            type: MessageType.SCHEDULE_SYNC,
+                            data: {
+                                reason: ScheduleSyncReason.FILTERS
+                            }
+                        });
                     }
                 });
             } else {
@@ -1811,6 +1854,13 @@ class FilterSettingsTab extends BaseSettingsTab {
         const items = Array.from(this.filtersList.querySelectorAll('.filter-item'));
         const orderedIds = items.map(item => item.dataset.id);
         await customFilter.saveFilterOrder(orderedIds);
+
+        sendMessageSafely({
+            type: MessageType.SCHEDULE_SYNC,
+            data: {
+                reason: ScheduleSyncReason.FILTERS
+            }
+        });
     }
 
     formatConditions(conditions) {
@@ -2633,10 +2683,9 @@ class ImportExportSettingsTab extends BaseSettingsTab {
                     source: 'import_from_browser'
                 });
                 sendMessageSafely({
-                    type: MessageType.AUTO_SYNC_BOOKMARK,
-                }, (response) => {
-                    if (response && response.error) {
-                        showToast('书签同步失败: ' + response.error, true);
+                    type: MessageType.SCHEDULE_SYNC,
+                    data: {
+                        reason: ScheduleSyncReason.BOOKMARKS
                     }
                 });
             }
@@ -2807,6 +2856,40 @@ class ImportExportSettingsTab extends BaseSettingsTab {
     }
 }
 
+class SyncSettingsTab extends BaseSettingsTab {
+    constructor() {
+        super();
+        this.section = document.getElementById('sync-section');
+        
+        // WebDAV服务
+        this.webdavSyncCard = document.getElementById('webdav-sync-card');
+        this.webdavDialog = document.getElementById('webdav-config-dialog');
+        this.webdavService = new WebDAVSyncService(this.webdavSyncCard, this.webdavDialog);
+        
+        // 云同步服务
+        this.cloudSyncCard = document.getElementById('cloud-sync-card');
+        this.cloudDialog = document.getElementById('cloud-config-dialog');
+        this.cloudService = new CloudSyncService(this.cloudSyncCard, this.cloudDialog);
+    }
+
+    async initialize() {
+        await this.webdavService.initialize();
+        await this.cloudService.initialize();
+    }
+    
+    handleEscKey(e) {
+        this.webdavService.hideConfigDialog();
+        this.cloudService.hideConfigDialog();
+    }
+
+    checkLoginStatus() {
+        this.cloudService.checkLoginStatus();
+    }
+
+    cleanup() {
+    }
+}
+
 class AboutSettingsTab extends BaseSettingsTab {
     constructor() {
         super();
@@ -2818,11 +2901,13 @@ class AboutSettingsTab extends BaseSettingsTab {
     }
 
     async updateVersionInfo() {
-        // 获取manifest.json中的版本号
-        const manifest = chrome.runtime.getManifest();
         const versionElement = document.getElementById('current-version');
         if (versionElement) {
-            versionElement.textContent = manifest.version;
+            versionElement.textContent = VERSION_INFO.version;
+        }
+        const updateDateElement = document.getElementById('last-update-date');
+        if (updateDateElement) {
+            updateDateElement.textContent = VERSION_INFO.lastUpdate;
         }
     }
 
@@ -2842,7 +2927,8 @@ class SettingsUI {
             filters: new FilterSettingsTab(),
             'import-export': new ImportExportSettingsTab(),
             privacy: new PrivacySettingsTab(),
-            about: new AboutSettingsTab() // 添加About页签
+            sync: new SyncSettingsTab(),
+            about: new AboutSettingsTab()
         };
     }
 
@@ -2860,6 +2946,19 @@ class SettingsUI {
 
         // 添加全局事件监听器
         window.addEventListener('keydown', this.handleEscKey.bind(this));
+        this.setupStorageListener();
+    }
+
+    setupStorageListener() {
+        chrome.storage.onChanged.addListener((changes, areaName) => {
+            if (areaName === 'local') {
+                // 监听API Keys的变化
+                if (changes['token']) {
+                    logger.info('token changed');
+                    this.checkLoginStatus();
+                }
+            }
+        });
     }
 
     initializeNavigation() {
@@ -2912,6 +3011,14 @@ class SettingsUI {
         }
     }
 
+    checkLoginStatus() {
+        Object.values(this.tabs).forEach(tab => {
+            if (tab.checkLoginStatus) {
+                tab.checkLoginStatus();
+            }
+        });
+    }
+
     cleanup() {
         Object.values(this.tabs).forEach(tab => tab.cleanup());
     }
@@ -2961,6 +3068,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await Promise.all([
         LocalStorageMgr.setupListener(),
         SettingsManager.init(),
+        SyncSettingsManager.init(),
     ]);
     logger.debug('初始化页面完成', Date.now()/1000);
 }); 

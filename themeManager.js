@@ -101,7 +101,7 @@ class ThemeManager {
      */
     async updateTheme(themeSettings) {
         try {
-            await SettingsManager.update({
+            await updateSettingsWithSync({
                 display: {
                     theme: themeSettings
                 }

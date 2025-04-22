@@ -130,9 +130,7 @@ class CustomFilter {
     }
 
     async getExportData() {
-        if (!this.initialized) {
-            await this.init();
-        }
+        await this.reloadRules();
         return {
             rules: this.rules || [],
             orderedIds: this.orderedIds || []
