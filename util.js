@@ -106,6 +106,25 @@ async function updateBookmarkUsage(url) {
     return null;
 }
 
+// 批量更新书签使用频率
+async function batchUpdateBookmarksUsage(urls) {
+    try {
+        const bookmarks = await LocalStorageMgr.batchGetBookmarks(urls, true);
+        logger.debug('批量更新书签使用频率', { bookmarks: bookmarks, urls: urls });
+        for (const bookmark of bookmarks) {
+            // 更新使用次数和最后使用时间
+            bookmark.useCount = calculateWeightedScore(
+                bookmark.useCount,
+                bookmark.lastUsed
+            ) + 1;
+            bookmark.lastUsed = new Date().toISOString();
+        }
+        await LocalStorageMgr.setBookmarks(bookmarks);
+    } catch (error) {
+        logger.error('批量更新书签使用频率失败:', error);
+    }
+}
+
 // 添加计算加权使用分数的函数
 function calculateWeightedScore(useCount, lastUsed) {
     if (!useCount || !lastUsed) return 0;
@@ -125,10 +144,16 @@ function calculateWeightedScore(useCount, lastUsed) {
     return Math.round(weightedScore);
 }
 
-async function getAllBookmarks(includeChromeBookmarks = false) {
+async function getAllBookmarks(includeChromeBookmarks = false, fromLocalCache = false) {
     try {
         // 获取扩展书签
-        const extensionBookmarks = await LocalStorageMgr.getBookmarks();
+        let extensionBookmarks = {};
+        if (fromLocalCache) {
+            extensionBookmarks = await LocalStorageMgr.getBookmarksFromLocalCache();
+        }
+        if (Object.keys(extensionBookmarks).length === 0) {
+            extensionBookmarks = await LocalStorageMgr.getBookmarks();
+        }
         const extensionBookmarksMap = Object.entries(extensionBookmarks)
             .reduce((map, [_, data]) => {
                 const bookmark = new UnifiedBookmark(data, BookmarkSource.EXTENSION);
@@ -166,9 +191,9 @@ async function getAllBookmarks(includeChromeBookmarks = false) {
     }
 }
 
-async function getDisplayedBookmarks() {
+async function getDisplayedBookmarks(fromLocalCache = false) {
     const showChromeBookmarks = await SettingsManager.get('display.showChromeBookmarks');
-    return await getAllBookmarks(showChromeBookmarks);
+    return await getAllBookmarks(showChromeBookmarks, fromLocalCache);
 }
 
 // 获取Chrome书签的辅助函数
@@ -277,14 +302,6 @@ function isNonMarkableUrl(url) {
         // 4. 检查是否匹配任何不可标记模式
         for (const [key, rule] of Object.entries(nonMarkablePatterns)) {
             if (rule.pattern.test(url)) {
-                logger.debug('URL不可标记:', {
-                    url: url,
-                    reason: rule.description,
-                    pattern: rule.pattern.toString(),
-                    example: rule.example,
-                    protocol: urlObj.protocol
-                });
-
                 // 5. 检查是否有例外情况
                 if (shouldAllowNonMarkableException(url, key)) {
                     logger.debug('URL虽然匹配不可标记规则，但属于例外情况');

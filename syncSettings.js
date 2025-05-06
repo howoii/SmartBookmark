@@ -423,6 +423,12 @@ class WebDAVSyncService extends BaseSyncService {
     constructor(serviceCard, configDialog) {
         super('webdav', serviceCard, configDialog);
 
+        // 定义时间间隔数组（分钟为单位）
+        this.intervals = [
+            5, 10, 15, 20, 25, 30, 45,
+            60, 120, 180, 240, 360, 480, 720, 960, 1440
+        ];
+
         // 同步服务配置
         this.urlInput = this.configDialog.querySelector('#webdav-url');
         this.usernameInput = this.configDialog.querySelector('#webdav-username');
@@ -437,9 +443,10 @@ class WebDAVSyncService extends BaseSyncService {
 
         // 同步策略
         this.autoSyncCheck = this.configDialog.querySelector('#auto-sync');
-        this.intervalInput = this.configDialog.querySelector('#sync-interval');
         this.mechanismInputs = this.configDialog.querySelectorAll('input[name="sync-mechanism"]');
         this.syncEmbeddingsCheck = this.configDialog.querySelector('#sync-embeddings');
+        this.intervalSlider = this.configDialog.querySelector('#sync-interval');
+        this.intervalDisplay = this.configDialog.querySelector('#interval-display');
 
         this.bindEvents();
     }
@@ -476,10 +483,15 @@ class WebDAVSyncService extends BaseSyncService {
         });
 
         // 自动同步开关事件
-        const autoSyncCheck = this.configDialog.querySelector('#auto-sync');
-        const intervalInput = this.configDialog.querySelector('#sync-interval');
-        autoSyncCheck.addEventListener('change', () => {
-            intervalInput.disabled = !autoSyncCheck.checked;
+        this.autoSyncCheck.addEventListener('change', () => {
+            this.intervalSlider.disabled = !this.autoSyncCheck.checked;
+        });
+
+        // 添加滑动条事件
+        this.intervalSlider.addEventListener('input', (e) => {
+            const index = parseInt(e.target.value);
+            this.updateIntervalDisplay(index);
+            this.updateSliderFill(this.intervalSlider);
         });
     }
 
@@ -514,9 +526,15 @@ class WebDAVSyncService extends BaseSyncService {
 
         // 同步策略
         this.autoSyncCheck.checked = config.syncStrategy.autoSync;
-        this.intervalInput.value = config.syncStrategy.interval || 30;
-        this.intervalInput.disabled = !this.autoSyncCheck.checked;
+        this.intervalSlider.disabled = !this.autoSyncCheck.checked;
         this.syncEmbeddingsCheck.checked = config.syncStrategy.syncEmbeddings;
+
+        // 初始化滑动条
+        const intervalInMinutes = config.syncStrategy.interval || 30;
+        const closestIndex = this.findClosestIntervalIndex(intervalInMinutes);
+        this.intervalSlider.value = closestIndex;
+        this.updateIntervalDisplay(closestIndex);
+        this.updateSliderFill(this.intervalSlider);
         
         // 设置同步机制单选框
         this.mechanismInputs.forEach(input => {
@@ -605,6 +623,7 @@ class WebDAVSyncService extends BaseSyncService {
     }
 
     getFormData() {
+        const sliderValue = parseInt(this.intervalSlider.value);
         return {
             server: {
                 url: this.urlInput.value.trim(),
@@ -620,7 +639,7 @@ class WebDAVSyncService extends BaseSyncService {
             },
             syncStrategy: {
                 autoSync: this.autoSyncCheck.checked,
-                interval: parseInt(this.intervalInput.value),
+                interval: this.intervals[sliderValue],
                 mechanism: this.configDialog.querySelector('input[name="sync-mechanism"]:checked').value,
                 syncEmbeddings: this.syncEmbeddingsCheck.checked
             }
@@ -703,5 +722,46 @@ class WebDAVSyncService extends BaseSyncService {
         } catch (error) {
             throw error;
         }
+    }
+
+    // 找到最接近的间隔索引
+    findClosestIntervalIndex(minutes) {
+        let closestIndex = 0;
+        let minDiff = Math.abs(this.intervals[0] - minutes);
+        
+        for (let i = 1; i < this.intervals.length; i++) {
+            const diff = Math.abs(this.intervals[i] - minutes);
+            if (diff < minDiff) {
+                minDiff = diff;
+                closestIndex = i;
+            }
+        }
+        
+        return closestIndex;
+    }
+
+    // 更新间隔显示
+    updateIntervalDisplay(index) {
+        const intervalDisplay = this.intervalDisplay;
+        const minutes = this.intervals[index];
+        
+        if (minutes < 60) {
+            intervalDisplay.textContent = `${minutes}m`;
+        } else if (minutes === 60) {
+            intervalDisplay.textContent = `1h`;
+        } else if (minutes < 1440) {
+            const hours = minutes / 60;
+            intervalDisplay.textContent = `${hours}h`;
+        } else {
+            intervalDisplay.textContent = `1d`;
+        }
+    }
+
+    updateSliderFill(slider) {
+        const min = slider.min || 0;
+        const max = slider.max || 100;
+        const value = slider.value;
+        const percentage = ((value - min) / (max - min)) * 100;
+        slider.style.backgroundSize = `${percentage}% 100%`;
     }
 }

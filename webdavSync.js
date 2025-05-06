@@ -998,6 +998,8 @@ class WebDAVSyncManager {
                         remoteBookmark.embedding = bookmark.embedding;
                     }
                     diffResult.updated.push(remoteBookmark);
+                } else if (remoteBookmark.embedding && !bookmark.embedding) {
+                    diffResult.updated.push(remoteBookmark);
                 } else {
                     diffResult.same.push(bookmark);
                 }

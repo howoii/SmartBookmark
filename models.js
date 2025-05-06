@@ -21,6 +21,7 @@ class UnifiedBookmark {
             this.lastUsed = data.lastUsed ? new Date(data.lastUsed).toISOString() : null;
             this.apiService = data.apiService;
             this.embedModel = data.embedModel;
+            this.isCached = data.isCached;
         } else {
             this.tags = [...data.folderTags || []];
             this.excerpt = '';

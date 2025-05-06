@@ -6,6 +6,7 @@
     --secondary-color-rgb: 108, 117, 125;
     --danger-color-rgb: 211, 47, 47;
     --danger-hover-rgb: 198, 40, 40;
+    --bg-primary-rgb: 255, 255, 255;
     
     /* 基础色彩 */
     --primary-color: #4caf50;
@@ -70,6 +71,9 @@
     --tag-recommended-text: #1976d2;
     --tag-recommended-border: #bbdefb;
 
+    --text-tag: #ffffff;
+    --tag-color: #69acc8;
+
     /* 状态颜色 */
     --success-bg: #e8f5e9;
     --success-text: #2e7d32;
@@ -88,7 +92,7 @@
     --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.1);
     --shadow-xs: 0 0 0 1px rgba(0, 0, 0, 0.03);
     --shadow-lg: 0 2px 8px rgba(0, 0, 0, 0.1);
-    --shadow-flow: 0 1px 4px rgba(0, 0, 0, 0.08), 0 2px 3px rgba(0, 0, 0, 0.12);
+    --shadow-flow: 0 2px 6px rgba(0, 0, 0, 0.16), 0 2px 2px rgba(0, 0, 0, 0.32);
 }
 
 /* 深色主题变量 */
@@ -99,6 +103,7 @@
     --secondary-color-rgb: 158, 158, 158;
     --danger-color-rgb: 239, 83, 80;
     --danger-hover-rgb: 229, 115, 115;
+    --bg-primary-rgb: 54, 54, 54;
     
     /* 基础色彩 */
     --primary-color: #66bb6a;
@@ -144,7 +149,7 @@
     --text-secondary: #cccccc;
     --text-tertiary: #999999;
     --text-fourth: #666666;
-    --text-fifth: #ffffff;
+    --text-fifth: #2c2c2c;
     --text-sixth: #aaaaaa;
     --text-seventh: #dddddd;
     --text-link: #58a6ff;
@@ -162,6 +167,9 @@
     --tag-recommended-bg-hover: #2b4359;
     --tag-recommended-text: #90caf9;
     --tag-recommended-border: #1e4b73;
+
+    --text-tag: #2c2c2c;
+    --tag-color: #69acc8;
 
     /* 状态颜色 */
     --success-bg: #1b4d1b;
@@ -193,6 +201,7 @@
         --secondary-color-rgb: 158, 158, 158;
         --danger-color-rgb: 239, 83, 80;
         --danger-hover-rgb: 229, 115, 115;
+        --bg-primary-rgb: 54, 54, 54;
         
         /* 基础色彩 */
         --primary-color: #66bb6a;
@@ -238,7 +247,7 @@
         --text-secondary: #cccccc;
         --text-tertiary: #999999;
         --text-fourth: #666666;
-        --text-fifth: #ffffff;
+        --text-fifth: #2c2c2c;
         --text-sixth: #aaaaaa;
         --text-seventh: #dddddd;
         --text-link: #58a6ff;
@@ -256,6 +265,9 @@
         --tag-recommended-bg-hover: #2b4359;
         --tag-recommended-text: #90caf9;
         --tag-recommended-border: #1e4b73;
+
+        --text-tag: #2c2c2c;
+        --tag-color: #69acc8;
 
         /* 状态颜色 */
         --success-bg: #1b4d1b;

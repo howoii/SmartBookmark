@@ -107,6 +107,7 @@ body {
     color: var(--text-link);
 }
 
+/* 页面URL样式 */
 .page-url {
     font-size: 11px;
     color: var(--text-link);
@@ -115,6 +116,31 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    transition: all 0.2s;
+    position: relative;
+}
+
+/* URL获得焦点时的样式 - 仅应用于可编辑状态 */
+.page-url.editable:focus {
+    white-space: normal;
+    outline: none;
+    background: var(--bg-primary);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+}
+
+/* 仅对可编辑的URL应用悬停样式 */
+.page-url.editable:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+    cursor: text;
+}
+
+/* 非可编辑URL的样式 */
+.page-url:not(.editable) {
+    cursor: default;
 }
 
 /* 页面摘要 */
@@ -122,7 +148,7 @@ body {
     font-size: 13px;
     line-height: 1.5;
     color: var(--text-secondary);
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     padding: 8px;
     background: var(--bg-tertiary);
     border-radius: 4px;
@@ -138,19 +164,30 @@ body {
 .tags-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 8px;
+    gap: 4px;
+    padding: 4px;
+    margin-bottom: 4px;
+    background-color: var(--bg-secondary);
+    border-radius: 4px;
+}
+
+.tags-list:empty {
+    display: none;
 }
 
 .tag {
     display: inline-flex;
     align-items: center;
-    padding: 4px 8px;
+    padding: 2px 6px;
     background: var(--tag-bg);
     color: var(--tag-text);
     border-radius: 6px;
     font-size: 12px;
     gap: 4px;
+}
+
+.tags-list .tag {
+    border: 1px solid var(--success-border);
 }
 
 .remove-tag-btn {
@@ -267,7 +304,7 @@ body {
 
 #save-tags-btn {
     background: var(--primary-color);
-    color: white;
+    color: var(--text-fifth);
     min-width: 64px;
     height: 32px;
 }
@@ -279,12 +316,14 @@ body {
 #cancel-tags-btn {
     background: var(--bg-tertiary);
     color: var(--text-primary);
+    border: 1px solid var(--bg-border-light);
     min-width: 64px;
     height: 32px;
 }
 
 #cancel-tags-btn:hover {
-    background: var(--bg-secondary);
+    background: var(--bg-tertiary-hover);
+    border: 1px solid var(--border-color);
 }
 
 /* 删除按钮样式 */

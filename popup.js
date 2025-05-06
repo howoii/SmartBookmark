@@ -166,10 +166,9 @@ class SaveManager {
 }
 
 // 添加获取 BookmarkManager 实例的函数
-async function getBookmarkManager() {
+function getBookmarkManager() {
     if (!window.bookmarkManagerInstance) {
         const bookmarkManagerInstance = new BookmarkManager();
-        await bookmarkManagerInstance.initialize();
         window.bookmarkManagerInstance = bookmarkManagerInstance;
     }
     return window.bookmarkManagerInstance;
@@ -303,7 +302,12 @@ class SyncStatusDialog {
                 this.servicesContainer.innerHTML = `
                     <div class="no-services-message">
                         <p>您尚未配置任何同步服务，您可以前往设置页面开启同步功能，实现跨浏览器同步您的书签。</p>
-                        <a href="#" id="go-to-sync-settings" class="primary-button">配置同步服务</a>
+                        <a href="#" id="go-to-sync-settings" class="primary-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16">
+                                <path fill="currentColor" d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
+                            </svg>
+                            配置同步服务
+                        </a>
                     </div>
                 `;
 
@@ -510,36 +514,7 @@ class BookmarkManager {
         this.editingBookmark = null;
         // 将 DOM 元素分为必需和可选两类
         this.elements = {
-            required: {
-                saveButton: null,
-                dialog: null,
-                tagsList: null,
-                apiKeyNotice: null,
-                syncButton: null,
-                regenerateEmbeddings: null,
-                privacyIcon: null
-            },
-            optional: {
-                newTagInput: null,
-                saveTagsBtn: null,
-                cancelTagsBtn: null,
-                deleteBookmarkBtn: null,
-                dialogContent: null,
-                recommendedTags: null,
-                pageExcerpt: null,
-                dialogTitle: null   
-            }
-        };
-        this.alertDialog = null;
-        this.syncStatusDialog = null;
-    }
-
-    async initialize() {
-        if (this.isInitialized) return;
-
-        try {
-            // 获取必需的 DOM 元素
-            this.elements.required = {
+            required: {                
                 saveButton: document.getElementById('save-page'),
                 dialog: document.getElementById('tags-dialog'),
                 tagsList: document.getElementById('tags-list'),
@@ -547,19 +522,8 @@ class BookmarkManager {
                 syncButton: document.getElementById('sync-button'),
                 regenerateEmbeddings: document.getElementById('regenerate-embeddings'),
                 privacyIcon: document.getElementById('privacy-mode')
-            };
-
-            // 检查必需元素
-            const missingRequired = Object.entries(this.elements.required)
-                .filter(([key, element]) => !element)
-                .map(([key]) => key);
-
-            if (missingRequired.length > 0) {
-                throw new Error(`缺少必需的DOM元素: ${missingRequired.join(', ')}`);
-            }
-
-            // 获取可选的 DOM 元素
-            this.elements.optional = {
+            },
+            optional: {
                 newTagInput: document.getElementById('new-tag-input'),
                 saveTagsBtn: document.getElementById('save-tags-btn'),
                 cancelTagsBtn: document.getElementById('cancel-tags-btn'),
@@ -567,30 +531,42 @@ class BookmarkManager {
                 dialogContent: document.querySelector('#tags-dialog .dialog-content'),
                 recommendedTags: document.querySelector('.recommended-tags'),
                 pageExcerpt: document.querySelector('.page-excerpt'),
-                dialogTitle: document.querySelector('.page-title')  
-            };
-
-            // 记录缺失的可选元素（仅用于调试）
-            const missingOptional = Object.entries(this.elements.optional)
-                .filter(([key, element]) => !element)
-                .map(([key]) => key);
-
-            if (missingOptional.length > 0) {
-                logger.warn('以下可选DOM元素未找到:', missingOptional);
+                dialogTitle: document.querySelector('.page-title'),
+                pageUrl: document.querySelector('.page-url')
             }
-            
-            this.alertDialog = new AlertDialog();
-            this.syncStatusDialog = new SyncStatusDialog();
+        };
 
+        // 检查必需元素
+        const missingRequired = Object.entries(this.elements.required)
+        .filter(([key, element]) => !element)
+        .map(([key]) => key);
+
+        if (missingRequired.length > 0) {
+            throw new Error(`缺少必需的DOM元素: ${missingRequired.join(', ')}`);
+        }
+        
+        this.alertDialog = new AlertDialog();
+        this.syncStatusDialog = new SyncStatusDialog();
+
+        this.showDialog = this.showDialog.bind(this);
+        this.refreshBookmarksList = this.refreshBookmarksList.bind(this);
+        this.initBookmarkListEditMode();
+        this.initSearchListEditMode();
+        this.bindEvents();
+    }
+
+    async initialize() {
+        if (this.isInitialized) return;
+
+        try {
+            this.isInitialized = true;
             // 绑定核心事件处理器
-            this.bindEvents();
             await Promise.all([
                 this.checkEmbeddingStatus(),
                 this.checkApiKeyConfig(true),
                 this.updateSyncButtonState()
             ]);
                         
-            this.isInitialized = true;
             logger.info('BookmarkManager 初始化成功');
         } catch (error) {
             logger.error('初始化失败:', error);
@@ -598,9 +574,47 @@ class BookmarkManager {
         }
     }
 
+    initBookmarkListEditMode() {
+        const editElements = {
+            container: document.querySelector('.container'),
+            bookmarkList: document.getElementById('bookmarks-list'),
+            selectAllCheckbox: document.getElementById('select-all-checkbox'),
+            selectedCountElement: document.getElementById('selected-count'),
+            batchDeleteButton: document.getElementById('batch-delete-btn'),
+            batchOpenButton: document.getElementById('batch-open-btn'),
+            exitEditModeButton: document.getElementById('exit-edit-mode-btn')
+        }
+        const callbacks = {
+            showStatus: updateStatus,
+            showDialog: this.showDialog,
+            afterDelete: this.refreshBookmarksList
+        }
+        this.editManager = new BookmarkEditManager(editElements, callbacks, 'bookmark-item');
+    }
+
+    initSearchListEditMode() {
+        // 准备编辑管理器需要的元素和回调
+        const editElements = {
+            container: document.querySelector('.search-content'),
+            bookmarkList: document.getElementById('search-results'),
+            selectAllCheckbox: document.getElementById('search-select-all-checkbox'),
+            selectedCountElement: document.getElementById('search-selected-count'),
+            batchDeleteButton: document.getElementById('search-batch-delete-btn'),
+            batchOpenButton: document.getElementById('search-batch-open-btn'),
+            exitEditModeButton: document.getElementById('search-exit-edit-mode-btn')
+        };
+        const callbacks = {
+            showStatus: updateStatus,
+            showDialog: this.showDialog,
+            afterDelete: this.refreshBookmarksList
+        };
+        // 创建编辑管理器实例
+        this.searchEditManager = new BookmarkEditManager(editElements, callbacks, 'result-item');
+    }
+
     async refreshBookmarksList() {
         logger.debug('刷新书签列表');
-        await renderBookmarksList();
+        await refreshBookmarksInfo();
     }
 
     bindEvents() {
@@ -658,6 +672,10 @@ class BookmarkManager {
         }
     }
 
+    showDialog(params) {
+        this.alertDialog.show(params);
+    }
+
     setupTagsDialogEvents() {
         const { dialog, tagsList, apiKeyNotice } = this.elements.required;
         const { 
@@ -666,7 +684,8 @@ class BookmarkManager {
             cancelTagsBtn, 
             dialogContent,
             dialogTitle,
-            deleteBookmarkBtn
+            deleteBookmarkBtn,
+            pageUrl
         } = this.elements.optional;
 
         // 基本的对话框关闭功能（必需）
@@ -739,12 +758,18 @@ class BookmarkManager {
             deleteBookmarkBtn.addEventListener('click', async (e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                const confirmation = confirm('确定要删除此收藏吗？');
-                if (confirmation) {
-                    dialog.classList.remove('show');
-                    await this.handleUnsave(this.currentTab);
-                    this.resetEditMode();
-                }
+                
+                this.alertDialog.show({
+                    title: '确认删除',
+                    message: '确定要删除此书签吗？',
+                    primaryText: '删除',
+                    secondaryText: '取消',
+                    onPrimary: async () => {
+                        dialog.classList.remove('show');
+                        await this.handleUnsave(this.currentTab);
+                        this.resetEditMode();
+                    }
+                });
             });
         }
 
@@ -780,6 +805,19 @@ class BookmarkManager {
             dialogTitle.addEventListener('blur', handlers.blur);
             dialogTitle.addEventListener('keydown', handlers.keydown);
             dialogTitle.addEventListener('keypress', handlers.keypress);
+        }
+
+        if (pageUrl) {
+            pageUrl.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    pageUrl.blur();
+                }
+            });
+
+            pageUrl.addEventListener('blur', () => {
+                this.validateUrl();
+            });
         }
 
         const apiKeyLink = apiKeyNotice.querySelector('.api-key-link');
@@ -958,8 +996,36 @@ class BookmarkManager {
         return Array.from(tagElements).map(el => el.textContent.replace('×', '').trim());
     }
 
+    // 验证URL格式
+    validateUrl() {
+        const {pageUrl} = this.elements.optional;
+        let url = pageUrl.textContent.trim();
+        
+        try {
+            // 尝试创建URL对象以验证格式
+            new URL(url);
+        } catch (error) {
+            // URL无效，恢复原始URL
+            updateStatus('URL格式错误', true);
+            pageUrl.textContent = this.currentTab?.url;
+        }
+    }
+
     getEditedTitle() {
-        return document.querySelector('.page-title').textContent.trim();
+        const {dialogTitle} = this.elements.optional;
+        return dialogTitle.textContent.trim();
+    }
+    
+    // 获取编辑后的URL
+    getEditedUrl() {
+        const {pageUrl} = this.elements.optional;
+        let url = pageUrl.textContent.trim();
+        try {
+            new URL(url);
+            return url;
+        } catch (error) {
+            return this.currentTab?.url;
+        }
     }
 
     async handleSaveClick() {
@@ -1008,11 +1074,7 @@ class BookmarkManager {
             await LocalStorageMgr.removeBookmark(tab.url);
             await recordBookmarkChange(bookmark, true, true, onSyncError);
             updateStatus('已取消收藏');
-            await Promise.all([
-                renderBookmarksList(),
-                updateBookmarkCount(),
-                updateTabState(),
-            ]);
+            await refreshBookmarksInfo();
         }
     }
 
@@ -1103,6 +1165,15 @@ class BookmarkManager {
         // 设置URL
         dialogUrl.textContent = this.currentTab.url;
         dialogUrl.title = this.currentTab.url;
+        
+        // 设置URL是否可编辑 - 只有在非编辑模式下才可编辑
+        if (!this.isEditMode) {
+            dialogUrl.contentEditable = "true";
+            dialogUrl.classList.add("editable");
+        } else {
+            dialogUrl.contentEditable = "false";
+            dialogUrl.classList.remove("editable");
+        }
 
         // 设置图标
         dialogFavicon.src = await getFaviconUrl(this.currentTab.url);
@@ -1190,12 +1261,15 @@ class BookmarkManager {
             }
             StatusManager.startOperation(this.isEditMode ? '正在更新书签' : '正在保存书签');
             
+            // 获取编辑后的 URL
+            const url = this.isEditMode ? this.currentTab.url : this.getEditedUrl();
+            
             // 如果是编辑现有书签,保留原有的 embedding 和其他信息
             const embedding = this.isEditMode ? this.editingBookmark.embedding : await getEmbedding(makeEmbeddingText(this.pageContent, this.currentTab, tags));
             const apiService = await ConfigManager.getActiveService();
             
             const pageInfo = {
-                url: this.currentTab.url,
+                url: url,
                 title: title,
                 tags: tags,
                 excerpt: this.pageContent?.excerpt || '',
@@ -1214,14 +1288,10 @@ class BookmarkManager {
                 after: pageInfo
             });
             
-            await LocalStorageMgr.setBookmark(this.currentTab.url, pageInfo);
+            await LocalStorageMgr.setBookmark(url, pageInfo);
             await recordBookmarkChange(pageInfo, false, true, onSyncError);
 
-            await Promise.all([
-                renderBookmarksList(),
-                updateBookmarkCount(),
-                updateTabState(),
-            ]);
+            await refreshBookmarksInfo();
             StatusManager.endOperation(this.isEditMode ? '书签更新成功' : '书签保存成功', false);
         } catch (error) {
             logger.error('保存书签时出错:', error);
@@ -1232,9 +1302,29 @@ class BookmarkManager {
     }
 }
 
+async function updateSearchResults() {
+    const searchInput = document.getElementById('search-input');
+    if (searchInput.value) {
+        logger.debug('更新搜索结果');
+        const query = searchInput.value.trim();
+        const includeChromeBookmarks = await SettingsManager.get('display.showChromeBookmarks');
+        const results = await searchManager.search(query, {
+            debounce: false,
+            includeUrl: true,
+            includeChromeBookmarks: includeChromeBookmarks
+        });
+        displaySearchResults(results, query);
+    }
+}
+
 function displaySearchResults(results, query) {
     const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = '';
+
+    const bookmarkManager = getBookmarkManager();
+    if (bookmarkManager) {
+        bookmarkManager.searchEditManager.initialize(results);
+    }
 
     // 如果没有搜索结果，显示空状态
     if (results.length === 0) {
@@ -1259,6 +1349,7 @@ function displaySearchResults(results, query) {
     const createResultElement = async (result) => {
         const li = document.createElement('li');
         li.className = 'result-item';
+        li.dataset.url = result.url;
         
         // 添加高相关度样式
         if (result.score >= 85) {
@@ -1280,11 +1371,16 @@ function displaySearchResults(results, query) {
 
         const tags = result.tags.map(tag => 
             result.source === BookmarkSource.CHROME ? 
-            `<span class="tag folder-tag">${highlightText(tag)}</span>` :
-            `<span class="tag">${highlightText(tag)}</span>`
+            `<span class="tag folder-tag">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12">
+                    <path fill="currentColor" d="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z"/>
+                </svg>
+                ${tag}
+            </span>` :
+            `<span class="tag">${tag}</span>`
         ).join('');
 
-        const preview = highlightText(truncateExcerpt(result.excerpt || ''));
+        const preview = truncateExcerpt(result.excerpt || '');
 
         // 使用 getFaviconUrl 函数获取图标
         const faviconUrl = await getFaviconUrl(result.url);
@@ -1294,37 +1390,51 @@ function displaySearchResults(results, query) {
             if (similarity < 0.01) {
                 return '';
             }
-            let bars;
-            let text = '';
+            
+            let stars;
             if (score >= 85) {
-                // 高相关：三根绿条
-                bars = `
-                    <div class="relevance-bar high"></div>
-                    <div class="relevance-bar high"></div>
-                    <div class="relevance-bar high"></div>
+                // 高相关：三颗绿星
+                stars = `
+                    <span class="relevance-star high">★</span>
+                    <span class="relevance-star high">★</span>
+                    <span class="relevance-star high">★</span>
                 `;
-                text = '相关度高';
             } else if (score >= 65) {
-                // 中等相关
-                bars = `
-                    <div class="relevance-bar medium"></div>
-                    ${score >= 75 ? '<div class="relevance-bar medium"></div>' : '<div class="relevance-bar low"></div>'}
-                    <div class="relevance-bar low"></div>
+                // 中等相关：根据分数显示1-2颗橙星
+                stars = `
+                    <span class="relevance-star medium">★</span>
+                    ${score >= 75 ? '<span class="relevance-star medium">★</span>' : '<span class="relevance-star low">★</span>'}
+                    <span class="relevance-star low">★</span>
                 `;
-                text = '相关度中';
             } else {
-                // 低相关：三根灰条
-                bars = `
-                    <div class="relevance-bar low"></div>
-                    <div class="relevance-bar low"></div>
-                    <div class="relevance-bar low"></div>
+                // 低相关：三颗灰星
+                stars = `
+                    <span class="relevance-star low">★</span>
+                    <span class="relevance-star low">★</span>
+                    <span class="relevance-star low">★</span>
                 `;
-                text = '相关度低';
             }
-            return `<div class="result-score"><span class="relevance-text">${text}</span>${bars}</div>`;
+
+            return `<div class="result-score">
+                <div class="relevance-stars">${stars}</div>
+            </div>`;
         };
 
+        const editBtnHtml = result.source !== BookmarkSource.EXTENSION ? '' : `
+            <button class="action-btn edit-btn" title="编辑">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                    <path fill="currentColor" d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" />
+                </svg>
+            </button>
+        `;
+        
+        const formattedDate = result.savedAt ? new Date(result.savedAt).toLocaleDateString(navigator.language, {year: 'numeric', month: 'long', day: 'numeric'}) : '未知时间';
+
+        // 添加选择复选框
         li.innerHTML = `
+            <div class="bookmark-checkbox">
+                <input type="checkbox" title="选择此书签">
+            </div>
             <a href="${result.url}" class="result-link" target="_blank">
                 <div class="result-header">
                     <div class="result-title-wrapper">
@@ -1332,17 +1442,50 @@ function displaySearchResults(results, query) {
                             <img src="${faviconUrl}" alt="">
                         </div>
                         <span class="result-title" title="${result.title}">${highlightText(result.title)}</span>
+                        ${getRelevanceIndicator(result.score, result.similarity)}
                     </div>
                 </div>
+                <div class="result-url" title="${result.url}">${result.url}</div>
                 <div class="result-preview" title="${result.excerpt || ''}">${preview}</div>
                 <div class="result-tags">${tags}</div>
-                ${getRelevanceIndicator(result.score, result.similarity)}
+                <!-- 书签底部信息栏 -->
+                <div class="result-metadata">
+                    <div class="result-saved-time" title="收藏于 ${formattedDate}">
+                        <svg viewBox="0 0 24 24" width="14" height="14">
+                            <path fill="currentColor" d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z" />
+                        </svg>
+                        <span>${formattedDate}</span>
+                    </div>
+                </div>
             </a>
-            <button class="delete-btn" title="删除">
+            
+            <!-- 添加三点菜单按钮 -->
+            <div class="more-actions-btn" title="更多操作">
                 <svg viewBox="0 0 24 24" width="16" height="16">
-                    <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
+                    <circle cx="12" cy="5" r="2.2" fill="currentColor" />
+                    <circle cx="12" cy="12" r="2.2" fill="currentColor" />
+                    <circle cx="12" cy="19" r="2.2" fill="currentColor" />
                 </svg>
-            </button>
+            </div>
+            
+            <!-- 操作菜单（默认隐藏） -->
+            <div class="actions-menu">
+                <div class="actions-menu-content">
+                    ${editBtnHtml}
+                    <button class="action-btn delete-btn" title="删除">
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                        <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="actions-menu-header">
+                    <button class="close-menu-btn" title="关闭">
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
         `;
 
         // 为图标添加错误处理
@@ -1350,11 +1493,11 @@ function displaySearchResults(results, query) {
         img.addEventListener('error', function() {
             this.src = 'icons/default_favicon.png';
         });
-
+        
         // 修改点击事件处理
         const link = li.querySelector('.result-link');
         link.addEventListener('click', async (e) => {
-            // 根据点击方式决定打开方式
+            // 非编辑模式下的正常处理
             if (isNonMarkableUrl(result.url)) {
                 e.preventDefault();
                 // 显示提示并提供复制链接选项
@@ -1371,12 +1514,113 @@ function displaySearchResults(results, query) {
             }
         });
 
-        // 删除按钮事件处理保持不变
-        li.querySelector('.delete-btn').onclick = async (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            await deleteBookmark(result);
-        };
+        li.addEventListener('click', async (e) => {
+            if (bookmarkManager && bookmarkManager.searchEditManager.isInEditMode()) {
+                if (!e.target.closest('a') && !e.target.closest('button') && !e.target.closest('.bookmark-checkbox')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // 触发复选框点击
+                    const checkbox = li.querySelector('.bookmark-checkbox input');
+                    if (checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                        const changeEvent = new CustomEvent('change', { 
+                            bubbles: true,
+                            detail: { shiftKey: e.shiftKey }
+                        });
+                        changeEvent.shiftKey = e.shiftKey;
+                        checkbox.dispatchEvent(changeEvent);
+                    }
+                    return;
+                }
+            }
+        });
+        
+        // 设置复选框事件处理
+        const checkbox = li.querySelector('.bookmark-checkbox input');
+        if (checkbox) {
+            checkbox.addEventListener('change', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // 获取搜索结果编辑管理器
+                if (bookmarkManager) {
+                    const searchEditManager = bookmarkManager.searchEditManager;
+                    // 如果尚未进入编辑模式，则进入编辑模式并选中当前项
+                    if (!searchEditManager.isInEditMode()) {
+                        searchEditManager.enterEditMode(li);
+                    } else {
+                        // 如果已经在编辑模式，则切换当前项的选中状态
+                        const isShiftKey = e.shiftKey || (e.detail && e.detail.shiftKey);
+                        searchEditManager.toggleBookmarkSelection(li, e.target.checked, isShiftKey);
+                    }
+                }  
+            });
+        }
+
+        // 处理三点菜单按钮点击
+        const moreActionsBtn = li.querySelector('.more-actions-btn');
+        if (moreActionsBtn) {
+            moreActionsBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // 获取当前菜单
+                const menu = moreActionsBtn.nextElementSibling;
+                
+                // 关闭所有其他打开的菜单
+                document.querySelectorAll('.actions-menu.visible').forEach(openMenu => {
+                    if (openMenu !== menu) {
+                        openMenu.classList.remove('visible');
+                    }
+                });
+                
+                // 切换当前菜单
+                menu.classList.toggle('visible');
+            });
+        }
+        
+        // 处理关闭菜单按钮点击
+        const closeMenuBtn = li.querySelector('.close-menu-btn');
+        if (closeMenuBtn) {
+            closeMenuBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                closeMenuBtn.closest('.actions-menu').classList.remove('visible');
+            });
+        }
+
+        // 编辑按钮事件处理
+        const editBtn = li.querySelector('.edit-btn');
+        if (editBtn) {
+            editBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // 关闭菜单
+                editBtn.closest('.actions-menu').classList.remove('visible');
+                
+                // 获取 BookmarkManager 实例
+                const bookmarkManager = getBookmarkManager();
+                if (bookmarkManager) {
+                    await bookmarkManager.handleEdit(result);
+                }
+            });
+        }
+
+        // 删除按钮事件处理
+        const deleteBtn = li.querySelector('.delete-btn');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // 关闭菜单
+                deleteBtn.closest('.actions-menu').classList.remove('visible');
+                
+                await deleteBookmark(result);
+            });
+        }
 
         return li;
     };
@@ -1389,37 +1633,33 @@ function displaySearchResults(results, query) {
 // 删除书签的函数
 async function deleteBookmark(bookmark) {
     try {
-        const confirmation = confirm('确定要删除此收藏吗？');
-        if (confirmation) {
-            // 先删除书签
-            if (bookmark.source === BookmarkSource.EXTENSION) {
-                await LocalStorageMgr.removeBookmark(bookmark.url);
-                await recordBookmarkChange(bookmark, true, true, onSyncError);
-            } else {
-                await chrome.bookmarks.remove(bookmark.chromeId);
-            }
-            
-            // 并行执行所有UI更新
-            await Promise.all([
-                renderBookmarksList(),    // 确保更新书签列表
-                updateBookmarkCount(),    // 更新计数
-                updateTabState(),    // 更新保存按钮状态
-            ]);
-
-            // 如果在搜索模式，更新搜索结果
-            const searchInput = document.getElementById('search-input');
-            if (searchInput.value) {
-                const query = searchInput.value.trim();
-                const includeChromeBookmarks = await SettingsManager.get('display.showChromeBookmarks');
-                const results = await searchManager.search(query, {
-                    debounce: false,
-                    includeUrl: true,
-                    includeChromeBookmarks: includeChromeBookmarks
-                });
-                displaySearchResults(results, query);
-            }
-            updateStatus('书签已成功删除', false);
+        // 获取书签管理器实例，以便使用其 alertDialog
+        const bookmarkManager = getBookmarkManager();
+        if (!bookmarkManager || !bookmarkManager.alertDialog) {
+            logger.error('获取 AlertDialog 失败');
+            return;
         }
+
+        bookmarkManager.alertDialog.show({
+            title: '确认删除',
+            message: '确定要删除此书签吗？',
+            primaryText: '删除',
+            secondaryText: '取消',
+            onPrimary: async () => {
+                // 先删除书签
+                if (bookmark.source === BookmarkSource.EXTENSION) {
+                    await LocalStorageMgr.removeBookmark(bookmark.url);
+                    await recordBookmarkChange(bookmark, true, true, onSyncError);
+                } else {
+                    await chrome.bookmarks.remove(bookmark.chromeId);
+                }
+                
+                // 并行执行所有UI更新
+                await refreshBookmarksInfo();
+
+                updateStatus('书签已成功删除', false);
+            }
+        });
     } catch (error) {
         logger.error('删除书签时出错:', error);
         updateStatus('删除失败: ' + error.message, true);
@@ -1516,12 +1756,8 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     } else if (message.type === MessageType.TOGGLE_SEARCH) {
         toggleSearching();
     } else if (message.type === MessageType.BOOKMARKS_UPDATED) {
-        await renderBookmarksList();    // 确保更新书签列表
-        await Promise.all([
-            updateBookmarkCount(),    // 更新计数
-            updateTabState(),    // 更新保存按钮状态
-        ]);
-        const bookmarkMgr = await getBookmarkManager();
+        await refreshBookmarksInfo();
+        const bookmarkMgr = getBookmarkManager();
         await bookmarkMgr.checkEmbeddingStatus();
     }
 });
@@ -1545,6 +1781,11 @@ function openSearching(skipAnimation = false) {
     const searchInput = document.getElementById('search-input');
     if (!toolbar || !searchInput) return;
 
+    const bookmarkManager = getBookmarkManager()
+    if (bookmarkManager && bookmarkManager.editManager) {
+        bookmarkManager.editManager.exitEditMode();
+    }
+
     if (skipAnimation) {
         toolbar.classList.add('searching', 'no-transition');
         requestAnimationFrame(() => {
@@ -1567,6 +1808,13 @@ function closeSearching() {
 
     toolbar.classList.remove('searching');
     searchInput.value = ''; // 清空搜索框
+    
+    // 退出搜索结果编辑模式
+    const bookmarkManager = getBookmarkManager();
+    if (bookmarkManager && bookmarkManager.searchEditManager) {
+        bookmarkManager.searchEditManager.exitEditMode();
+    }
+    
     // 清空搜索结果
     const searchResults = document.getElementById('search-results');
     if (searchResults) {
@@ -1593,9 +1841,9 @@ function updateSaveButtonState(isSaved) {
 }
 
 // 更新收藏数量显示
-async function updateBookmarkCount() {
+async function updateBookmarkCount(localCache = false) {
     try {
-        const allBookmarks = await getDisplayedBookmarks();
+        const allBookmarks = await getDisplayedBookmarks(localCache);
         const count = Object.keys(allBookmarks).length;
         const bookmarkCount = document.getElementById('bookmark-count');
         bookmarkCount.setAttribute('data-count', count);
@@ -1609,10 +1857,16 @@ async function updateBookmarkCount() {
 let currentRenderer = null;
 
 // 修改渲染书签列表函数
-async function renderBookmarksList() {
-    logger.debug('renderBookmarksList 开始', Date.now()/1000);
+async function renderBookmarksList(localCache = false) {
+    logger.debug('renderBookmarksList 开始, localCache: ', localCache);
     const bookmarksList = document.getElementById('bookmarks-list');
     if (!bookmarksList) return;
+
+    // 退出编辑模式
+    const bookmarkManager = getBookmarkManager();
+    if (bookmarkManager && bookmarkManager.editManager) {
+        bookmarkManager.editManager.exitEditMode();
+    }
 
     try {
         if (currentRenderer) {
@@ -1632,8 +1886,8 @@ async function renderBookmarksList() {
         const sortBy = settings.sort.bookmarks;
 
         const data = viewMode === 'group'
-            ? Object.values(await getDisplayedBookmarks())
-            : await filterManager.getFilteredBookmarks();
+            ? Object.values(await getDisplayedBookmarks(localCache))
+            : await filterManager.getFilteredBookmarks(localCache);
 
         let bookmarks = data.map((item) => ({
                 ...item,
@@ -1658,7 +1912,7 @@ async function renderBookmarksList() {
                                 <svg viewBox="0 0 24 24" width="16" height="16">
                                     <path fill="currentColor" d="M17,3H7A2,2 0 0,0 5,5V21L12,18L19,21V5A2,2 0 0,0 17,3M12,7A2,2 0 0,1 14,9A2,2 0 0,1 12,11A2,2 0 0,1 10,9A2,2 0 0,1 12,7Z" />
                                 </svg>
-                                点击左上角的书签图标开始收藏
+                                点击左上角的收藏图标开始收藏
                             </div>
                             <div class="action-item import-action">
                                 <svg viewBox="0 0 24 24" width="16" height="16">
@@ -1720,7 +1974,7 @@ async function renderBookmarksList() {
             currentRenderer = new BookmarkRenderer(bookmarksList, bookmarks);
         }
         await currentRenderer.initialize();
-        logger.debug('renderBookmarksList 完成', Date.now()/1000);
+        logger.debug('renderBookmarksList 完成');
     } catch (error) {
         logger.error('渲染书签列表失败:', error);
         // 显示错误状态
@@ -1734,6 +1988,15 @@ async function renderBookmarksList() {
             </li>`;
         updateStatus('加载书签失败: ' + error.message, true);
     }
+}
+
+async function refreshBookmarksInfo(localCache = false) {
+    await renderBookmarksList(localCache);
+    await Promise.all([
+        updateBookmarkCount(localCache),
+        updateTabState(),
+        updateSearchResults(),
+    ]);
 }
 
 // 修改视图模式切换事件处理
@@ -1816,6 +2079,12 @@ class BookmarkRenderer {
         // 清理之前的实例
         this.cleanup();
 
+        // 初始化编辑模式
+        const bookmarkManager = getBookmarkManager();
+        if (bookmarkManager && bookmarkManager.editManager) {
+            bookmarkManager.editManager.initialize(this.allBookmarks);
+        }
+
         // 创建加载指示器
         this.loadingIndicator = document.createElement('div');
         this.loadingIndicator.className = 'loading-indicator';
@@ -1857,17 +2126,9 @@ class BookmarkRenderer {
     async createBookmarkElement(bookmark) {
         const li = document.createElement('li');
         li.className = 'bookmark-item';
+        li.dataset.url = bookmark.url;
 
-        // 根据标签类型使用不同的样式
-        const tags = bookmark.tags.map(tag => {
-            if (bookmark.source === BookmarkSource.CHROME) {
-                return `<span class="tag folder-tag">${tag}</span>`;
-            } else {
-                return `<span class="tag">${tag}</span>`;
-            }
-        }).join('');
-
-        const editBtn = bookmark.source === BookmarkSource.EXTENSION 
+        const editBtn = bookmark.source === BookmarkSource.EXTENSION && !bookmark.isCached
             ? `<button class="edit-btn" title="编辑">
                     <svg viewBox="0 0 24 24" width="16" height="16">
                         <path fill="currentColor" d="M3,17.25V21H6.75L17.81,9.93L14.06,6.18M17.5,3C19.54,3 21.43,4.05 22.39,5.79L20.11,7.29C19.82,6.53 19.19,6 18.5,6A2.5,2.5 0 0,0 16,8.5V11H18V13H16V15H18V17.17L16.83,18H13V16H15V14H13V12H15V10H13V8.83"></path>
@@ -1876,13 +2137,16 @@ class BookmarkRenderer {
             : '';
         
         li.innerHTML = `
+            <div class="bookmark-checkbox">
+                <input type="checkbox" title="选择此书签">
+            </div>
             <a href="${bookmark.url}" class="bookmark-link" target="_blank">
                 <div class="bookmark-info">
                     <div class="bookmark-main">
                         <div class="bookmark-favicon">
                             <img src="${await getFaviconUrl(bookmark.url)}" alt="" loading="lazy">
                         </div>
-                        <h3 class="bookmark-title" title="${bookmark.title}">${bookmark.title}</h3>
+                        <h3 class="bookmark-title"">${bookmark.title}</h3>
                         <div class="bookmark-actions">
                             ${editBtn}
                             <button class="delete-btn" title="删除">
@@ -1892,72 +2156,134 @@ class BookmarkRenderer {
                             </button>
                         </div>
                     </div>
-                    <div class="bookmark-meta">
-                        <div class="bookmark-tags">
-                            ${tags}
-                        </div>
-                    </div>
                 </div>
             </a>
         `;
 
-        // 为标签添加动画延迟
-        const tagElements = li.querySelectorAll('.bookmark-tags .tag');
-        const baseDelay = 0.05; // 基础延迟时间（秒）
-        tagElements.forEach((tag, index) => {
-            const delay = index < 5 ? baseDelay * index : 0.25;
-            tag.style.setProperty('--delay', `${delay}s`);
-        });
-
         // 添加事件监听器
         this.setupBookmarkEvents(li, bookmark);
         
+        // 更新书签选择状态
+        const bookmarkManager = getBookmarkManager();
+        if (bookmarkManager && bookmarkManager.editManager) {
+            bookmarkManager.editManager.refreshBookmarkSelection(li);
+        }
+
         return li;
     }
 
     setupBookmarkEvents(li, bookmark) {
-        // 删除按钮事件
-        li.querySelector('.delete-btn').addEventListener('click', async (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            await deleteBookmark(bookmark);
+        // 添加书签项的事件处理
+        const checkbox = li.querySelector('.bookmark-checkbox input[type="checkbox"]');
+        const bookmarkManager = getBookmarkManager();
+        const deleteBtn = li.querySelector('.delete-btn');
+        const editBtn = li.querySelector('.edit-btn');
+        
+        // 添加鼠标悬停事件来显示tooltip
+        li.addEventListener('mouseenter', (e) => {
+            showTooltip(li, bookmark);
         });
+        
+        // 添加鼠标离开事件来隐藏tooltip
+        li.addEventListener('mouseleave', () => {
+            hideTooltip();
+        });
+        
+        // 删除按钮事件
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                
+                await deleteBookmark(bookmark);
+            });
+        }
 
         // 添加编辑按钮事件处理
-        const editBtn = li.querySelector('.edit-btn');
         if (editBtn) {
             editBtn.addEventListener('click', async (e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                // 获取 BookmarkManager 实例
-                const bookmarkManager = await getBookmarkManager();
                 if (bookmarkManager) {
                     await bookmarkManager.handleEdit(bookmark);
                 }
             });
         }
 
-        // 保持原有的图标错误处理逻辑
-        const img = li.querySelector('.bookmark-favicon img');
-        img.addEventListener('error', function() {
-            this.src = 'icons/default_favicon.png';
-        });
-
-        // 修改点击事件处理，只处理链接点击
+        // 图标错误处理
+        const faviconImg = li.querySelector('.bookmark-favicon img');
+        if (faviconImg) {
+            faviconImg.addEventListener('error', function() {
+                this.src = 'icons/default_favicon.png';
+            });
+        }
+        
+        // 修改点击事件处理，处理特殊链接
         const link = li.querySelector('.bookmark-link');
-        link.addEventListener('click', async (e) => {
-            if (isNonMarkableUrl(bookmark.url)) {
-                e.preventDefault();
-                // 显示提示并提供复制链接选项   
-                const copyConfirm = confirm('此页面无法直接打开。是否复制链接到剪贴板？');
-                if (copyConfirm) {
-                    await navigator.clipboard.writeText(bookmark.url);  
-                    updateStatus('链接已复制到剪贴板'); 
+        if (link) {
+            link.addEventListener('click', async (e) => {
+                if (isNonMarkableUrl(bookmark.url)) {
+                    e.preventDefault();
+                    // 显示提示并提供复制链接选项   
+                    const copyConfirm = confirm('此页面无法直接打开。是否复制链接到剪贴板？');
+                    if (copyConfirm) {
+                        await navigator.clipboard.writeText(bookmark.url);  
+                        updateStatus('链接已复制到剪贴板'); 
+                    }
+                } else {
+                    if (bookmark.source === BookmarkSource.EXTENSION) {
+                        // 更新使用频率
+                        await updateBookmarkUsage(bookmark.url);
+                    }
                 }
-            } else {
-                if (bookmark.source === BookmarkSource.EXTENSION) {
-                    // 更新使用频率
-                    await updateBookmarkUsage(bookmark.url);
+            });
+        }
+        
+        // 添加复选框点击事件，进入编辑模式
+        if (checkbox) {
+            checkbox.addEventListener('change', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // 获取书签管理器实例
+                if (bookmarkManager && bookmarkManager.editManager) {
+                    const bookmarkItem = e.target.closest('.bookmark-item');
+                    
+                    // 如果尚未进入编辑模式，则进入编辑模式并选中当前项
+                    if (!bookmarkManager.editManager.isInEditMode()) {
+                        bookmarkManager.editManager.enterEditMode(bookmarkItem);
+                    } else {
+                        // 如果已经在编辑模式，则切换当前项的选中状态
+                        // 获取shift键状态
+                        const isShiftKey = e.shiftKey;
+                        bookmarkManager.editManager.toggleBookmarkSelection(bookmarkItem, e.target.checked, isShiftKey);
+                    }
+                }
+            });
+        }
+        
+        // 添加整个书签项点击时可以触发复选框的功能
+        li.addEventListener('click', async (e) => {
+            // 如果已经在编辑模式，点击书签项时触发复选框点击
+            if (bookmarkManager && bookmarkManager.editManager && bookmarkManager.editManager.isInEditMode()) {
+                // 如果点击的不是链接、不是按钮、不是复选框，则触发复选框点击
+                if (!e.target.closest('a') && !e.target.closest('button') && !e.target.closest('.bookmark-checkbox')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    if (checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                        // 保存shift键状态
+                        const isShiftKey = e.shiftKey;
+                        // 创建自定义事件，保留shift键信息
+                        const changeEvent = new CustomEvent('change', { 
+                            bubbles: true,
+                            detail: { shiftKey: isShiftKey }
+                        });
+                        // 在事件对象上添加shift键状态
+                        changeEvent.shiftKey = isShiftKey;
+                        checkbox.dispatchEvent(changeEvent);
+                    }
                 }
             }
         });
@@ -2001,6 +2327,22 @@ class GroupedBookmarkRenderer extends BookmarkRenderer {
                 rule: rule,
                 bookmarks: matchedBookmarks
             });
+        }
+
+        // 初始化编辑模式
+        const bookmarkManager = getBookmarkManager();
+        if (bookmarkManager && bookmarkManager.editManager) {
+            const allBookmarksMap = new Map();
+            for (const group of this.groups) {
+                for (const bookmark of group.bookmarks) {
+                    // 使用URL作为键来确保唯一性
+                    if (!allBookmarksMap.has(bookmark.url)) {
+                        allBookmarksMap.set(bookmark.url, bookmark);
+                    }
+                }
+            }
+            const uniqueBookmarks = Array.from(allBookmarksMap.values());
+            bookmarkManager.editManager.initialize(uniqueBookmarks);
         }
         
         await this.render();
@@ -2102,7 +2444,10 @@ class SettingsDialog {
             shortcutsBtn: document.getElementById('keyboard-shortcuts'),
             openSettingsPageBtn: document.getElementById('open-settings-page'),
             feedbackBtn: document.getElementById('feedback-button'),
-            storeReviewButton: document.getElementById('store-review-button')
+            storeReviewButton: document.getElementById('store-review-button'),
+            showUpdateLogBtn: document.getElementById('show-update-log'),
+            closeUpdateNotification: document.getElementById('close-update-notification'),
+            viewAllUpdatesLink: document.getElementById('view-all-updates'),
         };
     }
 
@@ -2133,8 +2478,7 @@ class SettingsDialog {
         // 设置变更事件
         this.elements.showChromeBookmarks.addEventListener('change', async (e) => 
             await this.handleSettingChange('display.showChromeBookmarks', e.target.checked, async () => {
-                await renderBookmarksList();
-                await updateBookmarkCount();
+                await refreshBookmarksInfo();
             }));
 
         this.elements.autoFocusSearch.addEventListener('change', async (e) =>
@@ -2192,6 +2536,37 @@ class SettingsDialog {
             chrome.tabs.create({ url: storeUrl });
             this.close();
         });
+
+        // 添加查看更新日志按钮点击事件
+        this.elements.showUpdateLogBtn.addEventListener('click', () => {
+            showUpdateNotification();
+            this.close();
+        });
+
+         
+        // 绑定关闭按钮事件
+        this.elements.closeUpdateNotification.addEventListener('click', async () => {
+            const container = document.getElementById('update-notification');
+            container.classList.remove('show');
+        });
+        
+        // 绑定查看所有更新链接事件
+        this.elements.viewAllUpdatesLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            // 打开更新日志页面
+            chrome.tabs.create({ url: `${SERVER_URL}/changelog` });
+        });
+
+        // 添加点击背景关闭功能
+        const overlay = document.querySelector('.update-overlay');
+        if (overlay) {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) {
+                    const container = document.getElementById('update-notification');
+                    container.classList.remove('show');
+                }
+            });
+        }
     }
 
     async loadSettings() {
@@ -2302,6 +2677,10 @@ class AlertDialog {
         onPrimary = () => {},
         onSecondary = () => {},
     }) {
+        if (this.dialog.classList.contains('show')) {
+            this.hide();
+        }
+
         this.title.textContent = title;
         this.message.textContent = message;
         this.primaryBtn.textContent = primaryText;
@@ -2316,6 +2695,8 @@ class AlertDialog {
 
     hide() {
         this.dialog.classList.remove('show');
+        this.onPrimary = () => {};
+        this.onSecondary = () => {};
     }
 }
 
@@ -2327,6 +2708,11 @@ async function handleSearch() {
     if (!query) {
         searchResults.innerHTML = '';
         return;
+    }
+
+    const bookmarkManager = getBookmarkManager();
+    if (bookmarkManager) {
+        bookmarkManager.searchEditManager.exitEditMode();
     }
 
     try {
@@ -2386,7 +2772,7 @@ async function renderSearchHistory(query) {
             </svg>
             <span>${item.query}</span>
             <svg class="delete-history-btn" viewBox="0 0 24 24" title="删除此搜索记录">
-                <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+                <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"></path>
             </svg>
         </div>
     `).join('');
@@ -2547,6 +2933,19 @@ async function initializeSearch() {
             closeSearching();
         }
     });
+    
+    // 添加全局点击事件处理，用于关闭打开的菜单
+    document.addEventListener('click', (e) => {
+        // 如果点击的是菜单按钮或菜单本身，不执行关闭操作
+        if (e.target.closest('.more-actions-btn') || e.target.closest('.actions-menu')) {
+            return;
+        }
+        
+        // 关闭所有打开的菜单
+        document.querySelectorAll('.actions-menu.visible').forEach(menu => {
+            menu.classList.remove('visible');
+        });
+    });
 
     // 搜索输入框回车事件
     searchInput?.addEventListener('keypress', async (event) => {
@@ -2566,6 +2965,122 @@ async function initializeSearch() {
             await handleSearch();
         }
     });
+}
+
+function initializeGlobalTooltip() {
+    const tooltip = document.getElementById('global-bookmark-tooltip');
+    if (!tooltip) return;
+    
+    let isScrolling = false;
+    
+    // 监听文档滚动事件（捕获阶段）
+    document.addEventListener('scroll', () => {
+        if (!isScrolling) {
+            logger.debug('文档滚动开始，隐藏tooltip');
+            hideTooltip();
+        }
+        isScrolling = true;
+    }, { passive: true, capture: true });
+
+    document.addEventListener("scrollend", (event) => {
+        logger.debug('文档滚动结束');
+        isScrolling = false;
+    }, { passive: true, capture: true });
+    
+    // 添加全局点击事件，关闭tooltip
+    document.addEventListener('click', (e) => {
+        // 如果tooltip正在显示，则关闭它
+        if (tooltip.classList.contains('show')) {
+            // 检查点击的元素是否是tooltip本身或其子元素
+            if (!tooltip.contains(e.target)) {
+                hideTooltip();
+            }
+        }
+    }, { passive: true });
+}
+
+let tooltipTimeout;
+
+function showTooltip(li, bookmark) {
+    const tooltip = document.getElementById('global-bookmark-tooltip');
+    if (!tooltip) return;
+    
+    // 清除任何可能存在的超时
+    if (tooltipTimeout) {
+        clearTimeout(tooltipTimeout);
+        tooltip.classList.remove('show');
+    }
+    
+    tooltipTimeout = setTimeout(() => {
+        // 根据标签类型使用不同的样式
+        const tags = bookmark.tags.map(tag => {
+            if (bookmark.source === BookmarkSource.CHROME) {
+                return `<span class="tag folder-tag">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12">
+                        <path fill="currentColor" d="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z"/>
+                    </svg>
+                    ${tag}
+                </span>`;
+            } else {
+                return `<span class="tag">${tag}</span>`;
+            }
+        }).join('');
+
+        // 格式化保存时间
+        const savedDate = bookmark.savedAt ? new Date(bookmark.savedAt) : new Date();
+        const formattedDate = savedDate.toLocaleDateString(navigator.language, {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        // 更新tooltip内容
+        tooltip.querySelector('.bookmark-tooltip-title').textContent = bookmark.title;
+        tooltip.querySelector('.bookmark-tooltip-url').textContent = bookmark.url;
+        tooltip.querySelector('.bookmark-tooltip-tags').innerHTML = tags;
+        tooltip.querySelector('.bookmark-tooltip-time span').textContent = formattedDate;
+        
+        // 计算位置
+        const rect = li.getBoundingClientRect();
+        
+        // 设置tooltip的位置
+        tooltip.style.top = `${rect.bottom + 8}px`;
+        tooltip.style.left = `${rect.left}px`;
+        
+        // 检查是否会超出右侧边界
+        const tooltipRect = tooltip.getBoundingClientRect();
+        const rightOverflow = window.innerWidth - (rect.left + tooltipRect.width);
+        
+        if (rightOverflow < 0) {
+            // 如果会超出右边界，调整位置
+            tooltip.style.left = `${Math.max(10, rect.left + rightOverflow - 10)}px`;
+        }
+        
+        // 检查是否会超出底部边界
+        const bottomOverflow = window.innerHeight - (rect.bottom + tooltipRect.height + 8);
+        
+        if (bottomOverflow < 0) {
+            // 如果会超出底部边界，显示在元素上方
+            tooltip.style.top = `${rect.top - tooltipRect.height - 8}px`;
+        }
+        
+        // 显示tooltip
+        tooltip.classList.add('show');
+    }, 500); // 500ms的延迟
+}
+
+function hideTooltip() {
+    const tooltip = document.getElementById('global-bookmark-tooltip');
+    if (!tooltip) return;
+    
+    // 清除显示的超时
+    if (tooltipTimeout) {
+        clearTimeout(tooltipTimeout);
+    }
+    
+    if (tooltip.classList.contains('show')) {
+        tooltip.classList.remove('show');
+    }
 }
 
 // 检查更新并显示更新提示
@@ -2604,25 +3119,6 @@ async function showUpdateNotification(version) {
     // 设置更新内容
     const updateNotificationBody = container.querySelector('.update-notification-body');
     updateNotificationBody.innerHTML = updateContent.content;
-    
-    // 显示更新提示
-    container.classList.add('show');
-    
-    // 绑定关闭按钮事件
-    const closeButton = document.getElementById('close-update-notification');
-    closeButton.addEventListener('click', async () => {
-        container.classList.remove('show');
-        // 保存当前版本为已显示
-        await LocalStorageMgr.setLastShownVersion(version);
-    });
-    
-    // 绑定查看所有更新链接事件
-    const viewAllUpdatesLink = document.getElementById('view-all-updates');
-    viewAllUpdatesLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        // 打开更新日志页面
-        chrome.tabs.create({ url: `${SERVER_URL}/changelog` });
-    });
 
     // 给content里的所有a标签添加点击事件
     updateNotificationBody.querySelectorAll('a').forEach(a => {
@@ -2631,13 +3127,15 @@ async function showUpdateNotification(version) {
             chrome.tabs.create({ url: a.href });
         });
     });
+
+    // 显示更新提示
+    container.classList.add('show');
 }
 
 // 获取更新内容
 function getUpdateContent(version) {
     // 这里可以根据不同版本返回不同的更新内容
     const updateNotes = {
-        // 示例版本更新内容
         '1.2.0': {
             title: `v${version} 版本更新内容`,
             content: `
@@ -2650,39 +3148,69 @@ function getUpdateContent(version) {
         }
     };
     
+    // 如果找不到当前版本的更新内容，返回一个默认的
+    if (!version || !updateNotes[version]) {
+        return {
+            title: `最近添加的内容`,
+            content: `
+                <ul>
+                    <li>优化了同步功能，新增<a href="settings.html#sync">WebDAV同步</a></li>
+                    <li>支持删除搜索历史 <a href="settings.html#overview">去查看</a></li>
+                    <li>支持在搜索结果中编辑和删除书签</li>
+                    <li>支持批量选择和删除书签</li>
+                </ul>
+            `
+        };
+    }
+    
     return updateNotes[version];
+}
+
+// 初始化与书签向量无关的部分
+async function initPopupFastPass() {
+    logger.debug('initPopupFastPass 开始');
+    // 初始化必需的管理器
+    await Promise.all([
+        LocalStorageMgr.initLocalCache(),
+        SettingsManager.init(),
+        SyncSettingsManager.init(),
+    ]);
+
+    // 初始化中间数据层
+    await filterManager.init();
+
+    // 使用缓存书签先渲染一次书签列表
+    await Promise.all([
+        initializeViewModeSwitch(),
+        initializeSearch(),
+        initializeSortDropdown(),
+        window.settingsDialog.initialize(),
+        refreshBookmarksInfo(true),
+        initializeGlobalTooltip(),
+    ]);
+
+    logger.debug('initPopupFastPass 结束');
 }
 
 // 主初始化函数
 async function initializePopup() {
     logger.info(`当前环境: ${ENV.current}, SERVER_URL: ${SERVER_URL}`);
-    try {
-        // 1. 初始化必需的管理器
-        await Promise.all([
-            LocalStorageMgr.init(),
-            SettingsManager.init(),
-            SyncSettingsManager.init(),
-        ]);
-
+    try {        
+        // 初始化UI组件
         const settingsDialog = new SettingsDialog();
         window.settingsDialog = settingsDialog;
+        const bookmarkManager = getBookmarkManager();
+        
+        // 先初始化一部分，减少初始化时间
+        await initPopupFastPass();
 
-        // 2. 初始化中间数据层
-        await Promise.all([
-            filterManager.init(),
-        ]);
+        // 初始化书签
+        await LocalStorageMgr.init();
 
-        // 3. 初始化UI状态 (并行执行以提高性能)
+        // 初始化UI状态 (并行执行以提高性能)
         await Promise.all([
-            getBookmarkManager(),
-            initializeViewModeSwitch(),
-            initializeSearch(),
-            updateBookmarkCount(),
-            initializeSortDropdown(),
-            settingsDialog.initialize(),
-            renderBookmarksList(),
-            updateTabState(),
-            checkForUpdates(),
+            bookmarkManager.initialize(),
+            refreshBookmarksInfo(),
         ]);
 
         logger.info('弹出窗口初始化完成');

@@ -88,9 +88,7 @@ class TagFilter extends BookmarkFilter {
         bookmarks.forEach(bookmark => {
             bookmark.tags.forEach(tag => this.availableTags.add(tag));
         });
-        logger.debug('updateAvailableTags', {
-            availableTags: Array.from(this.availableTags)
-        });
+        logger.debug('updateAvailableTags 完成，数量:', this.availableTags.size);
     }
 
     async updateFilterCounts(bookmarks) {
@@ -344,7 +342,7 @@ class FilterManager {
         const customTagFilter = new CustomTagFilter();
         
         // 等待所有筛选器初始化完成
-        const bookmarks = await getDisplayedBookmarks();
+        const bookmarks = await getDisplayedBookmarks(true);
         const bookmarksList = Object.values(bookmarks);
         await Promise.all([
             tagFilter.init(bookmarksList),
@@ -566,9 +564,9 @@ class FilterManager {
         this.renderFilterOptions();
     }
 
-    async getFilteredBookmarks() {
+    async getFilteredBookmarks(localCache = false) {
         // 获取所有书签
-        const bookmarks = await getDisplayedBookmarks();
+        const bookmarks = await getDisplayedBookmarks(localCache);
         // 应用筛选
         let filteredBookmarks = Object.values(bookmarks);
         if (this.activeFilter) {

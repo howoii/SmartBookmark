@@ -11,6 +11,19 @@
     <div class="container">
         <!-- 添加全局状态消息 -->
         <div id="status" class="status-message"></div>
+
+        <!-- 添加悬浮提示框 -->
+        <div id="global-bookmark-tooltip" class="bookmark-tooltip">
+            <div class="bookmark-tooltip-title"></div>
+            <div class="bookmark-tooltip-url"></div>
+            <div class="bookmark-tooltip-tags"></div>
+            <div class="bookmark-tooltip-time">
+                <svg viewBox="0 0 24 24" width="14" height="14">
+                    <path fill="currentColor" d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z" />
+                </svg>
+                <span></span>
+            </div>
+        </div>
         
         <!-- 顶部工具栏 -->
         <div class="toolbar">
@@ -59,10 +72,10 @@
             <div class="toolbar-search">
                 <div class="search-input-wrapper">
                     <input type="text" id="search-input" placeholder="Cmd/Ctrl+K 搜索书签...">
-                    <button id="close-search" class="icon-button">
-                        <svg viewBox="0 0 24 24" width="20" height="20">
+                    <button id="close-search" class="icon-button" title="关闭搜索">
+                        <svg viewBox="0 0 24 24" width="24" height="24">
                             <path fill="currentColor"
-                                d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+                                d="M7,6C7,5.4 7.4,5 8,5H16V7H8V17H16V19H8C7.4,19 7,18.6 7,18V6M16,11V9L20,12L16,15V13H12V11H16Z" />
                         </svg>
                     </button>
                 </div>
@@ -134,9 +147,39 @@
                     <svg viewBox="0 0 24 24" width="16" height="16">
                         <path fill="currentColor" d="M12,6V9L16,5L12,1V4A8,8 0 0,0 4,12C4,13.57 4.46,15.03 5.24,16.26L6.7,14.8C6.25,13.97 6,13 6,12A6,6 0 0,1 12,6M18.76,7.74L17.3,9.2C17.74,10.04 18,11 18,12A6,6 0 0,1 12,18V15L8,19L12,23V20A8,8 0 0,0 20,12C20,10.43 19.54,8.97 18.76,7.74Z" />
                     </svg>
-                    重新生成索引
+                    <span class="button-text">重新生成索引</span>
                 </button>
             </div>
+            
+            <!-- 编辑工具栏 -->
+            <div class="edit-toolbar">
+                <div class="select-all-container">
+                    <input type="checkbox" id="select-all-checkbox">
+                    <label for="select-all-checkbox">全选</label>
+                </div>
+                <div class="edit-toolbar-counter">
+                    (<span id="selected-count">0</span>)
+                </div>
+                <div class="edit-toolbar-actions">
+                    <button id="batch-open-btn" class="icon-button" title="打开选中项">
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path fill="currentColor" d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"/>
+                        </svg>
+                    </button>
+                    <button id="batch-delete-btn" class="icon-button danger-icon-button" title="删除选中项">
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <button id="exit-edit-mode-btn" class="icon-button" title="退出编辑模式">
+                    <svg viewBox="0 0 24 24" width="24" height="24">
+                        <path fill="currentColor" d="M7,6C7,5.4 7.4,5 8,5H16V7H8V17H16V19H8C7.4,19 7,18.6 7,18V6M16,11V9L20,12L16,15V13H12V11H16Z" />
+                    </svg>
+                </button>
+            </div>
+            
             <div class="bookmarks-container">
                 <!-- 新的控制容器 -->
                 <ul id="bookmarks-list" class="bookmarks-list">
@@ -154,6 +197,35 @@
                         <!-- 搜索记录项将被动态插入到这里 -->
                     </div>
                 </div>
+                
+                <!-- 搜索结果编辑工具栏 -->
+                <div class="search-edit-toolbar">
+                    <div class="select-all-container">
+                        <input type="checkbox" id="search-select-all-checkbox">
+                        <label for="search-select-all-checkbox">全选</label>
+                    </div>
+                    <div class="search-edit-toolbar-counter">
+                        (<span id="search-selected-count">0</span>)
+                    </div>
+                    <div class="search-edit-toolbar-actions">
+                        <button id="search-batch-open-btn" class="icon-button" title="打开选中项">
+                            <svg viewBox="0 0 24 24" width="20" height="20">
+                                <path fill="currentColor" d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"/>
+                            </svg>
+                        </button>
+                        <button id="search-batch-delete-btn" class="icon-button danger-icon-button" title="删除选中项">
+                            <svg viewBox="0 0 24 24" width="20" height="20">
+                                <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
+                            </svg>
+                        </button>
+                        <button id="search-exit-edit-mode-btn" class="icon-button" title="退出编辑模式">
+                            <svg viewBox="0 0 24 24" width="24" height="24">
+                                <path fill="currentColor" d="M7,6C7,5.4 7.4,5 8,5H16V7H8V17H16V19H8C7.4,19 7,18.6 7,18V6M16,11V9L20,12L16,15V13H12V11H16Z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
                 <!-- 搜索结果列表 -->
                 <ul id="search-results" class="search-results"></ul>
             </div>
@@ -161,6 +233,7 @@
         
         <!-- 更新提示框 -->
         <div id="update-notification" class="update-notification">
+            <div class="update-overlay"></div>
             <div class="update-notification-content">
                 <div class="update-notification-header">
                     <h3>新版本更新</h3>
@@ -189,7 +262,7 @@
                     </div>
                     <h3 class="page-title" contenteditable="true" spellcheck="false" title=""></h3>
                 </div>
-                <div class="page-url" title=""></div>
+                <div class="page-url" spellcheck="false" title=""></div>
             </div>
             <div class="page-excerpt"></div>
             <div class="tags-container">
@@ -294,6 +367,11 @@
                             <path fill="currentColor" d="M19 10H17V8H19M19 13H17V11H19M16 10H14V8H16M16 13H14V11H16M16 17H8V15H16M7 10H5V8H7M7 13H5V11H7M8 11H10V13H8M8 8H10V10H8M11 11H13V13H11M11 8H13V10H11M20 5H4C2.89 5 2 5.89 2 7V17C2 18.11 2.9 19 4 19H20C21.11 19 22 18.11 22 17V7C22 5.89 21.1 5 20 5Z" />
                         </svg>
                     </button>
+                    <button id="show-update-log" class="icon-button" title="新变化" style="display: none;">
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path fill="currentColor" d="M18,22A2,2 0 0,0 20,20V4C20,2.89 19.1,2 18,2H12V9L9.5,7.5L7,9V2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18M13,15V13H16V15H13M13,11H16V9H13V11Z" />
+                        </svg>
+                    </button>
                 </div>
                 <div class="right-group">
                     <button id="feedback-button" class="icon-button" title="提交反馈">
@@ -334,8 +412,8 @@
                 <p class="alert-message"></p>
             </div>
             <div class="alert-buttons">
-                <button class="primary-button" id="alert-primary-btn">确定</button>
                 <button class="secondary-button" id="alert-secondary-btn">取消</button>
+                <button class="primary-button" id="alert-primary-btn">确定</button>
             </div>
         </div>
     </div>
@@ -403,6 +481,7 @@
     <script src="syncSettingManager.js"></script>
     <script src="filterManager.js"></script>
     <script src="search.js"></script>
+    <script src="bookmarkEditManager.js"></script>
     <script src="popup.js"></script>
 </body>
 

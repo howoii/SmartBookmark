@@ -1,16 +1,25 @@
 class LocalStorageMgr {
     static Namespace = {
         BOOKMARK: 'bookmark.',
-        TAGCACHE: 'tagcache'
+        TAGCACHE: 'tagcache',
+        BOOKMARK_CACHE: 'bookmark_cache'
     };
 
     static _bookmarksCache = null;
     static _debounceTimer = null;
-    static DEBOUNCE_DELAY = 300; // 300毫秒的防抖延迟
+    static _bookmarksLocalCache = null;
+    static _bookmarkCacheUpdateTimer = null;
+    static DEBOUNCE_DELAY = 2000; // 2000毫秒的防抖延迟
+    static BOOKMARK_CACHE_UPDATE_DELAY = 4000; // 4000毫秒的更新间隔
 
     static async init() {
         await this.getBookmarks();
         this.setupListener();
+    }
+
+    // 初始化本地缓存，不需要监听变化，因为只有第一次加载时需要
+    static async initLocalCache() {
+        await this.getBookmarksFromLocalCache();
     }
 
     static sendMessageSafely(message, callback = null) {
@@ -113,13 +122,13 @@ class LocalStorageMgr {
     }
 
     static async getBookmarks() {
-        logger.debug('开始获取书签', Date.now()/1000);
+        logger.debug('开始获取书签');
         if (this._bookmarksCache) {
-            logger.debug('书签缓存命中', Date.now()/1000);
+            logger.debug('获取书签完成，缓存命中');
             return this._bookmarksCache;
         }
         const bookmarks = await this.getKeysByPrefix(this.Namespace.BOOKMARK);
-        logger.debug('书签缓存未命中', Date.now()/1000);
+        logger.debug('获取书签完成，缓存未命中');
         this._bookmarksCache = bookmarks;
         return bookmarks;
     }
@@ -127,6 +136,26 @@ class LocalStorageMgr {
     static async getBookmarksList() {
         const bookmarks = await this.getBookmarks();
         return Object.values(bookmarks);
+    }
+
+    /**
+     * 根据URL数组获取书签数据
+     * @param {Array<string>} urls URL数组
+     * @param {boolean} withoutCache 是否跳过缓存直接获取
+     * @returns {Promise<Array>} 存在的书签数组
+     */
+    static async batchGetBookmarks(urls, withoutCache = false) {
+        if (!withoutCache) {
+            const bookmarks = await this.getBookmarks();
+            // 过滤出存在的书签
+            return urls
+                .map(url => bookmarks[this.getBookmarkKey(url)])
+                .filter(bookmark => bookmark !== undefined && bookmark !== null);
+        } else {
+            const result = await this.batchGet(...urls.map(url => this.getBookmarkKey(url)));
+            // 过滤出存在的书签
+            return Object.values(result).filter(bookmark => bookmark !== undefined && bookmark !== null);
+        }
     }
 
     static async getBookmark(url, withoutCache = false) {
@@ -149,9 +178,13 @@ class LocalStorageMgr {
         this.sendMessageSafely({
             type: MessageType.BOOKMARK_STORAGE_UPDATED,
         });
+        this.triggerBookmarkCacheUpdate();
     }
 
     static async setBookmarks(bookmarks) {
+        if (bookmarks.length === 0) {
+            return;
+        }
         // 将书签数组转换为对象
         const bookmarksObject = bookmarks.reduce((obj, bookmark) => {
             obj[this.getBookmarkKey(bookmark.url)] = bookmark;
@@ -167,6 +200,7 @@ class LocalStorageMgr {
         this.sendMessageSafely({
             type: MessageType.BOOKMARK_STORAGE_UPDATED,
         });
+        this.triggerBookmarkCacheUpdate();
     }
 
     static async removeBookmark(url) {
@@ -179,6 +213,7 @@ class LocalStorageMgr {
         this.sendMessageSafely({
             type: MessageType.BOOKMARK_STORAGE_UPDATED,
         });
+        this.triggerBookmarkCacheUpdate();
     }
 
     static async removeBookmarks(urls) {
@@ -193,6 +228,7 @@ class LocalStorageMgr {
         this.sendMessageSafely({
             type: MessageType.BOOKMARK_STORAGE_UPDATED,
         });
+        this.triggerBookmarkCacheUpdate();
     }
 
     static async clearBookmarks() {
@@ -203,6 +239,69 @@ class LocalStorageMgr {
         this.sendMessageSafely({
             type: MessageType.BOOKMARK_STORAGE_UPDATED,
         });
+        this.triggerBookmarkCacheUpdate();
+    }
+
+    static async getBookmarksFromLocalCache() {
+        logger.debug('开始获取本地书签缓存');
+        if (this._bookmarksLocalCache) {
+            logger.debug('获取本地书签缓存完成，缓存命中');
+            return this._bookmarksLocalCache;
+        }
+        const bookmarks = await this.get(this.Namespace.BOOKMARK_CACHE);
+        // 转成map
+        if (!bookmarks || !Array.isArray(bookmarks)) {
+            logger.debug('获取本地书签缓存完成，缓存未命中');
+            this._bookmarksLocalCache = {};
+            return {};
+        }
+        
+        const bookmarksMap = {};
+        for (const bookmark of bookmarks) {
+            if (bookmark && bookmark.url) {
+                bookmark.isCached = true;
+                bookmarksMap[bookmark.url] = bookmark;
+            }
+        }
+        logger.debug('获取本地书签缓存完成，缓存未命中');
+        this._bookmarksLocalCache = bookmarksMap;
+        return bookmarksMap;
+    }
+
+    static scheduleBookmarkCacheUpdate() {
+        logger.debug('4s后开始更新书签缓存');
+        if (this._bookmarkCacheUpdateTimer) {
+            clearTimeout(this._bookmarkCacheUpdateTimer);
+        }
+        this._bookmarkCacheUpdateTimer = setTimeout(async () => {
+            await this.updateBookmarkCache();
+        }, this.BOOKMARK_CACHE_UPDATE_DELAY);
+    }
+
+    static async updateBookmarkCache() {
+        logger.debug('开始更新书签缓存');
+        let bookmarks = await this.getBookmarksList();
+        bookmarks = bookmarks.map(bookmark => {
+            return {
+                ...bookmark,
+                apiService: undefined,
+                embedModel: undefined,
+                embedding: undefined
+            };
+        });
+        await this.set(this.Namespace.BOOKMARK_CACHE, bookmarks);
+        this._bookmarksLocalCache = null;
+    }
+
+    static triggerBookmarkCacheUpdate() {
+        logger.debug('触发书签缓存更新');
+        if (EnvIdentifier === 'background') {
+            this.scheduleBookmarkCacheUpdate();
+        } else {
+            this.sendMessageSafely({
+                type: MessageType.TRIGGER_BOOKMARK_CACHE_UPDATE,
+            });
+        }
     }
 
     // 标签缓存

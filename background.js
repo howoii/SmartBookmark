@@ -153,6 +153,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 sendResponse({ success: false, error: error.message });
             });
         return true;
+    } else if (message.type === MessageType.TRIGGER_BOOKMARK_CACHE_UPDATE) {
+        // 触发书签缓存更新
+        LocalStorageMgr.scheduleBookmarkCacheUpdate();
+        return true;
     }
 });
 

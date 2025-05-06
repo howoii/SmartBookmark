@@ -105,7 +105,7 @@ body {
     display: flex;
     align-items: center;
     padding: 12px 16px;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.9);
     text-decoration: none;
     border-radius: 8px;
     transition: all 0.2s ease;
@@ -114,12 +114,12 @@ body {
 
 .nav-item:hover {
     background-color: rgba(255, 255, 255, 0.1);
-    color: var(--text-fifth);
+    color: rgba(255, 255, 255, 0.6);
 }
 
 .nav-item.active {
     background-color: rgba(255, 255, 255, 0.15);
-    color: var(--text-fifth);
+    color: rgba(255, 255, 255, 0.6);
     font-weight: 500;
 }
 
@@ -357,14 +357,6 @@ input:checked + .slider:before {
 
 .dialog-content h3 {
     margin: 0 0 20px 0;
-}
-
-.form-group input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    box-sizing: border-box;
 }
 
 .help-text {
@@ -1040,7 +1032,7 @@ input:checked + .slider:before {
 
 .footer-link:hover {
     background-color: rgba(255, 255, 255, 0.1);
-    color: var(--text-fifth);
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .footer-link i {
@@ -1452,6 +1444,7 @@ select:disabled {
     padding: 6px 10px;
     border: 1px solid var(--border-color);
     border-radius: 6px;
+    box-sizing: border-box;
     font-size: 14px;
     transition: all 0.2s;
 }
@@ -2261,7 +2254,7 @@ input[type="number"].condition-value-input {
     transform: translateY(-10%) translateX(8px);
     padding: 8px 12px;
     background: rgba(33, 33, 33, 0.9);
-    color: var(--text-fifth);
+    color: rgba(255, 255, 255, 0.9);
     font-size: 12px;
     font-weight: normal;
     white-space: nowrap;
@@ -4131,17 +4124,7 @@ input[type="radio"]:checked + .radio-mark::after {
 .sync-interval-group {
     margin-top: 16px;
     display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.sync-interval-group label {
-    margin-bottom: 0;
-}
-
-.sync-interval-group input {
-    width: 120px;
+    flex-direction: column;
 }
 
 .sync-interval-group .help-text {
@@ -4265,4 +4248,71 @@ input[type="radio"]:checked + .radio-mark::after {
     margin-top: 10px;
     font-size: 0.85rem;
     padding: 5px 12px;
+}
+
+/* 间隔滑动条样式 */
+.interval-slider-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+}
+
+.interval-slider-container input {
+    padding: 0;
+    border-radius: 4px;
+    border: none;
+}
+
+.interval-slider {
+    flex: 1;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--action-light-active);
+    outline: none;
+    cursor: pointer;
+    border-radius: 3px;
+    background-image: linear-gradient(var(--action-color), var(--action-color));
+    background-size: 0% 100%;
+    background-repeat: no-repeat;
+}
+
+.interval-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 8px;
+    height: 16px;
+    border-radius: 2px;
+    background: var(--action-color);
+    cursor: pointer;
+}
+
+.interval-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    background: var(--action-hover);
+}
+
+.interval-value {
+    min-width: 40px;
+    padding: 4px 8px;
+    background: var(--bg-fifth);
+    color: var(--text-secondary);
+    border-radius: 4px;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* 添加滑动条禁用状态的样式 */
+.interval-slider:disabled {
+    opacity: 0.5;
+    /* background: var(--bg-secondary); */
+    cursor: not-allowed;
+    background-image: linear-gradient(var(--text-tertiary), var(--text-tertiary));
+}
+
+.interval-slider:disabled::-webkit-slider-thumb {
+    background: var(--text-tertiary);
+    cursor: not-allowed;
+    transform: scale(0.9);
 }

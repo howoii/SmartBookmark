@@ -1310,9 +1310,12 @@
                             <div class="help-text">开启后，书签数据会定期同步到WebDAV服务器，以及在你修改本地数据30秒后同步到服务器</div>
                         </div>
                         <div class="form-group sync-interval-group">
-                            <label for="sync-interval" class="sync-strategy-label">同步间隔（分钟）</label>
-                            <input type="number" id="sync-interval" min="5" max="1440" value="30">
-                            <div class="help-text">设置自动同步的时间间隔，最短 5 分钟，最长 24 小时</div>
+                            <label for="sync-interval" class="sync-strategy-label">同步间隔</label>
+                            <div class="interval-slider-container">
+                                <input type="range" id="sync-interval" min="0" max="15" value="2" step="1" class="interval-slider">
+                                <div class="interval-value" id="interval-display">15m</div>
+                            </div>
+                            <div class="help-text">设置自动同步的时间间隔，最短5分钟，最长24小时</div>
                         </div>
                         <!-- 书签向量同步开关 -->
                         <div class="form-group">

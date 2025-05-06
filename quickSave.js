@@ -24,6 +24,7 @@ class QuickSaveManager {
         this.isEditMode = false;
         this.editingBookmark = null;
         this.statusTimeout = null;
+        this.originalUrl = null;
 
         this.init();
     }
@@ -37,6 +38,7 @@ class QuickSaveManager {
             }
 
             this.currentTab = tab;
+            this.originalUrl = tab.url;
 
             // 检查页面是否加载完成
             if (tab.status !== 'complete') {
@@ -249,14 +251,19 @@ class QuickSaveManager {
                 this.isEditMode = true;
                 this.editingBookmark = bookmark;
                 this.elements.pageTitle.textContent = bookmark.title;
+                this.elements.pageUrl.contentEditable = "false";
+                this.elements.pageUrl.classList.remove("editable");
                 this.renderTags(bookmark.tags);
                 this.elements.deleteBookmarkBtn.style.display = 'flex';
             }
+        } else {
+            this.elements.pageUrl.contentEditable = "true";
+            this.elements.pageUrl.classList.add("editable");
         }
     }
 
     setupEventListeners() {
-        const { pageTitle, tagsList, newTagInput, saveTagsBtn, cancelTagsBtn, deleteBookmarkBtn, recommendedTagsList } = this.elements;
+        const { pageTitle, pageUrl, tagsList, newTagInput, saveTagsBtn, cancelTagsBtn, deleteBookmarkBtn, recommendedTagsList } = this.elements;
 
         pageTitle.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -264,6 +271,19 @@ class QuickSaveManager {
                 pageTitle.blur();
             }
         });
+
+        if (!this.isEditMode) {
+            pageUrl.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    pageUrl.blur();
+                }
+            });
+
+            pageUrl.addEventListener('blur', () => {
+                this.validateUrl();
+            });
+        }
 
         // 标签列表点击事件（删除标签）
         tagsList.addEventListener('click', (e) => {
@@ -354,10 +374,37 @@ class QuickSaveManager {
             .join('');
     }
 
+    // 验证URL格式
+    validateUrl() {
+        const { pageUrl } = this.elements;
+        let url = pageUrl.textContent.trim();
+        
+        try {
+            // 尝试创建URL对象以验证格式
+            new URL(url);
+            // URL有效，不需要更改
+        } catch (error) {
+            // URL无效，恢复原始URL
+            this.showStatus('URL格式错误', 'error');
+            pageUrl.textContent = this.originalUrl;
+        }
+    }
+
+    getEditedUrl() {
+        const { pageUrl } = this.elements;
+        let url = pageUrl.textContent.trim();
+        try {
+            new URL(url);
+            return url;
+        } catch (error) {
+            return this.currentTab?.url;
+        }
+    }
+
     async handleSave() {
         if (!this.currentTab) return;
         
-        const { saveTagsBtn } = this.elements;
+        const { saveTagsBtn, pageTitle } = this.elements;
         const tags = this.getCurrentTags();
         
         saveTagsBtn.disabled = true;
@@ -365,7 +412,15 @@ class QuickSaveManager {
         try {
             this.showStatus(i18n.M('msg_status_saving_bookmark'), 'success');
             
-            const title = this.elements.pageTitle.textContent.trim();
+            const title = pageTitle.textContent.trim();
+            const url = this.isEditMode ? this.currentTab.url : this.getEditedUrl();
+
+            // 验证URL
+            try {
+                new URL(url);
+            } catch (error) {
+                throw new Error('URL格式错误');
+            }
 
             // 生成嵌入向量
             let embedding = null;
@@ -378,7 +433,7 @@ class QuickSaveManager {
             const apiService = await ConfigManager.getActiveService();
             
             const pageInfo = {
-                url: this.currentTab.url,
+                url: url, 
                 title: title,
                 tags: tags,
                 excerpt: this.pageContent?.excerpt || '',
@@ -398,7 +453,9 @@ class QuickSaveManager {
             });
 
             this.showStatus(i18n.M('msg_status_saving_bookmark'), 'success');
-            await LocalStorageMgr.setBookmark(this.currentTab.url, pageInfo);
+            
+            // 保存新书签
+            await LocalStorageMgr.setBookmark(url, pageInfo);
             await recordBookmarkChange(pageInfo, false, true);
             await updateExtensionIcon(this.currentTab.id, true);
 
