@@ -451,7 +451,7 @@ class PrivacySettingsTab extends BaseSettingsTab {
             this.hideAddDomainDialog();
 
         } catch (error) {
-            alert(error.message);
+            showToast(error.message, true);
         }
     }
 
@@ -604,36 +604,66 @@ class ServicesSettingsTab extends BaseSettingsTab {
     }
 
     async initializeAPIServices() {
-        const serviceSelect = document.getElementById('active-service-select');
+        // 初始化Tab切换功能
+        const tabs = this.section.querySelectorAll('.tab-item');
+        const tabContents = this.section.querySelectorAll('.tab-content');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // 移除所有激活状态
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                // 添加当前激活状态
+                tab.classList.add('active');
+                const tabContentId = tab.getAttribute('data-tab');
+                const activeContent = this.section.querySelector(`.tab-content[data-tab-content="${tabContentId}"]`);
+                if (activeContent) {
+                    activeContent.classList.add('active');
+                }
+            });
+        });
+        
+        // 初始化服务选择器
+        const chatServiceSelect = document.getElementById('chat-service-select');
+        const embedServiceSelect = document.getElementById('embedding-service-select');
         const servicesGrid = document.querySelector('.api-services-grid');
         
-        const activeService = await ConfigManager.getActiveService();
+        // 获取当前服务配置
+        const chatService = await ConfigManager.getChatService();
+        const embeddingService = await ConfigManager.getEmbeddingService();
+        const chatServiceId = chatService.id;
+        const embedServiceId = embeddingService.id;
 
         // 添加内置服务
         for (const service of Object.values(API_SERVICES)) {
-            const option = document.createElement('option');
-            option.value = service.id;
-            option.textContent = service.name;
-            const isActive = service.id === activeService.id;   
-            option.selected = isActive;
-            serviceSelect.appendChild(option);
+            // 向Chat服务选择器添加选项
+            this.addOptionToServiceSelect(chatServiceSelect, service.id, service.name, service.id === chatServiceId);
+            
+            // 向Embedding服务选择器添加选项
+            this.addOptionToServiceSelect(embedServiceSelect, service.id, service.name, service.id === embedServiceId);
 
+            // 添加服务卡片
             const serviceConfig = await ConfigManager.findServiceById(service.id);
-            const serviceCard = this.createServiceCard(serviceConfig, isActive);
+            const isChatActive = chatServiceId === service.id;
+            const isEmbedActive = embedServiceId === service.id;
+            const serviceCard = this.createServiceCard(serviceConfig, isChatActive, isEmbedActive);
             servicesGrid.appendChild(serviceCard);
         }
 
         // 添加自定义服务
         const customServices = await ConfigManager.getCustomServices();
         for (const service of Object.values(customServices)) {
-            const option = document.createElement('option');
-            option.value = service.id;
-            option.textContent = service.name;
-            const isActive = service.id === activeService.id;
-            option.selected = isActive;
-            serviceSelect.appendChild(option);
+            // 向Chat服务选择器添加选项
+            this.addOptionToServiceSelect(chatServiceSelect, service.id, service.name, service.id === chatServiceId);
+            
+            // 向Embedding服务选择器添加选项
+            this.addOptionToServiceSelect(embedServiceSelect, service.id, service.name, service.id === embedServiceId);
 
-            const serviceCard = this.createServiceCard(service, isActive);
+            // 添加服务卡片
+            const isChatActive = chatServiceId === service.id;
+            const isEmbedActive = embedServiceId === service.id;
+            const serviceCard = this.createServiceCard(service, isChatActive, isEmbedActive);
             servicesGrid.appendChild(serviceCard);
         }
 
@@ -642,10 +672,11 @@ class ServicesSettingsTab extends BaseSettingsTab {
         servicesGrid.appendChild(addCustomCard);
         await this.updateAddCustomServiceCard();
 
-        serviceSelect.addEventListener('change', async (e) => {
-            logger.debug('change active service', e.target.value);
-            await ConfigManager.setActiveService(e.target.value);
-            this.updateActiveService(e.target.value);
+        // 为选择器添加变更事件处理程序
+        chatServiceSelect.addEventListener('change', async (e) => {
+            logger.debug('更改Chat服务', e.target.value);
+            await ConfigManager.setServiceType('chat', e.target.value);
+            this.updateActiveService(e.target.value, null);
 
             sendMessageSafely({
                 type: MessageType.SCHEDULE_SYNC,
@@ -654,7 +685,56 @@ class ServicesSettingsTab extends BaseSettingsTab {
                 }
             });
         });
+
+        embedServiceSelect.addEventListener('change', async (e) => {
+            logger.debug('更改Embedding服务', e.target.value);
+            await ConfigManager.setServiceType('embedding', e.target.value);
+            this.updateActiveService(null, e.target.value);
+
+            // 嵌入式模型变更需要重新计算书签向量
+            sendMessageSafely({
+                type: MessageType.SCHEDULE_SYNC,
+                data: {
+                    reason: ScheduleSyncReason.SERVICES,
+                }
+            });
+        });
+
+        const chatServiceStatus = document.getElementById('chat-service-status');
+        if (chatService.apiKey && chatService.chatModel) {  
+            chatServiceStatus.classList.add('is-valid');
+        } else {
+            chatServiceStatus.classList.add('is-invalid');
+        }
+        const embeddingServiceStatus = document.getElementById('embedding-service-status');
+        if (embeddingService.apiKey && embeddingService.embedModel) {
+            embeddingServiceStatus.classList.add('is-valid');
+        } else {
+            embeddingServiceStatus.classList.add('is-invalid');
+        }
     }
+
+    addOptionToServiceSelect(selector, serviceId, serviceName, selected = false) {
+        const option = document.createElement('option');
+        option.value = serviceId;
+        option.textContent = serviceName;
+        option.selected = selected;
+        selector.appendChild(option);
+    }
+
+    updateOptionToServiceSelect(selector, serviceId, serviceName) {
+        const option = selector.querySelector(`option[value="${serviceId}"]`);
+        if (option) {
+            option.textContent = serviceName;
+        }
+    }
+
+    removeOptionFromServiceSelect(selector, serviceId) {
+        const option = selector.querySelector(`option[value="${serviceId}"]`);
+        if (option) {
+            option.remove();
+        }
+    }   
 
     async updateStatsUI() {
         const stats = await statsManager.loadStats();
@@ -680,14 +760,25 @@ class ServicesSettingsTab extends BaseSettingsTab {
         }
     }
 
-    async updateActiveServiceUI(serviceId) {
-        const serviceSelect = document.getElementById('active-service-select');
-        serviceSelect.value = serviceId;
-        this.updateActiveService(serviceId);
+    async updateActiveServiceUI(chatServiceId, embeddingServiceId) {
+        // 更新活跃服务
+        this.updateActiveService(chatServiceId, embeddingServiceId);
+        
+        // 更新Chat服务选择器
+        const chatServiceSelect = document.getElementById('chat-service-select');
+        if (chatServiceSelect) {
+            chatServiceSelect.value = chatServiceId;
+        }
+        
+        // 更新Embedding服务选择器
+        const embedServiceSelect = document.getElementById('embedding-service-select');
+        if (embedServiceSelect) {
+            embedServiceSelect.value = embeddingServiceId;
+        }
     }
 
-    createServiceCard(service, isActive) {
-        const apiKey = service.apiKey;
+    createServiceCard(service, isChatActive, isEmbedActive) {
+        const configured = service.apiKey && (service.chatModel || service.embedModel);
         const card = document.createElement('div');
         card.className = 'service-card';
         card.setAttribute('data-service', service.id);
@@ -707,8 +798,9 @@ class ServicesSettingsTab extends BaseSettingsTab {
                 ${isCustom ? '自定义API服务' : service.description || ''}
             </p>
             <div class="service-status">
-                <div class="api-status ${apiKey ? 'configured' : ''}"></div>
-                <div class="status-toggle ${isActive ? 'active' : ''}"></div>
+                <div class="api-status ${configured ? 'configured' : ''}">未配置</div>
+                <div class="model-type-tag chat ${isChatActive ? 'active' : ''}">文本</div>
+                <div class="model-type-tag embedding ${isEmbedActive ? 'active' : ''}">向量</div>
             </div>
             ${isCustom ? `
                 <button class="delete-service-btn" title="删除服务">
@@ -749,8 +841,43 @@ class ServicesSettingsTab extends BaseSettingsTab {
             img.src = 'icons/default_favicon.png';
         });
 
+        this.setServiceCardStatus(card, service);
+
         return card;
     }
+
+    setServiceCardStatus(card, service) {
+        const chatModel = service.chatModel;
+        const embedModel = service.embedModel;
+        const apiKey = service.apiKey;
+
+        const status = card.querySelector('.api-status');
+        const chatTag = card.querySelector('.model-type-tag.chat');
+        const embedTag = card.querySelector('.model-type-tag.embedding');
+
+        const configured = apiKey && (chatModel || embedModel);
+        if (configured) {
+            status.classList.add('configured');
+        } else {
+            status.classList.remove('configured');
+        }
+
+        const isChat = apiKey && chatModel;
+        const isEmbed = apiKey && embedModel;
+
+        if (isChat) {
+            chatTag.classList.add('configured');
+        } else {
+            chatTag.classList.remove('configured');
+        }
+
+        if (isEmbed) {
+            embedTag.classList.add('configured');
+        } else {
+            embedTag.classList.remove('configured');
+        }
+    }
+
 
     createAddCustomServiceCard() {
         const card = document.createElement('div');
@@ -765,7 +892,7 @@ class ServicesSettingsTab extends BaseSettingsTab {
         card.addEventListener('click', async () => {
             const customServices = await ConfigManager.getCustomServices();
             if (Object.keys(customServices).length >= MAX_CUSTOM_SERVICES) {
-                alert(`最多只能添加${MAX_CUSTOM_SERVICES}个自定义服务`);
+                showToast(`最多只能添加${MAX_CUSTOM_SERVICES}个自定义服务`, true);
                 return;
             }
             this.showCustomServiceDialog();
@@ -864,15 +991,9 @@ class ServicesSettingsTab extends BaseSettingsTab {
             };
             await ConfigManager.saveBuiltinAPIKey(this.currentService.id, apiKey, setting);
             this.updateStatus(apiServiceStatus, '保存成功', 'success');
-            this.updateServiceCardStatus(this.currentService.id, true);
+            await this.updateServiceCardStatus(this.currentService.id);
 
-            // 检查是否有激活的API服务
-            const activeApiKey = await ConfigManager.getActiveAPIKey();
-            if (!activeApiKey) {
-                await ConfigManager.setActiveService(this.currentService.id);
-                // 更新UI显示
-                this.updateActiveServiceUI(this.currentService.id);
-            }
+            await this.autoCheckActiveService(this.currentService.id);
             this.closeServiceConfigDialog();
 
             sendMessageSafely({
@@ -885,6 +1006,24 @@ class ServicesSettingsTab extends BaseSettingsTab {
             this.updateStatus(apiServiceStatus, error.message, 'error');
             verifyIcon.classList.add('error');
         }
+    }
+
+    async autoCheckActiveService(serviceID) {
+        const service = await ConfigManager.findServiceById(serviceID);
+        const chatService = await ConfigManager.getChatService();
+        const embeddingService = await ConfigManager.getEmbeddingService();
+        let chatServiceId = chatService.id;
+        let embeddingServiceId = embeddingService.id;
+
+        if (!(chatService.apiKey && chatService.chatModel) && service.chatModel) {
+            await ConfigManager.setServiceType('chat', service.id);
+            chatServiceId = service.id;
+        }
+        if (!(embeddingService.apiKey && embeddingService.embedModel) && service.embedModel) {
+            await ConfigManager.setServiceType('embedding', service.id);
+            embeddingServiceId = service.id;
+        }
+        this.updateActiveServiceUI(chatServiceId, embeddingServiceId);
     }
 
     async verifyBuiltinServiceSettings() {
@@ -944,14 +1083,12 @@ class ServicesSettingsTab extends BaseSettingsTab {
         this.currentService = null;
     }
 
-    updateServiceCardStatus(serviceId, hasApiKey) {
+    async updateServiceCardStatus(serviceId) {
         const card = document.querySelector(`.service-card[data-service="${serviceId}"]`);
         if (card) {
-            const apiStatus = card.querySelector('.api-status');
-            if (hasApiKey) {
-                apiStatus.classList.add('configured');
-            } else {
-                apiStatus.classList.remove('configured');
+            const service = await ConfigManager.findServiceById(serviceId);
+            if (service) {
+                this.setServiceCardStatus(card, service)
             }
         }
     }
@@ -962,16 +1099,50 @@ class ServicesSettingsTab extends BaseSettingsTab {
         element.title = message;
     }
 
-    updateActiveService(serviceId) {
+    updateActiveService(chatServiceId, embeddingServiceId) {
+        // 更新所有卡片上的模型类型标签激活状态
         document.querySelectorAll('.service-card').forEach(card => {
             if (card.classList.contains('add-custom-card')) return;
-            const toggle = card.querySelector('.status-toggle');
-            if (card.getAttribute('data-service') === serviceId) {
-                toggle.classList.add('active');
-            } else {
-                toggle.classList.remove('active');
+            
+            const currentServiceId = card.getAttribute('data-service');
+            const chatTag = card.querySelector('.model-type-tag.chat');
+            const embedTag = card.querySelector('.model-type-tag.embedding');
+            
+            if (chatServiceId && chatTag) {
+                if (currentServiceId === chatServiceId) {
+                    chatTag.classList.add('active');
+                } else {
+                    chatTag.classList.remove('active');
+                }
+            }
+            
+            if (embeddingServiceId && embedTag) {
+                if (currentServiceId === embeddingServiceId) {
+                    embedTag.classList.add('active');
+                } else {
+                    embedTag.classList.remove('active');
+                }
             }
         });
+        if (chatServiceId) {
+            this.updateActiveServiceStatus('chat');
+        }
+        if (embeddingServiceId) {
+            this.updateActiveServiceStatus('embedding');
+        }
+    }
+
+    async updateActiveServiceStatus(type) {
+        const statusEl = document.getElementById(`${type}-service-status`);
+        if (statusEl) {
+            const valid = await checkAPIKeyValidSafe(type);
+            statusEl.classList.remove('is-valid', 'is-invalid');
+            if (valid) {
+                statusEl.classList.add('is-valid');
+            } else {
+                statusEl.classList.add('is-invalid');
+            }
+        }
     }
 
     async showCustomServiceDialog(serviceId) {
@@ -1020,12 +1191,16 @@ class ServicesSettingsTab extends BaseSettingsTab {
             const card = document.querySelector(`.service-card[data-service="${serviceId}"]`);
             card?.remove();
             
-            const option = document.querySelector(`option[value="${serviceId}"]`);
-            option?.remove();
+            // 移除服务选择项
+            const chatServiceSelect = document.getElementById('chat-service-select');
+            const embeddingServiceSelect = document.getElementById('embedding-service-select');
+            this.removeOptionFromServiceSelect(chatServiceSelect, serviceId);
+            this.removeOptionFromServiceSelect(embeddingServiceSelect, serviceId);
 
             // 更新UI
-            const activeService = await ConfigManager.getActiveService();
-            this.updateActiveServiceUI(activeService.id);
+            const chatService = await ConfigManager.getChatService();
+            const embeddingService = await ConfigManager.getEmbeddingService();
+            this.updateActiveServiceUI(chatService.id, embeddingService.id);
             await this.updateAddCustomServiceCard();
 
             sendMessageSafely({
@@ -1035,7 +1210,7 @@ class ServicesSettingsTab extends BaseSettingsTab {
                 }
             });
         } catch (error) {
-            alert('删除服务失败: ' + error.message);
+            showToast('删除服务失败: ' + error.message, true);
         }
     }
 
@@ -1063,13 +1238,18 @@ class ServicesSettingsTab extends BaseSettingsTab {
         };
 
         // 验证必填字段
-        if (!config.name || !config.baseUrl || !config.chatModel || !config.embedModel || !config.apiKey || isNaN(config.highSimilarity)) {
-            alert('请填写所有必填字段');
+        if (!config.name || !config.baseUrl || !config.apiKey ) {
+            showToast('请填写服务名称、API接口地址和API Key', true);
             return;
         }
 
-        if (config.highSimilarity < 0 || config.highSimilarity > 1) {
-            alert('相似度阈值必须在0-1之间');
+        if (!config.chatModel && !config.embedModel) {
+            showToast('文本模型和向量模型至少填写一个', true);
+            return;
+        }
+
+        if (isNaN(config.highSimilarity) || config.highSimilarity < 0 || config.highSimilarity > 1) {
+            showToast('相似度阈值必须在0-1之间', true);
             return;
         }
 
@@ -1080,7 +1260,7 @@ class ServicesSettingsTab extends BaseSettingsTab {
         
         try {
             // 先测试 Chat 接口
-            if (chatModelChanged || baseInfoChanged) {
+            if (config.chatModel && (chatModelChanged || baseInfoChanged)) {
                 const chatStatus = dialog.querySelector('.test-status[data-type="chat"]');
                 chatStatus.textContent = '验证中...';
                 chatStatus.className = 'test-status testing';
@@ -1093,12 +1273,12 @@ class ServicesSettingsTab extends BaseSettingsTab {
                     chatStatus.textContent = error.message;
                     chatStatus.title = error.message;
                     chatStatus.className = 'test-status error';
-                    throw new Error('Chat接口验证失败');
+                    throw new Error('文本模型接口验证失败');
                 }
             }
 
             // 再测试 Embedding 接口
-            if (embedModelChanged || baseInfoChanged) {
+            if (config.embedModel && (embedModelChanged || baseInfoChanged)) {
                 const embedStatus = dialog.querySelector('.test-status[data-type="embedding"]');
                 embedStatus.textContent = '验证中...';
                 embedStatus.className = 'test-status testing';
@@ -1111,7 +1291,7 @@ class ServicesSettingsTab extends BaseSettingsTab {
                     embedStatus.textContent = error.message;
                     embedStatus.title = error.message;
                     embedStatus.className = 'test-status error';
-                    throw new Error('Embedding接口验证失败');
+                    throw new Error('向量模型接口验证失败');
                 }
             }
 
@@ -1121,11 +1301,7 @@ class ServicesSettingsTab extends BaseSettingsTab {
             this.hideCustomServiceDialog();
             
             // 如果没有激活的服务，自动激活这个自定义服务
-            const activeApiKey = await ConfigManager.getActiveAPIKey();
-            if (!activeApiKey) {
-                await ConfigManager.setActiveService(config.id);
-                this.updateActiveServiceUI(config.id);
-            }
+            await this.autoCheckActiveService(config.id);
 
             await this.updateAddCustomServiceCard();
 
@@ -1156,15 +1332,15 @@ class ServicesSettingsTab extends BaseSettingsTab {
 
         // 检查是否为空
         if (!config.baseUrl || !config.apiKey) {
-            alert('请填写API接口地址和API Key');
+            showToast('请填写API接口地址和API Key', true);
             return;
         }
         if (type === 'chat' && !config.chatModel) {
-            alert('请填写 Chat Model');
+            showToast('请填写文本模型', true);
             return;
         }
         if (type === 'embedding' && !config.embedModel) {
-            alert('请填写 Embedding Model');
+            showToast('请填写向量模型', true);
             return;
         }
 
@@ -1187,34 +1363,31 @@ class ServicesSettingsTab extends BaseSettingsTab {
         }
     }
 
-    async updateCustomServiceCard(serviceId) {
+    async updateCustomServiceCard(serviceId, configured) {
         const card = document.querySelector(`.service-card[data-service="${serviceId}"]`);
+        const chatServiceSelect = document.getElementById('chat-service-select');
+        const embeddingServiceSelect = document.getElementById('embedding-service-select');
         if (card) {
-            const apiStatus = card.querySelector('.api-status');
-            apiStatus.classList.add('configured');
-            // 更新卡片信息
             const service = await ConfigManager.findServiceById(serviceId);
+            if (service) {
+                this.setServiceCardStatus(card, service);
+            }
+            // 更新卡片信息
             const serviceName = card.querySelector('.service-name');
             serviceName.textContent = service.name;
             // 更新option
-            const serviceSelect = document.getElementById('active-service-select');
-            const option = serviceSelect.querySelector(`option[value="${serviceId}"]`);
-            if (option) {
-                option.textContent = service.name;
-            }
+            this.updateOptionToServiceSelect(chatServiceSelect, serviceId, service.name);
+            this.updateOptionToServiceSelect(embeddingServiceSelect, serviceId, service.name);
         } else {
             // 添加新的自定义服务卡片和选项
             const service = await ConfigManager.findServiceById(serviceId);
-            const newCard = this.createServiceCard(service, false);
+            const newCard = this.createServiceCard(service, false, false);
             const addCustomCard = document.querySelector('.add-custom-card');
             addCustomCard.parentNode.insertBefore(newCard, addCustomCard);
 
             // 添加到服务选择下拉框
-            const serviceSelect = document.getElementById('active-service-select');
-            const option = document.createElement('option');
-            option.value = service.id;
-            option.textContent = service.name;
-            serviceSelect.appendChild(option);
+            this.addOptionToServiceSelect(chatServiceSelect, service.id, service.name);
+            this.addOptionToServiceSelect(embeddingServiceSelect, service.id, service.name);
         }
     }
 
@@ -1638,7 +1811,7 @@ class FilterSettingsTab extends BaseSettingsTab {
         
         // 验证规则名称
         if (!filterName.value.trim()) {
-            alert('请输入标签名称');
+            showToast('请输入标签名称', true);
             filterName.focus();
             return;
         }
@@ -1676,13 +1849,13 @@ class FilterSettingsTab extends BaseSettingsTab {
         
         // 检查是否有空条件
         if (hasEmptyCondition) {
-            alert('请填写完整的标签条件');
+            showToast('请填写完整的标签条件', true);
             return;
         }
         
         // 检查是否有条件
         if (conditions.length === 0) {
-            alert('请至少添加一个标签条件');
+            showToast('请至少添加一个标签条件', true);
             return;
         }
         
@@ -2622,8 +2795,8 @@ class ImportExportSettingsTab extends BaseSettingsTab {
             // 重置取消标志
             this.importCancelled = false;
             
-            const apiKey = await ConfigManager.getActiveAPIKey();
-            if (!apiKey) {
+            const chatService = await ConfigManager.getChatService();
+            if (!chatService.apiKey) {
                 throw new Error('请先配置API服务');
             }
 
@@ -2704,7 +2877,7 @@ class ImportExportSettingsTab extends BaseSettingsTab {
                 bookmark,
                 parentPath
             });
-            const apiService = await ConfigManager.getActiveService();
+            const apiService = await ConfigManager.getEmbeddingService();
             const tags = await generateTags({}, bookmark);
             const parentTitles = parentPath.map(p => p.title).filter(p => p);
             const folderTags = this.keepFolderTags.checked ? parentTitles.slice(1) : [];

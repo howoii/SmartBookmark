@@ -105,7 +105,7 @@ body {
     display: flex;
     align-items: center;
     padding: 12px 16px;
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.8);
     text-decoration: none;
     border-radius: 8px;
     transition: all 0.2s ease;
@@ -114,12 +114,12 @@ body {
 
 .nav-item:hover {
     background-color: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .nav-item.active {
     background-color: rgba(255, 255, 255, 0.15);
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.9);
     font-weight: 500;
 }
 
@@ -576,22 +576,66 @@ input:checked + .slider:before {
 }
 
 .service-selector {
-    background: var(--bg-primary);
+    background-color: var(--bg-primary);
     border-radius: 8px;
-    padding: 20px;
+    padding: 15px;
     margin-bottom: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-md);
+}
+
+.service-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 15px;
+}
+
+.tab-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    margin-right: 10px;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.tab-item:hover {
+    color: var(--action-color);
+}
+
+.tab-item.active {
+    color: var(--action-color);
+    border-bottom-color: var(--action-color);
+}
+
+.service-selector-content {
+    position: relative;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
 }
 
 .service-selector-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
 }
 
 .service-selector-header span {
+    margin-right: 5px;
     font-size: 14px;
     color: var(--text-secondary);
+}
+
+.service-selector-header select {
+    margin-left: auto;
+    min-width: 180px;
 }
 
 .service-selector select {
@@ -613,7 +657,7 @@ input:checked + .slider:before {
     background: var(--bg-primary);
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-md);
     transition: all 0.2s ease;
     cursor: pointer;
     position: relative;
@@ -621,7 +665,7 @@ input:checked + .slider:before {
 
 .service-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-lg);
 }
 
 .service-card-header {
@@ -670,36 +714,6 @@ input:checked + .slider:before {
     font-size: 13px;
     color: var(--text-sixth);
     margin: 0 0 0 44px;  /* 左边距等于 logo宽度(32px) + gap(12px) */
-}
-
-.status-toggle {
-    width: 40px;
-    height: 24px;
-    background: var(--bg-fourth);
-    border-radius: 12px;
-    position: relative;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-.status-toggle.active {
-    background: var(--action-color);
-}
-
-.status-toggle::after {
-    content: '';
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    background: var(--bg-primary);
-    border-radius: 50%;
-    top: 2px;
-    left: 2px;
-    transition: transform 0.3s;
-}
-
-.status-toggle.active::after {
-    transform: translateX(16px);
 }
 
 /* 服务配置对话框样式 */
@@ -774,11 +788,6 @@ input:checked + .slider:before {
     transition: all 0.3s;
 }
 
-.api-status::before {
-    content: '未配置';
-    white-space: nowrap;
-}
-
 .api-status::after {
     content: '';
     display: inline-block;
@@ -789,16 +798,7 @@ input:checked + .slider:before {
 }
 
 .api-status.configured {
-    background: var(--success-bg);
-    color: var(--success-text);
-}
-
-.api-status.configured::before {
-    content: '已配置';
-}
-
-.api-status.configured::after {
-    background: var(--success-text);
+    display: none;
 }
 
 /* 调整服务状态容器的样式 */
@@ -807,8 +807,34 @@ input:checked + .slider:before {
     top: 22px;
     right: 20px;
     display: flex;
-    gap: 12px;
+    gap: 4px;
     align-items: center;
+}
+
+/* 添加模型类型标签样式 */
+.model-type-tag {
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    border: 1px solid var(--bg-border-light);
+    display: none;
+    align-items: center;
+    gap: 2px;
+    transition: all 0.3s;
+    box-sizing: border-box;
+    white-space: nowrap;
+}
+
+.model-type-tag.configured {
+    display: flex;
+}
+
+.model-type-tag.active {
+    background: var(--bg-primary);
+    color: var(--tag-color);
+    border: 1px solid var(--tag-color);
 }
 
 /* 添加动画效果 */
@@ -857,7 +883,7 @@ input:checked + .slider:before {
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-md);
 }
 
 .status-header h3 {
@@ -1113,7 +1139,7 @@ input:checked + .slider:before {
     padding: 20px;
     background: var(--bg-primary);
     border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-md);
 }
 
 .stats-header {
@@ -1216,7 +1242,7 @@ input:checked + .slider:before {
     border: 1px solid var(--bg-border);
     padding: 16px;
     transition: all 0.2s;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
     cursor: move;
     transition: all 0.2s ease;
 }
@@ -1228,7 +1254,7 @@ input:checked + .slider:before {
 
 .filter-item:hover {
     border-color: var(--bg-border-hover);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow-md);
 }
 
 .filter-item.built-in {
@@ -1250,7 +1276,7 @@ input:checked + .slider:before {
 
 .filter-item.built-in:hover {
     border-color: var(--bg-border-hover);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-md);
 }
 
 .filter-info {
@@ -1640,8 +1666,8 @@ select:disabled {
     min-width: 0;
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
-    padding: 0px 8px;
+    gap: 2px;
+    padding: 4px 4px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
     min-height: 32px;
@@ -4315,4 +4341,63 @@ input[type="radio"]:checked + .radio-mark::after {
     background: var(--text-tertiary);
     cursor: not-allowed;
     transform: scale(0.9);
+}
+
+/* 同步书签向量强调样式 */
+.sync-strategy-label.emphasize-embedding {
+    position: relative;
+    font-weight: 600;
+    color: var(--warning-text);
+    display: inline-flex;
+    align-items: center;
+}
+
+.form-group:has(#sync-embeddings) {
+    position: relative;
+    border: 2px dashed var(--warning-border);
+    /* background-color: var(--warning-bg); */
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    transition: all 0.3s ease;
+}
+
+.form-group:has(#sync-embeddings) .help-text {
+    color: var(--warning-text);
+    font-weight: 500;
+}
+
+/* 添加服务状态图标样式 */
+.service-status-icon {
+    display: inline-flex;
+    margin-left: 0px;
+    position: relative;
+    align-items: center;
+}
+
+.service-status-icon svg {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    position: absolute;
+}
+
+.service-status-icon .status-success {
+    color: var(--success-text);
+}
+
+.service-status-icon .status-error {
+    color: var(--error-text);
+}
+
+.service-status-icon.is-valid .status-success {
+    opacity: 1;
+}
+
+.service-status-icon.is-invalid .status-error {
+    opacity: 1;
+}
+
+/* 默认状态下隐藏图标 */
+.service-status-icon:not(.is-valid):not(.is-invalid) {
+    opacity: 0;
 }

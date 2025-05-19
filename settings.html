@@ -283,11 +283,47 @@
 
                 <!-- API 服务选择器改为独立的选择器组件 -->
                 <div class="service-selector">
-                    <div class="service-selector-header">
-                        <span>当前使用的服务</span>
-                        <select id="active-service-select">
-                            <!-- 通过 JavaScript 动态填充 -->
-                        </select>
+                    <div class="service-tabs">
+                        <div class="tab-item active" data-tab="chat">
+                            <span class="tab-text">文本模型</span>
+                        </div>
+                        <div class="tab-item" data-tab="embedding">
+                            <span class="tab-text">向量模型</span>
+                        </div>
+                    </div>
+                    <div class="service-selector-content">
+                        <div class="tab-content active" data-tab-content="chat">
+                            <div class="service-selector-header">
+                                <span>当前使用的文本模型服务</span>
+                                <span class="service-status-icon" id="chat-service-status">
+                                    <svg class="status-success" viewBox="0 0 24 24" width="16" height="16">
+                                        <path fill="currentColor" d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M11,16.5L6.5,12L7.91,10.59L11,13.67L16.59,8.09L18,9.5L11,16.5Z"/>
+                                    </svg>
+                                    <svg class="status-error" viewBox="0 0 24 24" width="16" height="16">
+                                        <path fill="currentColor" d="M12,2C17.53,2 22,6.47 22,12C22,17.53 17.53,22 12,22C6.47,22 2,17.53 2,12C2,6.47 6.47,2 12,2M15.59,7L12,10.59L8.41,7L7,8.41L10.59,12L7,15.59L8.41,17L12,13.41L15.59,17L17,15.59L13.41,12L17,8.41L15.59,7Z"/>
+                                    </svg>
+                                </span>
+                                <select id="chat-service-select">
+                                    <!-- 通过 JavaScript 动态填充 -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="tab-content" data-tab-content="embedding">
+                            <div class="service-selector-header">
+                                <span>当前使用的向量模型服务</span>
+                                <span class="service-status-icon" id="embedding-service-status">
+                                    <svg class="status-success" viewBox="0 0 24 24" width="16" height="16">
+                                        <path fill="currentColor" d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M11,16.5L6.5,12L7.91,10.59L11,13.67L16.59,8.09L18,9.5L11,16.5Z"/>
+                                    </svg>
+                                    <svg class="status-error" viewBox="0 0 24 24" width="16" height="16">
+                                        <path fill="currentColor" d="M12,2C17.53,2 22,6.47 22,12C22,17.53 17.53,22 12,22C6.47,22 2,17.53 2,12C2,6.47 6.47,2 12,2M15.59,7L12,10.59L8.41,7L7,8.41L10.59,12L7,15.59L8.41,17L12,13.41L15.59,17L17,15.59L13.41,12L17,8.41L15.59,7Z"/>
+                                    </svg>
+                                </span>
+                                <select id="embedding-service-select">
+                                    <!-- 通过 JavaScript 动态填充 -->
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -304,7 +340,7 @@
                     </div>
                     <div class="stats-grid">
                         <div class="stats-card">
-                            <div class="stats-title">Chat 调用</div>
+                            <div class="stats-title">文本模型调用</div>
                             <div class="stats-value" id="chat-calls">0</div>
                             <div class="stats-tokens">
                                 <span>
@@ -318,7 +354,7 @@
                             </div>
                         </div>
                         <div class="stats-card">
-                            <div class="stats-title">Embedding 调用</div>
+                            <div class="stats-title">向量模型调用</div>
                             <div class="stats-value" id="embedding-calls">0</div>
                             <div class="stats-tokens">
                                 <span>
@@ -988,21 +1024,21 @@
                     <div class="models-section">
                         <div class="models-section-header">
                             <h3>模型信息
-                                <div class="tooltip-icon" data-tooltip="为了保证搜索结果的准确性，不支持修改Embedding模型，如有需要可以通过自定义服务配置来实现">
+                                <div class="tooltip-icon" data-tooltip="为了保证搜索结果的准确性，不支持修改向量模型，如有需要可以通过自定义服务配置来实现">
                                     <svg width="14" height="14" viewBox="0 0 24 24">
                                         <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
                                     </svg>
                                 </div>
                             </h3>
                             <a class="model-pricing-link" target="_blank" title="查看模型定价">
-                                <span>查看定价</span>
+                                <span>查看模型及定价</span>
                                 <svg viewBox="0 0 24 24" width="14" height="14">
                                     <path fill="currentColor" d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,20V12H19V19Z"/>
                                 </svg>
                             </a>
                         </div>
                         <div class="model-info-group">
-                            <div class="model-label">Chat 模型</div>
+                            <div class="model-label">文本模型</div>
                             <div class="model-value chat-model">
                                 <div class="model-input-container">
                                     <input type="text" placeholder="例如: gpt-3.5-turbo" readonly>
@@ -1016,7 +1052,7 @@
                         </div>
 
                         <div class="model-info-group">
-                            <div class="model-label">Embedding 模型</div>
+                            <div class="model-label">向量模型</div>
                             <div class="model-value embedding-model">
                                 <!-- 由 JavaScript 填充，例如: text-embedding-ada-002 -->
                             </div>
@@ -1110,12 +1146,12 @@
                                 </svg>
                             </div>
                         </label>
-                        <input type="text" id="custom-base-url" placeholder="https://api.example.com/v1/" required>
+                        <input type="text" id="custom-base-url" placeholder="https://api.deepseek.com" required>
                     </div>
                     <div class="form-group">
                         <label for="custom-api-key">
                             API Key
-                            <div class="tooltip-icon" data-tooltip="输入您的API密钥。请确保API密钥具有足够的权限来调用Chat和Embedding接口">
+                            <div class="tooltip-icon" data-tooltip="输入您的API密钥。请确保API密钥具有足够的权限来调用文本模型和向量模型接口">
                                 <svg width="14" height="14" viewBox="0 0 24 24">
                                     <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
                                 </svg>
@@ -1137,7 +1173,7 @@
                         <button class="test-btn test-chat-btn">验证</button>
                         <div class="form-group">
                             <label for="custom-chat-model">
-                                Chat 模型
+                                文本模型(可选)
                                 <div class="tooltip-icon" data-tooltip="请配置你的API服务支持的对话模型，暂不支持推理模型">
                                     <svg width="14" height="14" viewBox="0 0 24 24">
                                         <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
@@ -1145,24 +1181,24 @@
                                 </div>
                                 <span class="test-status" data-type="chat"></span>
                             </label>
-                            <input type="text" id="custom-chat-model" placeholder="gpt-3.5-turbo" required>
+                            <input type="text" id="custom-chat-model" placeholder="deepseek-chat">
                         </div>
                     </div>
                     
-                    <!-- Embedding模型配置组 -->
+                    <!-- 向量模型配置组 -->
                     <div class="model-config-group">
                         <button class="test-btn test-embed-btn">验证</button>
                         <div class="form-group">
                             <label for="custom-embed-model">
-                                Embedding 模型
-                                <div class="tooltip-icon" data-tooltip="请配置你的API服务支持的文本嵌入模型。注意：修改模型后需要重新生成书签的向量">
+                                向量模型(可选)
+                                <div class="tooltip-icon" data-tooltip="请配置你的API服务支持的向量模型。注意：修改模型后需要重新生成书签的向量">
                                     <svg width="14" height="14" viewBox="0 0 24 24">
                                         <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
                                     </svg>
                                 </div>
                                 <span class="test-status" data-type="embedding"></span>
                             </label>
-                            <input type="text" id="custom-embed-model" placeholder="text-embedding-ada-002" required>
+                            <input type="text" id="custom-embed-model" placeholder="BAAI/bge-m3">
                         </div>
                     </div>
                     
@@ -1320,7 +1356,7 @@
                         <!-- 书签向量同步开关 -->
                         <div class="form-group">
                             <label class="switch-label">
-                                <span class="switch-text sync-strategy-label">
+                                <span class="switch-text sync-strategy-label emphasize-embedding">
                                     同步书签向量
                                     <div class="tooltip-icon" data-tooltip="建议新设备首次同步时开启，首次同步完成之后关闭此选项">
                                         <svg width="16" height="16" viewBox="0 0 24 24">

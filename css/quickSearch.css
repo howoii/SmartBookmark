@@ -102,6 +102,38 @@ body {
     display: block;
 }
 
+/* 空搜索结果样式 */
+.empty-search-results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--text-tertiary);
+}
+
+.empty-search-results .icon {
+    margin-bottom: 16px;
+    width: 48px;
+    height: 48px;
+    opacity: 0.6;
+}
+
+.empty-search-results .message {
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.empty-search-results .description {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    max-width: 240px;
+    line-height: 1.4;
+}
+
 .search-result-item {
     padding: 12px;
     border-bottom: 1px solid var(--bg-border-light);
@@ -353,19 +385,19 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24px;
+    padding: 32px;
     color: var(--text-secondary);
-    font-size: 13px;
-    gap: 8px;
+    font-size: 14px;
+    gap: 10px;
 }
 
 .loading-spinner {
-    width: 16px;
-    height: 16px;
-    border: 2px solid var(--bg-border);
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(var(--primary-color-rgb), 0.2);
     border-top-color: var(--primary-color);
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {

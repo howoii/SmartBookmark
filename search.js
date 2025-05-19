@@ -51,7 +51,7 @@ class SearchManager {
                     if (!queryEmbedding) {
                         queryEmbedding = await getEmbedding(query);
                         if (queryEmbedding) {
-                            const activeService = await ConfigManager.getActiveService();
+                            const activeService = await ConfigManager.getEmbeddingService();
                             await this.searchHistoryManager.cacheVector(query, queryEmbedding, activeService);
                         }
                     }
@@ -90,7 +90,7 @@ class SearchManager {
         const allBookmarks = await getAllBookmarks(includeChromeBookmarks);
         
         // 获取API服务配置
-        const apiService = await ConfigManager.getActiveService();
+        const apiService = await ConfigManager.getEmbeddingService();
         const SIMILARITY_THRESHOLDS = {
             MAX: apiService.similarityThreshold?.MAX || 0.85,
             HIGH: apiService.similarityThreshold?.HIGH || 0.65, // 高相关性，分数 >= 80
@@ -311,7 +311,7 @@ class SearchHistoryManager {
 
     async getVector(query) {
         const cache = await this.getVectorCache();
-        const activeService = await ConfigManager.getActiveService();
+        const activeService = await ConfigManager.getEmbeddingService();
         if (cache[query] && cache[query].serviceId === activeService.id && cache[query].embedModel === activeService.embedModel) {
             return cache[query].vector;
         }

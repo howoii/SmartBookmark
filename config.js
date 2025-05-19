@@ -126,7 +126,8 @@ class ConfigManager {
         API_KEYS: 'apiKeys',
         BUILTIN_SERVICES_SETTINGS: 'builtinServicesSettings',
         CUSTOM_SERVICES: 'customServices',
-        PINNED_SITES: 'pinnedSites'
+        PINNED_SITES: 'pinnedSites',
+        SERVICE_TYPES: 'serviceTypes'
     };
 
     static async getServiceExportData() {
@@ -134,7 +135,8 @@ class ConfigManager {
             this.STORAGE_KEYS.ACTIVE_SERVICE,
             this.STORAGE_KEYS.API_KEYS,
             this.STORAGE_KEYS.BUILTIN_SERVICES_SETTINGS,
-            this.STORAGE_KEYS.CUSTOM_SERVICES
+            this.STORAGE_KEYS.CUSTOM_SERVICES,
+            this.STORAGE_KEYS.SERVICE_TYPES
         ];
         try {
             const data = await this.STORAGE.get(exportKeys);
@@ -203,25 +205,108 @@ class ConfigManager {
         }
     }
 
-    // 设置当前激活的服务
-    static async setActiveService(serviceId) {
-        const service = await this.findServiceById(serviceId);
-        if (!service) {
-            throw new Error('无效的服务ID');
+    // 新增：获取服务类型配置
+    static async getServiceTypeConfig() {
+        try {
+            const data = await this.STORAGE.get(this.STORAGE_KEYS.SERVICE_TYPES);
+            const serviceTypes = data[this.STORAGE_KEYS.SERVICE_TYPES] || {
+                chat: null, // 默认为null，表示使用activeService
+                embedding: null // 默认为null，表示使用activeService
+            };
+            return serviceTypes;
+        } catch (error) {
+            logger.error('获取服务类型配置失败:', error);
+            return { chat: null, embedding: null };
         }
-        await this.STORAGE.set({
-            [this.STORAGE_KEYS.ACTIVE_SERVICE]: service.id
-        });
     }
 
-    static async getActiveAPIKey() {
+    // 新增：设置特定类型的服务
+    static async setServiceType(type, serviceId) {
+        if (!['chat', 'embedding'].includes(type)) {
+            throw new Error('无效的服务类型');
+        }
+        
+        if (serviceId !== null) {
+            // 验证服务ID是否有效
+            const service = await this.findServiceById(serviceId);
+            if (!service) {
+                throw new Error('无效的服务ID');
+            }
+        }
+        
         try {
-            const activeService = await this.getActiveService();
-            return activeService.apiKey;
+            const serviceTypes = await this.getServiceTypeConfig();
+            serviceTypes[type] = serviceId;
+            
+            await this.STORAGE.set({
+                [this.STORAGE_KEYS.SERVICE_TYPES]: serviceTypes
+            });
+            
+            return serviceTypes;
         } catch (error) {
-            logger.error('获取当前服务API Key失败:', error);
+            logger.error(`设置${type}服务失败:`, error);
+            throw error;
+        }
+    }
+
+    // 新增：获取特定类型的服务
+    static async getServiceByType(type) {
+        if (!['chat', 'embedding'].includes(type)) {
+            throw new Error('无效的服务类型');
+        }
+        
+        try {
+            const serviceTypes = await this.getServiceTypeConfig();
+            const serviceId = serviceTypes[type];
+            
+            // 如果没有为该类型设置特定服务，则使用活跃服务
+            if (serviceId === null) {
+                return await this.getActiveService();
+            }
+            
+            const service = await this.findServiceById(serviceId);
+            if (!service) {
+                // 如果找不到服务，回退到活跃服务
+                return await this.getActiveService();
+            }
+            
+            return service;
+        } catch (error) {
+            logger.error(`获取${type}服务失败:`, error);
+            // 出错时回退到活跃服务
+            return await this.getActiveService();
+        }
+    }
+
+    // 新增：获取Chat服务
+    static async getChatService() {
+        return await this.getServiceByType('chat');
+    }
+
+    // 新增：获取Embedding服务
+    static async getEmbeddingService() {
+        return await this.getServiceByType('embedding');
+    }
+
+    // 新增：根据服务类型获取API Key
+    static async getAPIKeyByType(type) {
+        try {
+            const service = await this.getServiceByType(type);
+            return service.apiKey;
+        } catch (error) {
+            logger.error(`获取${type}服务API Key失败:`, error);
             return null;
         }
+    }
+    
+    // 新增：获取Chat服务的API Key
+    static async getChatAPIKey() {
+        return await this.getAPIKeyByType('chat');
+    }
+    
+    // 新增：获取Embedding服务的API Key
+    static async getEmbeddingAPIKey() {
+        return await this.getAPIKeyByType('embedding');
     }
 
     static async getBuiltinAPIKey(serviceId) {
@@ -346,9 +431,12 @@ class ConfigManager {
             }
 
             // 如果是当前激活的服务，需要切换到默认服务
-            const activeService = await this.getActiveService();
-            if (activeService.id === serviceId) {
-                await this.setActiveService(API_SERVICES.OPENAI.id);
+            const serviceTypes = await this.getServiceTypeConfig();
+            if (serviceTypes.chat === serviceId) {
+                await this.setServiceType('chat', API_SERVICES.OPENAI.id);
+            }
+            if (serviceTypes.embedding === serviceId) {
+                await this.setServiceType('embedding', API_SERVICES.OPENAI.id);
             }
 
             // 删除服务
@@ -509,6 +597,24 @@ class ConfigManager {
         return false;
     }
 
+    // 新增：使用当前embedding服务检查是否需要更新embedding
+    static async isNeedUpdateEmbeddingWithCurrentService(bookmark) {
+        if (!bookmark) {
+            return false;
+        }
+        
+        try {
+            const embeddingService = await this.getEmbeddingService();
+            if (!embeddingService || !embeddingService.apiKey) {
+                return false;
+            }
+            return this.isNeedUpdateEmbedding(bookmark, embeddingService);
+        } catch (error) {
+            logger.error('检查是否需要更新embedding失败:', error);
+            return false; // 安全起见，返回false以确保不更新
+        }
+    }
+
     // 获取常用网站列表
     static async getPinnedSites() {
         try {
@@ -587,7 +693,8 @@ class ConfigManager {
                 this.STORAGE_KEYS.ACTIVE_SERVICE,
                 this.STORAGE_KEYS.API_KEYS,
                 this.STORAGE_KEYS.BUILTIN_SERVICES_SETTINGS,
-                this.STORAGE_KEYS.CUSTOM_SERVICES
+                this.STORAGE_KEYS.CUSTOM_SERVICES,
+                this.STORAGE_KEYS.SERVICE_TYPES
             ];
             const importData = {};
 
@@ -627,6 +734,15 @@ class ConfigManager {
                             // 合并模式：获取现有设置
                             const currentSettings = await this.getBuiltinServiceSettings();
                             importData[key] = { ...currentSettings, ...data[key] };
+                        } else {
+                            importData[key] = data[key];
+                        }
+                    } else if (key === this.STORAGE_KEYS.SERVICE_TYPES) {
+                        // 处理服务类型设置
+                        if (!isOverwrite) {
+                            // 合并模式：获取现有服务类型设置
+                            const currentServiceTypes = await this.getServiceTypeConfig();
+                            importData[key] = { ...currentServiceTypes, ...data[key] };
                         } else {
                             importData[key] = data[key];
                         }

@@ -19,7 +19,18 @@
                 </div>
                 <div class="page-url" spellcheck="false"></div>
             </div>
-            <div class="page-excerpt"></div>
+            <div class="excerpt-container">
+                <textarea id="page-excerpt" class="page-excerpt" placeholder="添加或编辑书签摘要..." spellcheck="false" maxlength="500"></textarea>
+                <div class="char-counter"><span id="char-count">0</span>/500</div>
+                <button id="generate-excerpt-btn" class="generate-excerpt-btn" title="AI生成摘要">
+                    <svg class="icon-normal" t="1746761538879" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="17630" width="20" height="20" xmlns:xlink="http://www.w3.org/1999/xlink">
+                        <path d="M732.672 610.176c22.08-1.472 11.776 50.112 45.952 82.112 34.176 32 87.36 20.928 88.704 43.968 0.576 9.408-8.32 14.336-21.12 18.88l-19.904 6.656c-14.72 5.12-30.592 11.648-42.24 23.68-28.928 30.208-22.592 75.008-46.272 76.16-23.744 1.088-10.56-45.632-48.192-77.12-37.632-31.424-82.368-22.656-82.368-45.056s49.024-9.28 81.984-43.264c33.024-34.048 21.376-84.608 43.52-86.016z m63.552-408.96c37.888 36.352 48.704 117.632 22.336 164.288-20.864 36.864-415.04 430.464-453.44 453.824-48.448 29.44-160.832 43.52-195.328 10.496-34.368-33.024-18.88-154.24 7.68-194.56 10.176-15.424 94.208-103.36 187.52-197.76L473.6 329.088l33.792-33.152c61.824-60.352 111.232-106.304 123.712-113.152 51.136-27.904 126.528-18.56 165.12 18.432zM610.304 476.608L522.24 388.48 380.16 531.584c-72.768 74.24-132.352 136.448-138.56 145.92-3.008 4.48-10.112 31.552-13.44 57.536a239.168 239.168 0 0 0-2.112 29.056l0.32 8.96 23.424-1.152 11.584-1.152c26.752-3.392 53.632-10.88 63.808-17.024l4.416-3.328 12.224-10.56c33.856-30.464 110.08-104.832 187.776-182.208l27.584-27.648 53.056-53.312z m57.6-226.56l-4.48 3.2-7.936 6.656c-15.808 13.888-44.032 40.832-78.592 74.688l87.232 87.168 50.56-52.48 23.296-25.088c7.552-8.448 12.352-14.208 13.76-16.64 9.28-16.384 3.584-59.264-8.704-71.04-14.208-13.632-53.12-18.496-75.136-6.464zM252.992 183.488c14.464-0.96 7.68 33.984 30.08 55.68 22.464 21.76 57.344 14.272 58.24 29.888 0.896 15.68-35.584 12.992-54.592 33.408-19.072 20.48-14.848 50.88-30.4 51.648-15.552 0.768-6.912-30.912-31.616-52.288-24.704-21.376-54.016-15.36-54.016-30.592 0-15.168 32.128-6.336 53.76-29.44 21.632-23.04 14.08-57.344 28.544-58.304z" p-id="17631" fill="currentColor"></path>
+                    </svg>
+                    <svg class="icon-loading" width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="5" y="5" width="10" height="10" fill="currentColor" />
+                    </svg>
+                </button>
+            </div>
             <div class="tags-container">
                 <div class="recommended-tags">
                     <div class="recommended-tags-title" data-i18n="ui_label_recommended_tags"></div>
@@ -35,7 +46,7 @@
                     <button id="cancel-tags-btn" data-i18n="ui_button_cancel"></button>
                     <button id="save-tags-btn" data-i18n="ui_button_save"></button>
                 </div>
-                <button id="delete-bookmark-btn" class="danger-button" style="display: none;">
+                <button id="delete-bookmark-btn" class="danger-button">
                     <svg viewBox="0 0 24 24" width="16" height="16">
                         <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
                     </svg>
@@ -48,6 +59,7 @@
     <script src="common.js"></script>
     <script src="env.js"></script>
     <script src="logger.js"></script>
+    <script src="requestManager.js"></script>
     <script src="models.js"></script>
     <script src="i18n.js"></script>
     <script src="config.js"></script>

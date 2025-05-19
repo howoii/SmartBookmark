@@ -883,7 +883,7 @@ class QuickSearchManager {
         searchResults.innerHTML = `
             <div class="loading">
                 <div class="loading-spinner"></div>
-                <span>正在搜索...</span>
+                <span>正在搜索书签...</span>
             </div>
         `;
     }
@@ -969,11 +969,11 @@ class QuickSearchManager {
         } catch (error) {
             logger.error('搜索失败:', error);
             this.showStatus('搜索失败: ' + error.message, 'error');
-            searchResults.innerHTML = `
-                <div style="text-align: center; padding: 24px; color: #666;">
-                    搜索出错，请重试
-                </div>
-            `;
+            searchResults.innerHTML = this.getEmptyResultsHTML({
+                message: '搜索出错',
+                description: '请稍后重试，或联系开发者解决',
+                type: 'error'
+            });
         } finally {
             this.isSearching = false;
         }
@@ -988,11 +988,9 @@ class QuickSearchManager {
         
         // 如果没有结果，显示无结果消息
         if (results.length === 0) {
-            searchResults.innerHTML = `
-                <div style="text-align: center; padding: 24px; color: #666;">
-                    未找到相关书签
-                </div>
-            `;
+            searchResults.innerHTML = this.getEmptyResultsHTML({
+                type: 'empty'
+            });
             return;
         }
         
@@ -1222,6 +1220,14 @@ class QuickSearchManager {
                     updateStatus('链接已复制到剪贴板');
                 }
             } else {
+                // 获取用户的打开方式配置
+                const openInNewTab = await SettingsManager.get('display.openInNewTab');
+                
+                // 如果不是在新标签页打开，修改链接行为
+                if (!openInNewTab) {
+                    e.preventDefault();
+                    chrome.tabs.update({ url: result.url });
+                }
                 // 更新使用频率
                 if (result.source === BookmarkSource.EXTENSION) {
                     await updateBookmarkUsage(result.url);
@@ -1433,9 +1439,14 @@ class QuickSearchManager {
         try {
             // 更新使用频率
             await updateBookmarkUsage(url);
-            // 在新标签页中打开URL
-            await chrome.tabs.create({ url: url });
-            window.close();
+            // 获取用户的打开方式配置
+            const openInNewTab = await SettingsManager.get('display.openInNewTab');
+            if (!openInNewTab) {
+                chrome.tabs.update({ url: url });
+            } else {
+                // 在新标签页中打开URL
+                await chrome.tabs.create({ url: url });
+            }
         } catch (error) {
             logger.error('打开链接失败:', error);
             this.showStatus('打开链接失败: ' + error.message, 'error');
@@ -1479,11 +1490,9 @@ class QuickSearchManager {
                 
                 // 如果删除后没有结果了，显示无结果提示
                 if (this.resultItems.length === 0) {
-                    this.elements.searchResults.innerHTML = `
-                        <div style="text-align: center; padding: 24px; color: #666;">
-                            未找到相关书签
-                        </div>
-                    `;
+                    this.elements.searchResults.innerHTML = this.getEmptyResultsHTML({
+                        type: 'empty'
+                    });
                 }
             }, 300);
         } catch (error) {
@@ -1766,6 +1775,43 @@ class QuickSearchManager {
         this.confirmConfirmCallback = params.onPrimary;
         
         confirmDialog.classList.add('show');
+    }
+
+    // 生成空搜索结果的HTML
+    getEmptyResultsHTML(options = {}) {
+        const defaults = {
+            message: '未找到相关书签',
+            description: '您可以尝试使用不同的关键词，或检查拼写是否正确',
+            type: 'empty', // 可选值: empty, error, warning, no-access
+        };
+
+        const config = { ...defaults, ...options };
+        let iconPath = '';
+        
+        // 根据类型选择图标
+        switch (config.type) {
+            case 'error':
+                iconPath = 'M12,2C17.5,2 22,6.5 22,12C22,17.5 17.5,22 12,22C6.5,22 2,17.5 2,12C2,6.5 6.5,2 12,2M12,4C7.58,4 4,7.58 4,12C4,16.42 7.58,20 12,20C16.42,20 20,16.42 20,12C20,7.58 16.42,4 12,4M13,15H11V17H13V15M13,7H11V13H13V7Z';
+                break;
+            case 'warning':
+                iconPath = 'M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z';
+                break;
+            case 'no-access':
+                iconPath = 'M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M16.35,14.06L17.43,13L14.46,10.03L17.43,7.05L16.35,5.97L13.38,8.94L10.41,5.97L9.33,7.05L12.31,10.03L9.33,13L10.41,14.06L13.38,11.09L16.35,14.06';
+                break;
+            default: // empty
+                iconPath = 'M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5M7,8H12V10H7V8Z';
+        }
+
+        return `
+            <div class="empty-search-results">
+                <svg class="icon" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="${iconPath}" />
+                </svg>
+                <div class="message">${config.message}</div>
+                <div class="description">${config.description}</div>
+            </div>
+        `;
     }
 }
 

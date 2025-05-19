@@ -13,6 +13,7 @@ class SettingsManager {
             confirmTags: true,       // 保存时确认标签，默认开启
             skipApiKeyNotice: false,   // 跳过API Key检查提示，默认关闭
             viewMode: 'list', // 添加默认视图模式
+            openInNewTab: true, // 默认在新标签页打开书签
             theme: {
                 mode: 'light',  // 'system' | 'light' | 'dark'
             }

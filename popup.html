@@ -16,6 +16,9 @@
         <div id="global-bookmark-tooltip" class="bookmark-tooltip">
             <div class="bookmark-tooltip-title"></div>
             <div class="bookmark-tooltip-url"></div>
+            <div class="bookmark-tooltip-excerpt">
+                <p></p>
+            </div>
             <div class="bookmark-tooltip-tags"></div>
             <div class="bookmark-tooltip-time">
                 <svg viewBox="0 0 24 24" width="14" height="14">
@@ -47,8 +50,16 @@
                         <span id="bookmark-count" class="bookmark-count" data-count="0">书签</span>
                     </div>
                     <button id="sync-button" class="icon-button sync-button" title="同步书签">
-                        <svg viewBox="0 0 24 24" width="16" height="16">
+                        <svg class="sync-icon syncing-icon" viewBox="0 0 24 24" width="16" height="16">
                             <path fill="currentColor" d="M12,18A6,6 0 0,1 6,12C6,11 6.25,10.03 6.7,9.2L5.24,7.74C4.46,8.97 4,10.43 4,12A8,8 0 0,0 12,20V23L16,19L12,15M12,4V1L8,5L12,9V6A6,6 0 0,1 18,12C18,13 17.75,13.97 17.3,14.8L18.76,16.26C19.54,15.03 20,13.57 20,12A8,8 0 0,0 12,4Z"/>
+                        </svg>
+                        <svg class="sync-icon error-icon" width="18" height="18" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 33C8.66666 33 4 31.5 4 25.5C4 18.5 11 17 13 17C14 13.5 16 8 24 8C31 8 34 12 35 15.5C35 15.5 44 16.5 44 25C44 31 40 33 36 33" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M29 28L19 38" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M19 28L29 38" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <svg class="sync-icon normal-icon" width="18" height="18" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M13 33C9.66666 33 4 31.5 4 25.5C4 18.5 11 17 13 17C14 13.5 16 8 24 8C31 8 34 12 35 15.5C35 15.5 44 16.5 44 25C44 31 39 33 35 33H22" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M27 28L22 33L27 38" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                     </button>
                 </div>
@@ -140,7 +151,7 @@
                         <svg class="notice-icon" viewBox="0 0 24 24" width="16" height="16">
                             <path fill="currentColor" d="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
                         </svg>
-                        配置 API Key
+                        配置 API 服务
                     </a>
                 </div>
                 <button id="regenerate-embeddings" class="regenerate-button" style="display: none;" title="重新生成向量">
@@ -264,7 +275,18 @@
                 </div>
                 <div class="page-url" spellcheck="false" title=""></div>
             </div>
-            <div class="page-excerpt"></div>
+            <div class="excerpt-container">
+                <textarea id="page-excerpt" class="page-excerpt" placeholder="添加或编辑书签摘要..." spellcheck="false" maxlength="500"></textarea>
+                <button id="generate-excerpt-btn" class="generate-excerpt-btn" title="AI生成摘要">
+                    <svg class="icon-normal" t="1746761538879" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="17630" width="20" height="20" xmlns:xlink="http://www.w3.org/1999/xlink">
+                        <path d="M732.672 610.176c22.08-1.472 11.776 50.112 45.952 82.112 34.176 32 87.36 20.928 88.704 43.968 0.576 9.408-8.32 14.336-21.12 18.88l-19.904 6.656c-14.72 5.12-30.592 11.648-42.24 23.68-28.928 30.208-22.592 75.008-46.272 76.16-23.744 1.088-10.56-45.632-48.192-77.12-37.632-31.424-82.368-22.656-82.368-45.056s49.024-9.28 81.984-43.264c33.024-34.048 21.376-84.608 43.52-86.016z m63.552-408.96c37.888 36.352 48.704 117.632 22.336 164.288-20.864 36.864-415.04 430.464-453.44 453.824-48.448 29.44-160.832 43.52-195.328 10.496-34.368-33.024-18.88-154.24 7.68-194.56 10.176-15.424 94.208-103.36 187.52-197.76L473.6 329.088l33.792-33.152c61.824-60.352 111.232-106.304 123.712-113.152 51.136-27.904 126.528-18.56 165.12 18.432zM610.304 476.608L522.24 388.48 380.16 531.584c-72.768 74.24-132.352 136.448-138.56 145.92-3.008 4.48-10.112 31.552-13.44 57.536a239.168 239.168 0 0 0-2.112 29.056l0.32 8.96 23.424-1.152 11.584-1.152c26.752-3.392 53.632-10.88 63.808-17.024l4.416-3.328 12.224-10.56c33.856-30.464 110.08-104.832 187.776-182.208l27.584-27.648 53.056-53.312z m57.6-226.56l-4.48 3.2-7.936 6.656c-15.808 13.888-44.032 40.832-78.592 74.688l87.232 87.168 50.56-52.48 23.296-25.088c7.552-8.448 12.352-14.208 13.76-16.64 9.28-16.384 3.584-59.264-8.704-71.04-14.208-13.632-53.12-18.496-75.136-6.464zM252.992 183.488c14.464-0.96 7.68 33.984 30.08 55.68 22.464 21.76 57.344 14.272 58.24 29.888 0.896 15.68-35.584 12.992-54.592 33.408-19.072 20.48-14.848 50.88-30.4 51.648-15.552 0.768-6.912-30.912-31.616-52.288-24.704-21.376-54.016-15.36-54.016-30.592 0-15.168 32.128-6.336 53.76-29.44 21.632-23.04 14.08-57.344 28.544-58.304z" p-id="17631" fill="currentColor"></path>
+                    </svg>
+                    <svg class="icon-loading" width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="5" y="5" width="10" height="10" fill="currentColor" />
+                    </svg>
+                </button>
+                <div class="char-counter"><span id="char-count">0</span>/500</div>
+            </div>
             <div class="tags-container">
                 <div class="recommended-tags"></div>
                 <div id="tags-list" class="tags-list"></div>
@@ -327,6 +349,15 @@
                                 <span class="switch-slider"></span>
                             </div>
                         </label>
+                        <label class="settings-item toggle-switch">
+                            <div class="settings-text">
+                                <span data-tooltip="关闭后书签将在当前页面打开">在新标签页打开书签</span>
+                            </div>
+                            <div class="switch-container">
+                                <input type="checkbox" id="open-in-new-tab">
+                                <span class="switch-slider"></span>
+                            </div>
+                        </label>
                     </div>
                 </section>
                 <!-- 可以添加更多设置部分 -->
@@ -336,6 +367,12 @@
                         <label class="settings-item toggle-switch">
                             <div class="settings-text">
                                 <span data-tooltip="自动识别隐私相关页面（如银行、邮箱等），并自动启用隐私模式">自动检测隐私页面</span>
+                                <a href="#" id="privacy-settings-link" class="settings-link" title="更多隐私设置">
+                                    <svg viewBox="0 0 24 24" width="16" height="16">
+                                        <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.5" />
+                                        <path d="M10.5,8L14.5,12L10.5,16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </a>
                             </div>
                             <div class="switch-container">
                                 <input type="checkbox" id="auto-privacy-mode">
@@ -357,7 +394,7 @@
             <!-- 新增底部栏 -->
             <div class="settings-footer">
                 <div class="left-group">
-                    <button id="open-settings-page" class="icon-button" title="高级设置">
+                    <button id="open-settings-page" class="icon-button" title="更多设置">
                         <svg viewBox="0 0 24 24" width="20" height="20">
                             <path fill="currentColor" d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
                         </svg>
@@ -468,6 +505,7 @@
     <script src="common.js"></script>
     <script src="env.js"></script>
     <script src="logger.js"></script>
+    <script src="requestManager.js"></script>
     <script src="models.js"></script>
     <script src="i18n.js"></script>
     <script src="config.js"></script>

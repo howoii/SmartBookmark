@@ -512,6 +512,7 @@ class BookmarkManager {
         };
         this.isEditMode = false;
         this.editingBookmark = null;
+        this.excerptRequest = null;
         // 将 DOM 元素分为必需和可选两类
         this.elements = {
             required: {                
@@ -530,7 +531,7 @@ class BookmarkManager {
                 deleteBookmarkBtn: document.getElementById('delete-bookmark-btn'),
                 dialogContent: document.querySelector('#tags-dialog .dialog-content'),
                 recommendedTags: document.querySelector('.recommended-tags'),
-                pageExcerpt: document.querySelector('.page-excerpt'),
+                pageExcerpt: document.getElementById('page-excerpt'),
                 dialogTitle: document.querySelector('.page-title'),
                 pageUrl: document.querySelector('.page-url')
             }
@@ -685,7 +686,8 @@ class BookmarkManager {
             dialogContent,
             dialogTitle,
             deleteBookmarkBtn,
-            pageUrl
+            pageUrl,
+            pageExcerpt
         } = this.elements.optional;
 
         // 基本的对话框关闭功能（必需）
@@ -697,6 +699,10 @@ class BookmarkManager {
                 updateStatus('已取消保存');
             }
             this.resetEditMode();
+            if (this.excerptRequest) {
+                this.excerptRequest.abort();
+                this.excerptRequest = null;
+            }
         };
 
         // 必需的事件监听器
@@ -827,13 +833,131 @@ class BookmarkManager {
                 openOptionsPage('services');
             });
         }
+
+        // 添加AI生成摘要按钮点击事件
+        const generateExcerptBtn = document.getElementById('generate-excerpt-btn');
+        if (generateExcerptBtn && pageExcerpt) {
+            generateExcerptBtn.addEventListener('click', async () => {
+                await this.generateExcerpt(pageExcerpt);
+            });
+        }
+
+        if (pageExcerpt) {
+            // 监听输入事件和初始加载
+            pageExcerpt.addEventListener('input', () => {
+                this.adjustTextareaHeight(pageExcerpt);
+                this.updateCharCount(pageExcerpt);
+            });
+        }
+    }
+    
+    // AI生成书签摘要
+    async generateExcerpt(textarea) {
+        if (!textarea) return;
+        
+        // 获取生成按钮
+        const generateBtn = document.getElementById('generate-excerpt-btn');
+        if (!generateBtn) return;
+        
+        // 如果已经在loading状态，尝试取消请求
+        if (generateBtn.classList.contains('loading')) {
+            if (this.excerptRequest) {
+                this.excerptRequest.abort();
+                this.excerptRequest = null;
+            }
+            return;
+        }
+        
+        try {
+            // 显示加载状态
+            generateBtn.classList.add('loading');
+            generateBtn.title = "取消生成";
+
+            // 检查API Key是否有效
+            await checkAPIKeyValid('chat');
+
+            // 创建可取消的请求
+            this.excerptRequest = requestManager.create('generate_excerpt');
+
+            // 调用API生成摘要，传入signal
+            const excerpt = await generateExcerpt(this.pageContent, this.currentTab, this.excerptRequest.signal);
+            
+            if (excerpt) {
+                // 设置摘要内容
+                textarea.value = excerpt;
+                // 调整文本区域高度和字符计数
+                this.adjustTextareaHeight(textarea);
+                this.updateCharCount(textarea);
+            } else {
+                throw new Error('摘要生成失败');
+            }
+        } catch (error) {
+            if (error.message.includes('UserCanceled')) {
+                updateStatus('已取消生成摘要', false);
+            } else {
+                updateStatus(`${error.message}`, true);
+            }
+        } finally {
+            // 移除loading状态
+            generateBtn.classList.remove('loading');
+            generateBtn.title = "AI生成摘要";
+            
+            // 清理请求
+            if (this.excerptRequest) {
+                this.excerptRequest.done();
+                this.excerptRequest = null;
+            }
+        }
+    }
+
+    adjustTextareaHeight(textarea) {
+        if (!textarea) return;
+
+        // 重置高度为自动，计算新高度
+        textarea.style.height = 'auto';
+        
+        // 计算新的高度
+        const scrollHeight = textarea.scrollHeight;
+        
+        // 获取css中设置的最大高度限制
+        const maxHeight = parseInt(window.getComputedStyle(textarea).maxHeight);
+        
+        // 设置新高度，但不超过最大高度
+        textarea.style.height = Math.min(scrollHeight, maxHeight) + 'px';
+    }
+    
+    updateCharCount(textarea) {
+        if (!textarea) return;
+        
+        const charCount = document.getElementById('char-count');
+        if (!charCount) return;
+        
+        const maxLength = textarea.getAttribute('maxlength');
+        const currentLength = textarea.value.length;
+        
+        // 更新计数
+        charCount.textContent = currentLength;
+        
+        // 根据字符数添加样式
+        const charCounter = charCount.parentElement;
+        
+        // 清除现有样式
+        charCounter.classList.remove('near-limit', 'at-limit');
+        
+        // 添加新样式
+        if (currentLength >= maxLength) {
+            charCounter.classList.add('at-limit');
+        } else if (currentLength >= maxLength * 0.8) {
+            charCounter.classList.add('near-limit');
+        }
     }
 
     async checkApiKeyConfig(isInit = false) {
-        const apiKey = await ConfigManager.getActiveAPIKey();
+        const apiKeyValid = await checkAPIKeyValidSafe();
+        logger.debug('apiKeyValid', apiKeyValid);
+
         const skipApiKeyNotice = await SettingsManager.get('display.skipApiKeyNotice');
-        
-        if (!apiKey) {
+        if (!apiKeyValid) {
             // 显示API Key配置链接
             this.elements.required.apiKeyNotice.style.display = 'block';
 
@@ -841,7 +965,7 @@ class BookmarkManager {
             if (!skipApiKeyNotice && isInit) {
                 this.alertDialog.show({
                     title: '欢迎使用',
-                    message: '检测到您还未配置API Key，这将影响书签搜索等核心功能的使用。是否现在配置？',
+                    message: '您需要配置 API 服务才能使用书签搜索等核心功能。是否现在配置？',
                     primaryText: '去配置',
                     secondaryText: '暂不配置',
                     onPrimary: () => {
@@ -863,8 +987,8 @@ class BookmarkManager {
 
     async checkEmbeddingStatus() {
         try {
-            const activeService = await ConfigManager.getActiveService();
-            if (!activeService.apiKey) {
+            const activeService = await ConfigManager.getEmbeddingService();
+            if (!activeService.apiKey || !activeService.embedModel) {
                 this.elements.required.regenerateEmbeddings.style.display = 'none';
                 return;
             }
@@ -875,14 +999,15 @@ class BookmarkManager {
             );
 
             const regenerateButton = this.elements.required.regenerateEmbeddings;
-            regenerateButton.style.display = needsUpdate ? 'flex' : 'none';
-            
             if (needsUpdate) {
                 const count = Object.values(bookmarks).filter(bookmark => 
                     ConfigManager.isNeedUpdateEmbedding(bookmark, activeService)
                 ).length;
                 regenerateButton.title = `检测到 ${count} 个书签的索引向量已失效，需要更新`;
             }
+
+            const isApiKeyValid = await checkAPIKeyValidSafe();
+            regenerateButton.style.display = needsUpdate && isApiKeyValid ? 'flex' : 'none';
         } catch (error) {
             logger.error('检查embedding状态时出错:', error);
         }
@@ -905,7 +1030,7 @@ class BookmarkManager {
         try {
             regenerateButton.classList.add('processing');
 
-            const activeService = await ConfigManager.getActiveService();
+            const activeService = await ConfigManager.getEmbeddingService();
             const bookmarks = await LocalStorageMgr.getBookmarks();
             const needUpdateCount = Object.values(bookmarks).filter(bookmark => 
                 ConfigManager.isNeedUpdateEmbedding(bookmark, activeService)
@@ -967,8 +1092,8 @@ class BookmarkManager {
         chrome.storage.onChanged.addListener(async (changes, areaName) => {
             if (areaName === 'sync') {  // 确保是监听sync storage
                 // 监听API Keys的变化
-                if (changes[ConfigManager.STORAGE_KEYS.ACTIVE_SERVICE]) {
-                    logger.debug('API Keys发生变化:', changes[ConfigManager.STORAGE_KEYS.API_KEYS], changes[ConfigManager.STORAGE_KEYS.ACTIVE_SERVICE]);
+                if (changes[ConfigManager.STORAGE_KEYS.SERVICE_TYPES]) {
+                    logger.debug('API Keys发生变化:', changes[ConfigManager.STORAGE_KEYS.SERVICE_TYPES], changes[ConfigManager.STORAGE_KEYS.SERVICE_TYPES]);
                     this.checkApiKeyConfig(false);
                     this.checkEmbeddingStatus();
                 }
@@ -1143,9 +1268,15 @@ class BookmarkManager {
         const dialogTitle = dialog.querySelector('.page-title');
         const dialogUrl = dialog.querySelector('.page-url');
         const dialogFavicon = dialog.querySelector('.page-favicon img');
-        const dialogExcerpt = dialog.querySelector('.page-excerpt');
+        const dialogExcerpt = dialog.querySelector('#page-excerpt');
         const recommendedTags = dialog.querySelector('.recommended-tags');
         const deleteBookmarkBtn = dialog.querySelector('#delete-bookmark-btn');
+
+        if (this.isEditMode) {
+            dialog.classList.add('edit-mode');
+        } else {
+            dialog.classList.remove('edit-mode');
+        }
 
         // 缓存标签
         if (this.currentTab) {
@@ -1184,15 +1315,15 @@ class BookmarkManager {
 
         // 处理摘要
         if (this.pageContent?.excerpt) {
-            const maxLength = 300; // 最大字符数
-            const truncatedExcerpt = this.pageContent.excerpt.length > maxLength 
-                ? this.pageContent.excerpt.substring(0, maxLength) + '...' 
-                : this.pageContent.excerpt;
-            dialogExcerpt.textContent = truncatedExcerpt;
-            dialogExcerpt.style.display = 'block';
+            dialogExcerpt.value = this.pageContent.excerpt;
         } else {
-            dialogExcerpt.style.display = 'none';
+            dialogExcerpt.value = '';
+            dialogExcerpt.placeholder = '添加或编辑书签摘要...';
         }
+        requestAnimationFrame(() => {
+            this.adjustTextareaHeight(dialogExcerpt);
+            this.updateCharCount(dialogExcerpt);
+        });
         
         // 处理推荐标签
         recommendedTags.innerHTML = '';
@@ -1254,6 +1385,11 @@ class BookmarkManager {
         });
     }
 
+    getEditedExcerpt() {
+        const dialogExcerpt = document.querySelector('#page-excerpt');
+        return dialogExcerpt ? dialogExcerpt.value.trim() : '';
+    }
+
     async saveBookmark(tags, title) {
         try {
             if (!this.currentTab) {
@@ -1261,18 +1397,19 @@ class BookmarkManager {
             }
             StatusManager.startOperation(this.isEditMode ? '正在更新书签' : '正在保存书签');
             
-            // 获取编辑后的 URL
+            // 获取编辑后的 URL 和摘要
             const url = this.isEditMode ? this.currentTab.url : this.getEditedUrl();
+            const editedExcerpt = this.getEditedExcerpt();
             
             // 如果是编辑现有书签,保留原有的 embedding 和其他信息
             const embedding = this.isEditMode ? this.editingBookmark.embedding : await getEmbedding(makeEmbeddingText(this.pageContent, this.currentTab, tags));
-            const apiService = await ConfigManager.getActiveService();
+            const apiService = await ConfigManager.getEmbeddingService();
             
             const pageInfo = {
                 url: url,
                 title: title,
                 tags: tags,
-                excerpt: this.pageContent?.excerpt || '',
+                excerpt: editedExcerpt,
                 embedding: embedding,
                 savedAt: this.isEditMode ? this.editingBookmark.savedAt : new Date().toISOString(),
                 useCount: this.isEditMode ? this.editingBookmark.useCount : 1,
@@ -1507,6 +1644,15 @@ function displaySearchResults(results, query) {
                     updateStatus('链接已复制到剪贴板');
                 }
             } else {
+                // 获取用户的打开方式配置
+                const openInNewTab = await SettingsManager.get('display.openInNewTab');
+                
+                // 如果不是在新标签页打开，修改链接行为
+                if (!openInNewTab) {
+                    e.preventDefault();
+                    chrome.tabs.update({ url: result.url });
+                }
+                
                 // 更新使用频率
                 if (result.source === BookmarkSource.EXTENSION) {
                     await updateBookmarkUsage(result.url);
@@ -2231,6 +2377,15 @@ class BookmarkRenderer {
                         updateStatus('链接已复制到剪贴板'); 
                     }
                 } else {
+                    // 获取用户的打开方式配置
+                    const openInNewTab = await SettingsManager.get('display.openInNewTab');
+                    
+                    // 如果不是在新标签页打开，修改链接行为
+                    if (!openInNewTab) {
+                        e.preventDefault();
+                        chrome.tabs.update({ url: bookmark.url });
+                    }
+                    
                     if (bookmark.source === BookmarkSource.EXTENSION) {
                         // 更新使用频率
                         await updateBookmarkUsage(bookmark.url);
@@ -2438,6 +2593,7 @@ class SettingsDialog {
             showChromeBookmarks: document.getElementById('show-chrome-bookmarks'),
             autoFocusSearch: document.getElementById('auto-focus-search'),
             confirmTags: document.getElementById('confirm-tags'),
+            openInNewTab: document.getElementById('open-in-new-tab'), // 添加新元素引用
             autoPrivacySwitch: document.getElementById('auto-privacy-mode'),
             manualPrivacySwitch: document.getElementById('manual-privacy-mode'),
             manualPrivacyContainer: document.getElementById('manual-privacy-container'),
@@ -2486,6 +2642,10 @@ class SettingsDialog {
 
         this.elements.confirmTags.addEventListener('change', async (e) =>
             await this.handleSettingChange('display.confirmTags', e.target.checked));
+            
+        // 添加打开方式设置的事件监听器
+        this.elements.openInNewTab.addEventListener('change', async (e) =>
+            await this.handleSettingChange('display.openInNewTab', e.target.checked));
 
         this.elements.autoPrivacySwitch.addEventListener('change', async (e) => {
             const isAutoDetect = e.target.checked;
@@ -2567,6 +2727,16 @@ class SettingsDialog {
                 }
             });
         }
+
+        // 隐私设置链接点击
+        const privacySettingsLink = document.getElementById('privacy-settings-link');
+        if (privacySettingsLink) {
+            privacySettingsLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                openOptionsPage('privacy');
+            });
+        }
     }
 
     async loadSettings() {
@@ -2576,7 +2746,8 @@ class SettingsDialog {
                 display: { 
                     showChromeBookmarks, 
                     autoFocusSearch, 
-                    confirmTags 
+                    confirmTags,
+                    openInNewTab,
                 } = {},
                 privacy: { 
                     autoDetect: autoPrivacyMode, 
@@ -2588,6 +2759,7 @@ class SettingsDialog {
             this.elements.showChromeBookmarks.checked = showChromeBookmarks;
             this.elements.autoFocusSearch.checked = autoFocusSearch;
             this.elements.confirmTags.checked = confirmTags;
+            this.elements.openInNewTab.checked = openInNewTab; // 初始化打开方式开关状态
             this.elements.autoPrivacySwitch.checked = autoPrivacyMode;
             this.elements.manualPrivacySwitch.checked = manualPrivacyMode;
             this.elements.manualPrivacyContainer.classList.toggle('show', !autoPrivacyMode);
@@ -3038,6 +3210,17 @@ function showTooltip(li, bookmark) {
         tooltip.querySelector('.bookmark-tooltip-title').textContent = bookmark.title;
         tooltip.querySelector('.bookmark-tooltip-url').textContent = bookmark.url;
         tooltip.querySelector('.bookmark-tooltip-tags').innerHTML = tags;
+        
+        // 添加对摘要的处理
+        const excerptElement = tooltip.querySelector('.bookmark-tooltip-excerpt p');
+        if (bookmark.excerpt && bookmark.excerpt.trim()) {
+            excerptElement.textContent = bookmark.excerpt.trim();
+            excerptElement.parentElement.classList.remove('hide');
+        } else {
+            excerptElement.textContent = '';
+            excerptElement.parentElement.classList.add('hide');
+        }
+        
         tooltip.querySelector('.bookmark-tooltip-time span').textContent = formattedDate;
         
         // 计算位置

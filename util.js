@@ -154,12 +154,31 @@ async function getAllBookmarks(includeChromeBookmarks = false, fromLocalCache = 
         if (Object.keys(extensionBookmarks).length === 0) {
             extensionBookmarks = await LocalStorageMgr.getBookmarks();
         }
-        const extensionBookmarksMap = Object.entries(extensionBookmarks)
-            .reduce((map, [_, data]) => {
-                const bookmark = new UnifiedBookmark(data, BookmarkSource.EXTENSION);
-                map[bookmark.url] = bookmark;
-                return map;
-            }, {});
+        
+        // 检查需要删除的不可标记扩展书签
+        const bookmarksToDelete = [];
+        const extensionBookmarksMap = {};
+        
+        // 遍历并检查扩展书签
+        Object.entries(extensionBookmarks).forEach(([_, data]) => {
+            const bookmark = new UnifiedBookmark(data, BookmarkSource.EXTENSION);
+            if (isNonMarkableUrl(bookmark.url)) {
+                // 添加到待删除列表
+                bookmarksToDelete.push(bookmark);
+            } else {
+                // 添加到有效书签映射
+                extensionBookmarksMap[bookmark.url] = bookmark;
+            }
+        });
+        
+        // 如果有不可标记的扩展书签，批量删除它们
+        if (bookmarksToDelete.length > 0) {
+            logger.debug('删除不可标记的扩展书签', { count: bookmarksToDelete.length, urls: bookmarksToDelete.map(b => b.url) });
+            // 批量删除书签
+            await LocalStorageMgr.removeBookmarks(bookmarksToDelete.map(b => b.url));
+            // 记录变更并同步
+            await recordBookmarkChange(bookmarksToDelete, true, true);
+        }
 
         let chromeBookmarksMap = {};
         // 获取Chrome书签
@@ -172,19 +191,16 @@ async function getAllBookmarks(includeChromeBookmarks = false, fromLocalCache = 
                         return map;
                     }
                     const unifiedBookmark = new UnifiedBookmark(bookmark, BookmarkSource.CHROME);
-                    map[bookmark.url] = unifiedBookmark;
+                    // 只添加可标记的Chrome书签
+                    if (!isNonMarkableUrl(bookmark.url)) {
+                        map[bookmark.url] = unifiedBookmark;
+                    }
                     return map;
                 }, {});
         }
 
-        // 合并并过滤扩展程序页面
-        const allBookmarks = { ...extensionBookmarksMap, ...chromeBookmarksMap };
-        return Object.entries(allBookmarks).reduce((map, [url, bookmark]) => {
-            if (!isNonMarkableUrl(bookmark.url)) {
-                map[url] = bookmark;
-            }
-            return map;
-        }, {});
+        // 合并书签
+        return { ...extensionBookmarksMap, ...chromeBookmarksMap };
     } catch (error) {
         logger.error('获取书签失败:', error);
         return {};
@@ -1112,5 +1128,35 @@ async function getDeviceInfo() {
     } catch (error) {
         // 出错时返回默认值
         return "未知设备";
+    }
+}
+
+// 检查是否配置了API Key，如果没有则抛出错误
+async function checkAPIKeyValid(checkType) {
+    if (!checkType || checkType === 'chat') {
+        const chatService = await ConfigManager.getChatService();
+        if (!chatService.apiKey || !chatService.chatModel) {
+            throw new Error('未配置有效的对话模型');
+        }
+    }
+    if (!checkType || checkType === 'embedding') {
+        const embeddingService = await ConfigManager.getEmbeddingService();
+        if (!embeddingService.apiKey || !embeddingService.embedModel) {
+            throw new Error('未配置有效的向量模型');
+        }
+    }
+}
+
+/**
+ * 安全地检查API Key是否有效
+ * @param {string} checkType - 检查类型，可选值为 'chat' 或 'embedding'
+ * @returns {Promise<boolean>} 如果API Key有效返回 true，否则返回 false
+ */
+async function checkAPIKeyValidSafe(checkType) {
+    try {
+        await checkAPIKeyValid(checkType);
+        return true;
+    } catch (error) {
+        return false;
     }
 }

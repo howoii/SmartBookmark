@@ -850,7 +850,7 @@ mark {
 
 .dialog-content {
     background: var(--bg-primary);
-    padding: 24px;
+    padding: 20px;
     border-radius: 8px;
     width: 80%;
     max-width: 480px;
@@ -889,50 +889,158 @@ mark {
     opacity: 0.6;
 }
 
-/* 页面摘要样式 */
-.page-excerpt {
-    font-size: 13px;
-    line-height: 1.5;
-    color: var(--text-secondary);
-    background: var(--bg-secondary);
-    padding: 12px;
+/* 添加新的样式为文本框 */
+.excerpt-container {
+    margin: 10px 0;
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+textarea.page-excerpt {
+    width: 100%;
+    max-height: 150px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
-    margin: 12px 0;
-    border: 1px solid var(--bg-border-light);
-    
-    /* 限制最大高度为5行 */
-    max-height: calc(1.5em * 5 + 24px);  /* 行高 * 5行 + padding */
+    font-size: 0.9rem;
     overflow-y: auto;
+    resize: none;
+    transition: border-color 0.2s, box-shadow 0.2s, height 0.1s;
+    font-family: inherit;
+    box-sizing: border-box;
+    padding-bottom: 24px; /* 为字符计数器留出空间 */
+    padding-right: 32px; /* 为AI生成按钮留出空间 */
     
-    /* 美化滚动条 */
-    scrollbar-width: thin;
-    scrollbar-color: var(--bg-scrollbar-thumb) transparent;
+    /* 隐藏滚动条但保持滚动功能 */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
 }
 
-/* Webkit 滚动条样式 */
-.page-excerpt::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
+#tags-dialog.edit-mode textarea.page-excerpt {
+    padding-right: 12px;
 }
 
-.page-excerpt::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.page-excerpt::-webkit-scrollbar-thumb {
-    background-color: var(--bg-scrollbar-thumb);
-    border-radius: 2px;
-}
-
-.page-excerpt::-webkit-scrollbar-thumb:hover {
-    background-color: var(--bg-scrollbar-thumb-hover);
-}
-
-/* 当摘要为空时隐藏 */
-.page-excerpt:empty {
+#tags-dialog.edit-mode .generate-excerpt-btn {
     display: none;
-    margin: 0;
+}
+
+/* AI生成摘要按钮样式 */
+.generate-excerpt-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
     padding: 0;
+    background-color: transparent;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    color: var(--action-color);
+    opacity: 0.7;
+    transition: all 0.2s ease;
+}
+
+.generate-excerpt-btn:hover {
+    background-color: var(--action-light);
+    color: var(--action-hover);
+    opacity: 1;
+}
+
+.generate-excerpt-btn.loading:hover {
+    opacity: 0.8;
+    background-color: transparent;
+}
+
+.generate-excerpt-btn svg.icon-normal {
+    display: block;
+}
+
+.generate-excerpt-btn svg.icon-loading {
+    display: none;
+}
+
+.generate-excerpt-btn.loading svg.icon-normal {
+    display: none;
+}
+
+.generate-excerpt-btn.loading svg.icon-loading {
+    display: block;
+}
+
+.generate-excerpt-btn.loading::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    border-top-color: var(--action-color);
+    border-right-color: var(--action-color);
+    animation: spin-border 1.2s linear infinite;
+}
+
+.generate-excerpt-btn.loading svg {
+    transform: scale(0.8);
+    transition: all 0.2s ease;
+}
+
+@keyframes spin-border {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 字符计数器样式 */
+.char-counter {
+    position: absolute;
+    bottom: 4px;
+    right: 2px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-align: right;
+    padding: 4px 6px;
+    user-select: none;
+    border-radius: 8px 0 8px 0;
+    z-index: 1;
+    pointer-events: none; /* 避免干扰文本输入 */
+    transition: all 0.2s;
+    background-color: var(--bg-secondary);
+}
+
+.char-counter.near-limit {
+    color: var(--warning-text);
+    font-weight: 500;
+}
+
+.char-counter.at-limit {
+    color: var(--danger-color);
+    font-weight: 500;
+}
+
+/* Webkit浏览器隐藏滚动条 */
+textarea.page-excerpt::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+    width: 0;
+    height: 0;
+}
+
+textarea.page-excerpt:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+}
+
+textarea.page-excerpt::placeholder {
+    color: var(--text-tertiary);
+    opacity: 0.7;
 }
 
 .recommended-tags {
@@ -1361,11 +1469,11 @@ mark {
     color: var(--warning-text);
     text-decoration: none;
     font-size: 13px;
+    text-decoration: underline;
     transition: all 0.2s ease;
 }
 
 .api-key-link:hover {
-    background: var(--warning-bg);
     color: var(--warning-text-hover);
 }
 
@@ -3321,6 +3429,30 @@ input[type="checkbox"] {
     }
 }
 
+.sync-button svg {
+    display: none;
+}
+
+.sync-button .normal-icon {
+    display: block;
+}
+
+.sync-button.syncing .syncing-icon {
+    display: block;
+}
+
+.sync-button.syncing .normal-icon {
+    display: none;
+}
+
+.sync-button.error .error-icon {
+    display: block;
+}
+
+.sync-button.error .normal-icon {
+    display: none;
+}
+
 /* 同步中状态 */
 .sync-button.syncing svg {
     animation: rotate 1.0s linear infinite;
@@ -3492,7 +3624,7 @@ input[type="checkbox"] {
     position: fixed;
     z-index: 9999; /* 确保在所有元素之上 */
     width: auto;
-    max-width: 320px;
+    max-width: 480px;
     min-width: 240px;
     background: var(--bg-secondary);
     border: 1px solid var(--bg-border-light);
@@ -3543,6 +3675,31 @@ input[type="checkbox"] {
 .bookmark-tooltip-tags:empty {
     display: none;
     margin: 0px;
+}
+
+.bookmark-tooltip-excerpt {
+    background-color: var(--bg-fifth);
+    border-left: 2px solid var(--border-color);
+    border-radius: 4px;
+    margin: 8px 0;
+    padding: 4px 6px;
+}
+
+.bookmark-tooltip-excerpt.hide {
+    display: none;
+    margin: 0;
+    padding: 0;
+}
+
+.bookmark-tooltip-excerpt p {
+    font-size: 12px;
+    margin: 0;
+    padding: 0;
+    color: var(--text-secondary);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
 }
 
 .bookmark-tooltip-time {
@@ -3771,3 +3928,34 @@ input[type="checkbox"] {
     text-overflow: ellipsis;
 }
 
+.settings-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 2px;
+    width: 20px;
+    height: 20px;
+    color: var(--text-tertiary);
+    opacity: 0.75;
+    transition: all 0.15s;
+    vertical-align: middle;
+    border-radius: 50%;
+    padding: 2px;
+    background-color: transparent;
+}
+
+.settings-link:hover {
+    opacity: 1;
+    color: var(--action-color);
+    transform: scale(1.05);
+}
+
+.settings-link:active {
+    transform: scale(0.9);
+    transition: all 0.1s;
+}
+
+.settings-text {
+    display: flex;
+    align-items: center;
+}
