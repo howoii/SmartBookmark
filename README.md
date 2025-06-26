@@ -1,8 +1,10 @@
 # SmartBookmark
 Smart Bookmark 是一款基于 AI 的智能书签管理插件，专注于解决书签收藏和搜索的痛点。插件简洁高效，让书签管理变得更加智能和省心！
 
-### **Chrome 商店链接**  
-[🔗 Smart Bookmark - 点击体验](https://chromewebstore.google.com/detail/smart-bookmark/nlboajobccgidfcdoedphgfaklelifoa)  
+
+### **安装链接**  
+[🔗 Smart Bookmark - Chrome 应用商店](https://chromewebstore.google.com/detail/smart-bookmark/nlboajobccgidfcdoedphgfaklelifoa)  
+[🔗 Smart Bookmark - Microsoft Edge Addons](https://microsoftedge.microsoft.com/addons/detail/smart-bookmark/dohicooegjedllghbfapbmbhjopnkbad)
 
 ### **功能亮点**  
 - **AI 自动生成标签**：收藏网页时，智能生成相关标签，无需手动归类，彻底告别繁琐的文件夹！  
@@ -33,7 +35,7 @@ Smart Bookmark 是一款基于 AI 的智能书签管理插件，专注于解决�
 - [ ] 支持自定义提示词
 - [ ] 支持多级标签和AI自动分类
 - [ ] 增加多语言支持
-- [ ] 上架Edge浏览器商店
+- [x] 上架Edge浏览器商店
 
 ### FAQ
 #### 如何接入Ollama本地模型？
