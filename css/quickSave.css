@@ -298,6 +298,40 @@ body {
     outline: none;
 }
 
+/* 标签自动补全建议 */
+.tag-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    margin-top: 4px;
+    display: none;
+}
+
+.tag-suggestion-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-primary);
+    transition: background-color 0.2s;
+}
+
+.tag-suggestion-item:hover {
+    background-color: var(--bg-secondary);
+}
+
+.tag-suggestion-item strong {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
 /* 推荐标签区域 */
 .recommended-tags {
     display: flex;

@@ -219,14 +219,14 @@ class QuickSaveManager {
                         this.hideTagsLoading();
                         this.renderTags(cachedTags);
                     } else {
-                        const tags = await generateTags(this.pageContent, this.currentTab);
-                        logger.debug('生成标签:', tags);
+                        const hierarchicalTags = await generateHierarchicalTags(this.pageContent, this.currentTab);
+                        logger.debug('生成层级标签:', hierarchicalTags);
                         this.hideTagsLoading();
-                        if (tags && tags.length > 0) {
-                            this.renderTags(tags);
+                        if (hierarchicalTags && hierarchicalTags.length > 0) {
+                            this.renderTags(hierarchicalTags);
                             // 缓存生成的标签
-                            await LocalStorageMgr.setTags(this.currentTab.url, tags);
-                            logger.debug('缓存标签:', tags);
+                            await LocalStorageMgr.setTags(this.currentTab.url, hierarchicalTags);
+                            logger.debug('缓存标签:', hierarchicalTags);
                         } else {
                             this.renderTags([unclassifiedTag]);
                         }
@@ -292,11 +292,22 @@ class QuickSaveManager {
                 const tagElement = e.target.parentElement;
                 tagElement.remove();
             }  else if (e.target.classList.contains('tag-text')) {
-                // 点击标签本身，将标签内容设置到输入框中
+                // 点击扁平标签本身，将标签内容设置到输入框中
                 const tagText = e.target.textContent.trim();
                 if (newTagInput && tagText) {
                     newTagInput.value = tagText;
                     newTagInput.focus();
+                }
+            } else if (e.target.className && e.target.className.startsWith('tag-level-')) {
+                // 点击层级标签的某个层级，将完整标签路径设置到输入框中
+                const tagElement = e.target.closest('.tag');
+                if (tagElement && tagElement.classList.contains('hierarchical-tag')) {
+                    const levelSpans = tagElement.querySelectorAll('[class^="tag-level-"]');
+                    const fullPath = Array.from(levelSpans).map(span => span.textContent.trim()).join('/');
+                    if (newTagInput && fullPath) {
+                        newTagInput.value = fullPath;
+                        newTagInput.focus();
+                    }
                 }
             }
         });
@@ -304,8 +315,25 @@ class QuickSaveManager {
         // 新标签输入事件
         newTagInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                this.addNewTag(newTagInput.value.trim());
+                e.preventDefault();
+                const newTag = newTagInput.value.trim().replace(/>/g, '/'); // 将>转换为/
+                this.addNewTag(newTag);
             }
+        });
+
+        // 输入时显示自动补全建议
+        newTagInput.addEventListener('input', async (e) => {
+            const inputValue = e.target.value.trim();
+            if (inputValue.length > 0) {
+                await this.showTagAutoComplete(inputValue);
+            } else {
+                this.hideTagSuggestions();
+            }
+        });
+
+        // 失去焦点时隐藏建议（延迟以允许点击建议）
+        newTagInput.addEventListener('blur', () => {
+            setTimeout(() => this.hideTagSuggestions(), 200);
         });
 
         // 推荐标签点击事件
@@ -343,13 +371,36 @@ class QuickSaveManager {
     renderTags(tags) {
         const { tagsList } = this.elements;
         tagsList.innerHTML = '';
+
         tags.forEach(tag => {
             const tagElement = document.createElement('span');
-            tagElement.className = 'tag';
-            tagElement.innerHTML = `
-                <span class="tag-text">${tag}</span>
-                <button class="remove-tag-btn">×</button>
-            `;
+
+            // 检查是否为层级标签
+            if (tag.includes('/')) {
+                // 渲染层级标签
+                tagElement.className = 'tag hierarchical-tag';
+                const parts = tag.split('/');
+                let innerHTML = '';
+
+                parts.forEach((part, index) => {
+                    const levelClass = `tag-level-${index + 1}`;
+                    innerHTML += `<span class="${levelClass}">${part.trim()}</span>`;
+                    if (index < parts.length - 1) {
+                        innerHTML += '<span class="tag-separator">/</span>';
+                    }
+                });
+
+                innerHTML += '<button class="remove-tag-btn">×</button>';
+                tagElement.innerHTML = innerHTML;
+            } else {
+                // 渲染扁平标签
+                tagElement.className = 'tag';
+                tagElement.innerHTML = `
+                    <span class="tag-text">${tag}</span>
+                    <button class="remove-tag-btn">×</button>
+                `;
+            }
+
             tagsList.appendChild(tagElement);
         });
     }
@@ -368,8 +419,19 @@ class QuickSaveManager {
     }
 
     getCurrentTags() {
-        const tagElements = this.elements.tagsList.querySelectorAll('.tag-text');
-        return Array.from(tagElements).map(el => el.textContent.trim());
+        const tagElements = this.elements.tagsList.querySelectorAll('.tag');
+        return Array.from(tagElements).map(tagEl => {
+            // 检查是否为层级标签
+            if (tagEl.classList.contains('hierarchical-tag')) {
+                // 提取所有层级span的文本并用/连接
+                const levelSpans = tagEl.querySelectorAll('[class^="tag-level-"]');
+                return Array.from(levelSpans).map(span => span.textContent.trim()).join('/');
+            } else {
+                // 扁平标签
+                const tagText = tagEl.querySelector('.tag-text');
+                return tagText ? tagText.textContent.trim() : '';
+            }
+        }).filter(tag => tag); // 过滤空标签
     }
 
     addNewTag(tag) {
@@ -522,6 +584,96 @@ class QuickSaveManager {
             } catch (error) {
                 logger.error('删除书签失败:', error);
             }
+        }
+    }
+
+    /**
+     * 显示标签自动补全建议
+     * @param {string} inputValue - 输入的值
+     */
+    async showTagAutoComplete(inputValue) {
+        // 获取所有现有书签的标签
+        const bookmarks = await LocalStorageMgr.getBookmarksList();
+        const allTags = new Set();
+
+        for (const bookmark of bookmarks) {
+            const tags = bookmark.hierarchicalTags || bookmark.tags || [];
+            tags.forEach(tag => allTags.add(tag));
+        }
+
+        // 过滤匹配的标签
+        const suggestions = Array.from(allTags).filter(tag => {
+            const normalizedTag = tag.toLowerCase();
+            const normalizedInput = inputValue.toLowerCase().replace(/>/g, '/');
+
+            // 支持前缀匹配和包含匹配
+            return normalizedTag.includes(normalizedInput);
+        }).slice(0, 10); // 最多显示10个建议
+
+        if (suggestions.length > 0) {
+            this.renderTagSuggestions(suggestions, inputValue);
+        } else {
+            this.hideTagSuggestions();
+        }
+    }
+
+    /**
+     * 渲染标签建议列表
+     * @param {Array<string>} suggestions - 建议的标签列表
+     * @param {string} inputValue - 当前输入值
+     */
+    renderTagSuggestions(suggestions, inputValue) {
+        const { newTagInput } = this.elements;
+        if (!newTagInput) return;
+
+        // 移除旧的建议容器
+        let suggestionsContainer = document.querySelector('.tag-suggestions');
+        if (!suggestionsContainer) {
+            suggestionsContainer = document.createElement('div');
+            suggestionsContainer.className = 'tag-suggestions';
+            newTagInput.parentElement.appendChild(suggestionsContainer);
+        }
+
+        // 清空并填充新建议
+        suggestionsContainer.innerHTML = '';
+        suggestions.forEach(tag => {
+            const suggestionItem = document.createElement('div');
+            suggestionItem.className = 'tag-suggestion-item';
+
+            // 高亮匹配部分
+            const normalizedInput = inputValue.toLowerCase().replace(/>/g, '/');
+            const normalizedTag = tag.toLowerCase();
+            const matchIndex = normalizedTag.indexOf(normalizedInput);
+
+            if (matchIndex !== -1) {
+                const before = tag.substring(0, matchIndex);
+                const match = tag.substring(matchIndex, matchIndex + inputValue.length);
+                const after = tag.substring(matchIndex + inputValue.length);
+                suggestionItem.innerHTML = `${before}<strong>${match}</strong>${after}`;
+            } else {
+                suggestionItem.textContent = tag;
+            }
+
+            // 点击建议项添加标签
+            suggestionItem.addEventListener('click', () => {
+                this.addNewTag(tag);
+                newTagInput.value = '';
+                this.hideTagSuggestions();
+            });
+
+            suggestionsContainer.appendChild(suggestionItem);
+        });
+
+        suggestionsContainer.style.display = 'block';
+    }
+
+    /**
+     * 隐藏标签建议
+     */
+    hideTagSuggestions() {
+        const suggestionsContainer = document.querySelector('.tag-suggestions');
+        if (suggestionsContainer) {
+            suggestionsContainer.style.display = 'none';
         }
     }
 

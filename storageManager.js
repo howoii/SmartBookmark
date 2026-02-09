@@ -618,4 +618,39 @@ class LocalStorageMgr {
         this._commonCache[key] = states;
     }
     // 自定义分组折叠状态结束
+
+    // 层级视图展开状态管理
+    static async getHierarchyExpandedStates() {
+        const key = this.Namespace.CACHE + 'hierarchy_expanded_states';
+        if (this._commonCache[key]) {
+            return this._commonCache[key];
+        }
+        const states = await this.get(key);
+        this._commonCache[key] = states;
+        return states || [];
+    }
+
+    static async setHierarchyExpandedStates(states) {
+        const key = this.Namespace.CACHE + 'hierarchy_expanded_states';
+        await this.set(key, states);
+        this._commonCache[key] = states;
+    }
+
+    // 层级视图标签树宽度管理
+    static async getHierarchyTreeWidth() {
+        const key = this.Namespace.CACHE + 'hierarchy_tree_width';
+        if (this._commonCache[key]) {
+            return this._commonCache[key];
+        }
+        const width = await this.get(key);
+        this._commonCache[key] = width;
+        return width || null;
+    }
+
+    static async setHierarchyTreeWidth(width) {
+        const key = this.Namespace.CACHE + 'hierarchy_tree_width';
+        await this.set(key, width);
+        this._commonCache[key] = width;
+    }
+    // 层级视图展开状态管理结束
 }

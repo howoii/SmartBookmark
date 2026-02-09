@@ -1133,6 +1133,7 @@ textarea.page-excerpt::placeholder {
 }
 
 .tag-input-container {
+    position: relative;  /* 为建议列表提供定位参考 */
     display: flex;
     gap: 8px;
     margin-bottom: 15px;
@@ -2580,6 +2581,90 @@ input[type="checkbox"] {
 
 .filter-item.selected:hover .filter-count {
     background: var(--action-light-hover);
+}
+
+/* 树形筛选器样式 */
+.filter-tree {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-tree-node {
+    display: flex;
+    align-items: center;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    user-select: none;
+    font-size: 12px;
+}
+
+.filter-tree-node:hover {
+    background: var(--bg-tertiary);
+}
+
+.expand-btn {
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 10px;
+    margin-right: 4px;
+    transition: transform 0.2s;
+}
+
+.expand-btn:hover {
+    color: var(--text-primary);
+}
+
+.expand-placeholder {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    margin-right: 4px;
+}
+
+.filter-tree-node .filter-name {
+    flex: 1;
+    color: var(--text-primary);
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 3px;
+    transition: all 0.2s;
+}
+
+.filter-tree-node .filter-name:hover {
+    background: var(--bg-secondary);
+}
+
+.filter-tree-node .filter-name.selected {
+    background: var(--primary-color);
+    color: white;
+    font-weight: 500;
+}
+
+.filter-tree-node .filter-count {
+    margin-left: 8px;
+    padding: 2px 6px;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border-radius: 10px;
+    font-size: 11px;
+    min-width: 20px;
+    text-align: center;
+}
+
+.filter-tree-node .filter-name.selected + .filter-count {
+    background: var(--action-light);
+    color: var(--action-color);
+}
+
+.filter-tree-children {
+    display: flex;
+    flex-direction: column;
 }
 
 /* 添加媒体查询，在较窄的侧边栏下调整布局 */
@@ -4033,3 +4118,281 @@ input[type="checkbox"] {
     display: flex;
     align-items: center;
 }
+
+/* 标签自动补全建议 */
+.tag-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    margin-top: 4px;
+    display: none;
+}
+
+.tag-suggestion-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-primary);
+    transition: background-color 0.2s;
+}
+
+.tag-suggestion-item:hover {
+    background-color: var(--bg-secondary);
+}
+
+.tag-suggestion-item strong {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* ==================== 层级视图样式 ==================== */
+
+/* 分栏容器 */
+.hierarchy-split-container {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    padding: 0 !important;
+    margin: 0 !important;
+    list-style: none;
+}
+
+/* 左侧标签树容器 */
+.hierarchy-tag-tree {
+    width: 220px;
+    min-width: 220px;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-right: 1px solid var(--bg-border);
+    background: var(--bg-secondary);
+    padding: 0;
+    position: relative;
+    flex-shrink: 0;
+}
+
+/* 拖拽分隔条 */
+.hierarchy-resize-handle {
+    position: absolute;
+    top: 0;
+    right: -4px;
+    width: 8px;
+    height: 100%;
+    cursor: col-resize;
+    background: transparent;
+    z-index: 100;
+    transition: background-color 0.15s ease;
+}
+
+.hierarchy-resize-handle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 100%;
+    background: transparent;
+    transition: background-color 0.15s ease;
+}
+
+.hierarchy-resize-handle:hover::before {
+    background: var(--action-color);
+    opacity: 0.5;
+}
+
+.hierarchy-resize-handle.resizing::before {
+    background: var(--action-color);
+    opacity: 0.8;
+}
+
+/* 右侧书签列表容器 */
+.hierarchy-bookmark-list {
+    flex: 1;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 8px;
+}
+
+/* 标签树容器 */
+.hierarchy-tree-container {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 标签节点 */
+.hierarchy-tag-node {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.15s ease;
+    gap: 6px;
+    min-height: 36px;
+}
+
+.hierarchy-tag-node:hover {
+    background: var(--bg-third);
+}
+
+/* 全部书签节点 */
+.hierarchy-tag-node.all-bookmarks {
+    font-weight: 500;
+    border-bottom: 1px solid var(--bg-border);
+    background: var(--bg-third);
+}
+
+/* 展开/折叠按钮 */
+.hierarchy-tag-node .expand-btn {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+    transition: transform 0.15s ease;
+}
+
+.hierarchy-tag-node .expand-btn:hover {
+    color: var(--text-primary);
+}
+
+/* 展开占位符 */
+.hierarchy-tag-node .expand-placeholder {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+/* 标签名称 */
+.hierarchy-tag-node .tag-name {
+    flex: 1;
+    font-size: 13px;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: color 0.15s ease;
+}
+
+.hierarchy-tag-node .tag-name.selected {
+    color: var(--action-color);
+    font-weight: 500;
+}
+
+.hierarchy-tag-node.selected {
+    background: var(--bg-fourth);
+}
+
+/* 标签数量徽章 */
+.hierarchy-tag-node .tag-count {
+    font-size: 11px;
+    color: var(--text-secondary);
+    background: var(--bg-third);
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.hierarchy-tag-node:hover .tag-count {
+    background: var(--bg-fourth);
+}
+
+.hierarchy-tag-node .tag-name.selected ~ .tag-count {
+    background: rgba(26, 115, 232, 0.1);
+    color: var(--action-color);
+}
+
+/* 子标签容器 */
+.hierarchy-tag-children {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 空状态 */
+.hierarchy-bookmark-list .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-secondary);
+}
+
+.hierarchy-bookmark-list .empty-state svg {
+    opacity: 0.3;
+    margin-bottom: 16px;
+}
+
+.hierarchy-bookmark-list .empty-state p {
+    font-size: 14px;
+    margin: 0;
+}
+
+/* 书签列表样式 */
+.hierarchy-bookmark-list .bookmarks-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* 自定义滚动条 */
+.hierarchy-tag-tree::-webkit-scrollbar,
+.hierarchy-bookmark-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.hierarchy-tag-tree::-webkit-scrollbar-track,
+.hierarchy-bookmark-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.hierarchy-tag-tree::-webkit-scrollbar-thumb,
+.hierarchy-bookmark-list::-webkit-scrollbar-thumb {
+    background: var(--bg-border);
+    border-radius: 3px;
+}
+
+.hierarchy-tag-tree::-webkit-scrollbar-thumb:hover,
+.hierarchy-bookmark-list::-webkit-scrollbar-thumb:hover {
+    background: var(--bg-border-hover);
+}
+
+/* 响应式设计 */
+@media (max-width: 600px) {
+    .hierarchy-tag-tree {
+        width: 140px;
+        min-width: 140px;
+    }
+
+    .hierarchy-tag-node {
+        padding: 4px 6px;
+        font-size: 12px;
+    }
+
+    .hierarchy-tag-node .tag-name {
+        font-size: 12px;
+    }
+
+    .hierarchy-tag-node .tag-count {
+        font-size: 10px;
+        padding: 1px 4px;
+    }
+}
+
+/* ==================== 层级视图样式结束 ==================== */

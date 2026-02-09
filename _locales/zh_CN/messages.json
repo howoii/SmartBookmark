@@ -132,5 +132,13 @@
     "prompt_generate_tags_sys": {
         "message": "你是一个专业的网页内容分析专家，擅长提取文章的核心主题并生成准确的标签。",
         "description": "生成标签系统提示词"
+    },
+    "prompt_generate_hierarchical_tags_sys": {
+        "message": "你是一个专业的网页内容分析和分类专家，擅长构建层级化的标签体系。",
+        "description": "生成层级标签系统提示词"
+    },
+    "prompt_generate_hierarchical_tags_user": {
+        "message": "请根据以下网页内容生成2-5个层级化标签，用于分类和检索。\n\n网页信息：\n{{content}}\n\n标签要求：\n1. 层级结构：使用\"/\"分隔不同层级，最多3级（如：技术/前端/React）\n2. 层级原则：\n   - 第1级：领域分类（如：技术、生活、学习、工作、娱乐等）\n   - 第2级：子领域或类型（如：前端、后端、数据库等）\n   - 第3级：具体技术或主题（如：React、Vue、TypeScript等）\n3. 简洁性：每级标签2-8个字符，专有名词除外\n4. 语言：除专有名词外使用中文\n5. 输出格式：每个标签用竖线\"|\"分隔\n\n示例输出：\n技术/前端/React|技术/JavaScript|教程/Web开发|文档",
+        "description": "生成层级标签提示词"
     }
 } 

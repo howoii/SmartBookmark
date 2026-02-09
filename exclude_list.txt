@@ -9,3 +9,4 @@ build
 tmp_build
 exclude_list.txt
 config
+CLAUDE.md

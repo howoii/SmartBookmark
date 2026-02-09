@@ -390,6 +390,8 @@ async function getChatCompletion(systemPrompt, userPrompt, signal = null) {
 
 const SYSTEM_PROMPT_TAGS = i18n.M('prompt_generate_tags_sys');
 const USER_PROMPT_TAGS = i18n.M('prompt_generate_tags_user');
+const SYSTEM_PROMPT_HIERARCHICAL_TAGS = i18n.M('prompt_generate_hierarchical_tags_sys');
+const USER_PROMPT_HIERARCHICAL_TAGS = i18n.M('prompt_generate_hierarchical_tags_user');
 
 function makeChatPrompt(pageContent, tab, prompt) {
     const { content, excerpt, isReaderable, metadata } = pageContent;
@@ -439,6 +441,119 @@ async function generateTags(pageContent, tab) {
 
     tags = cleanTags(tags);
     return tags.length > 0 ? tags : [i18n.M('ui_tag_unclassified')];
+}
+
+// 用 ChatGPT API 生成层级标签
+async function generateHierarchicalTags(pageContent, tab) {
+    const prompt = makeChatPrompt(pageContent, tab, USER_PROMPT_HIERARCHICAL_TAGS);
+    logger.debug('生成层级标签的prompt:\n ', prompt);
+    const tagsText = await getChatCompletion(SYSTEM_PROMPT_HIERARCHICAL_TAGS, prompt) || '';
+
+    // 处理返回的标签
+    let tags = tagsText
+        .split('|')
+        .map(tag => tag.trim())
+        .filter(tag => {
+            if (!tag) return false;
+
+            // 验证层级标签格式
+            const parts = tag.split('/');
+
+            // 最多3级
+            if (parts.length > 3) {
+                logger.debug('标签层级过多，已过滤:', tag);
+                return false;
+            }
+
+            // 验证每级标签
+            for (const part of parts) {
+                const partTrimmed = part.trim();
+                if (!partTrimmed) return false;
+
+                const partLength = getStringVisualLength(partTrimmed);
+                // 每级标签长度2-20字符
+                if (partLength < 2 || partLength > 20) {
+                    logger.debug('标签层级长度不符合要求，已过滤:', { tag, part: partTrimmed, length: partLength });
+                    return false;
+                }
+
+                // 过滤特殊字符（允许斜杠）
+                if (!/^[^\\.,#!$%\\^&\\*;:{}=\\-_`~()]+$/.test(partTrimmed)) {
+                    logger.debug('标签包含特殊字符，已过滤:', partTrimmed);
+                    return false;
+                }
+            }
+
+            return true;
+        })
+        // 添加去重逻辑
+        .filter((tag, index, self) => self.indexOf(tag) === index)
+        // 限制最多5个标签
+        .slice(0, 5);
+
+    logger.debug('AI生成的层级标签:', tags);
+
+    // 如果没有生成有效标签，使用备选方案
+    if (tags.length === 0) {
+        tags = getFallbackHierarchicalTags(tab.title, pageContent?.metadata);
+    }
+
+    tags = cleanTags(tags);
+    return tags.length > 0 ? tags : [i18n.M('ui_tag_unclassified')];
+}
+
+/**
+ * 从层级标签中提取扁平标签（用于向后兼容）
+ * @param {Array<string>} hierarchicalTags - 层级标签数组
+ * @returns {Array<string>} 扁平标签数组
+ */
+function extractFlatTags(hierarchicalTags) {
+    const flatTags = new Set();
+
+    for (const tag of hierarchicalTags) {
+        const parts = tag.split('/');
+        // 添加所有层级的标签
+        for (const part of parts) {
+            const trimmed = part.trim();
+            if (trimmed) {
+                flatTags.add(trimmed);
+            }
+        }
+    }
+
+    return Array.from(flatTags);
+}
+
+/**
+ * 备选层级标签生成方案
+ * @param {string} title - 页面标题
+ * @param {Object} metadata - 页面元数据
+ * @returns {Array<string>} 层级标签数组
+ */
+function getFallbackHierarchicalTags(title, metadata) {
+    const flatTags = getFallbackTags(title, metadata);
+
+    // 将扁平标签转换为简单的层级标签
+    // 如果有多个标签，尝试构建简单的层级关系
+    if (flatTags.length >= 2) {
+        // 第一个标签作为一级分类，其他作为二级
+        const hierarchicalTags = [];
+        const firstTag = flatTags[0];
+
+        for (let i = 1; i < flatTags.length && i < 4; i++) {
+            hierarchicalTags.push(`${firstTag}/${flatTags[i]}`);
+        }
+
+        // 如果只生成了一个层级标签，添加第一个标签作为独立标签
+        if (hierarchicalTags.length === 0) {
+            hierarchicalTags.push(firstTag);
+        }
+
+        return hierarchicalTags;
+    }
+
+    // 如果标签太少，直接返回扁平标签
+    return flatTags;
 }
 
 // 用 ChatGPT API 生成摘要

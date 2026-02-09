@@ -749,7 +749,7 @@ class BookmarkManager {
             // 回车键提交新标签
             newTagInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
-                    const newTag = newTagInput.value.trim();
+                    const newTag = newTagInput.value.trim().replace(/>/g, '/'); // 将>转换为/
                     if (newTag) {
                         const currentTags = this.getCurrentTags();
                         if (!currentTags.includes(newTag)) {
@@ -761,6 +761,21 @@ class BookmarkManager {
                     }
                 }
             });
+
+            // 输入时显示自动补全建议
+            newTagInput.addEventListener('input', async (e) => {
+                const inputValue = e.target.value.trim();
+                if (inputValue.length > 0) {
+                    await this.showTagAutoComplete(inputValue);
+                } else {
+                    this.hideTagSuggestions();
+                }
+            });
+
+            // 失去焦点时隐藏建议（延迟以允许点击建议）
+            newTagInput.addEventListener('blur', () => {
+                setTimeout(() => this.hideTagSuggestions(), 200);
+            });
         }
 
         if (tagsList) {
@@ -770,11 +785,22 @@ class BookmarkManager {
                     const tagElement = e.target.parentElement;
                     tagElement.remove();
                 } else if (e.target.classList.contains('tag-text')) {
-                    // 点击标签本身，将标签内容设置到输入框中
+                    // 点击扁平标签本身，将标签内容设置到输入框中
                     const tagText = e.target.textContent.trim();
                     if (newTagInput && tagText) {
                         newTagInput.value = tagText;
                         newTagInput.focus();
+                    }
+                } else if (e.target.className && e.target.className.startsWith('tag-level-')) {
+                    // 点击层级标签的某个层级，将完整标签路径设置到输入框中
+                    const tagElement = e.target.closest('.tag');
+                    if (tagElement && tagElement.classList.contains('hierarchical-tag')) {
+                        const levelSpans = tagElement.querySelectorAll('[class^="tag-level-"]');
+                        const fullPath = Array.from(levelSpans).map(span => span.textContent.trim()).join('/');
+                        if (newTagInput && fullPath) {
+                            newTagInput.value = fullPath;
+                            newTagInput.focus();
+                        }
                     }
                 }
             });
@@ -1087,9 +1113,20 @@ class BookmarkManager {
     getCurrentTags() {
         const { tagsList } = this.elements.required;
         if (!tagsList) return [];
-        
-        const tagElements = tagsList.querySelectorAll('.tag-text');
-        return Array.from(tagElements).map(el => el.textContent.trim());
+
+        const tagElements = tagsList.querySelectorAll('.tag');
+        return Array.from(tagElements).map(tagEl => {
+            // 检查是否为层级标签
+            if (tagEl.classList.contains('hierarchical-tag')) {
+                // 提取所有层级span的文本并用/连接
+                const levelSpans = tagEl.querySelectorAll('[class^="tag-level-"]');
+                return Array.from(levelSpans).map(span => span.textContent.trim()).join('/');
+            } else {
+                // 扁平标签
+                const tagText = tagEl.querySelector('.tag-text');
+                return tagText ? tagText.textContent.trim() : '';
+            }
+        }).filter(tag => tag); // 过滤空标签
     }
 
     // 验证URL格式
@@ -1194,7 +1231,7 @@ class BookmarkManager {
         } else {
             // 没有缓存或URL不匹配，重新生成标签
             StatusManager.startOperation('正在生成标签');
-            this.generatedTags = await generateTags(this.pageContent, tab);
+            this.generatedTags = await generateHierarchicalTags(this.pageContent, tab);
             StatusManager.endOperation('标签生成完成');
         }   
 
@@ -1334,16 +1371,131 @@ class BookmarkManager {
     renderTags(tags) {
         const tagsList = document.getElementById('tags-list');
         tagsList.innerHTML = '';
-        
+
         tags.forEach(tag => {
             const tagElement = document.createElement('span');
-            tagElement.className = 'tag';
-            tagElement.innerHTML = `
-                <span class="tag-text">${tag}</span>
-                <button class="remove-tag-btn">×</button>
-            `;
+
+            // 检查是否为层级标签
+            if (tag.includes('/')) {
+                // 渲染层级标签
+                tagElement.className = 'tag hierarchical-tag';
+                const parts = tag.split('/');
+                let innerHTML = '';
+
+                parts.forEach((part, index) => {
+                    const levelClass = `tag-level-${index + 1}`;
+                    innerHTML += `<span class="${levelClass}">${part.trim()}</span>`;
+                    if (index < parts.length - 1) {
+                        innerHTML += '<span class="tag-separator">/</span>';
+                    }
+                });
+
+                innerHTML += '<button class="remove-tag-btn">×</button>';
+                tagElement.innerHTML = innerHTML;
+            } else {
+                // 渲染扁平标签
+                tagElement.className = 'tag';
+                tagElement.innerHTML = `
+                    <span class="tag-text">${tag}</span>
+                    <button class="remove-tag-btn">×</button>
+                `;
+            }
+
             tagsList.appendChild(tagElement);
         });
+    }
+
+    /**
+     * 显示标签自动补全建议
+     * @param {string} inputValue - 输入的值
+     */
+    async showTagAutoComplete(inputValue) {
+        // 获取所有现有书签的标签
+        const bookmarks = await LocalStorageMgr.getBookmarksList();
+        const allTags = new Set();
+
+        for (const bookmark of bookmarks) {
+            const tags = bookmark.hierarchicalTags || bookmark.tags || [];
+            tags.forEach(tag => allTags.add(tag));
+        }
+
+        // 过滤匹配的标签（支持前缀和包含匹配）
+        const suggestions = Array.from(allTags).filter(tag => {
+            const normalizedTag = tag.toLowerCase();
+            const normalizedInput = inputValue.toLowerCase().replace(/>/g, '/');
+            return normalizedTag.includes(normalizedInput);
+        }).slice(0, 10); // 最多显示10个建议
+
+        if (suggestions.length > 0) {
+            this.renderTagSuggestions(suggestions, inputValue);
+        } else {
+            this.hideTagSuggestions();
+        }
+    }
+
+    /**
+     * 渲染标签建议列表
+     * @param {Array<string>} suggestions - 建议的标签列表
+     * @param {string} inputValue - 当前输入值
+     */
+    renderTagSuggestions(suggestions, inputValue) {
+        const newTagInput = this.elements.optional.newTagInput;
+        if (!newTagInput) return;
+
+        // 创建或获取建议容器
+        let suggestionsContainer = document.querySelector('.tag-suggestions');
+        if (!suggestionsContainer) {
+            suggestionsContainer = document.createElement('div');
+            suggestionsContainer.className = 'tag-suggestions';
+            newTagInput.parentElement.appendChild(suggestionsContainer);
+        }
+
+        // 清空并填充新建议
+        suggestionsContainer.innerHTML = '';
+        suggestions.forEach(tag => {
+            const suggestionItem = document.createElement('div');
+            suggestionItem.className = 'tag-suggestion-item';
+
+            // 高亮匹配部分
+            const normalizedInput = inputValue.toLowerCase().replace(/>/g, '/');
+            const normalizedTag = tag.toLowerCase();
+            const matchIndex = normalizedTag.indexOf(normalizedInput);
+
+            if (matchIndex !== -1) {
+                const before = tag.substring(0, matchIndex);
+                const match = tag.substring(matchIndex, matchIndex + inputValue.length);
+                const after = tag.substring(matchIndex + inputValue.length);
+                suggestionItem.innerHTML = `${before}<strong>${match}</strong>${after}`;
+            } else {
+                suggestionItem.textContent = tag;
+            }
+
+            // 点击建议项添加标签
+            suggestionItem.addEventListener('click', () => {
+                const currentTags = this.getCurrentTags();
+                if (!currentTags.includes(tag)) {
+                    this.renderTags([...currentTags, tag]);
+                    newTagInput.value = '';
+                } else {
+                    updateStatus('标签已存在', true);
+                }
+                this.hideTagSuggestions();
+            });
+
+            suggestionsContainer.appendChild(suggestionItem);
+        });
+
+        suggestionsContainer.style.display = 'block';
+    }
+
+    /**
+     * 隐藏标签建议
+     */
+    hideTagSuggestions() {
+        const suggestionsContainer = document.querySelector('.tag-suggestions');
+        if (suggestionsContainer) {
+            suggestionsContainer.style.display = 'none';
+        }
     }
 
     getEditedExcerpt() {
@@ -1997,7 +2149,8 @@ async function renderBookmarksList() {
         const viewMode = settings.display.viewMode;
         const sortBy = settings.sort.bookmarks;
 
-        const data = viewMode === 'group'
+        // 层级视图和分组视图获取所有书签，列表视图使用筛选器
+        const data = (viewMode === 'group' || viewMode === 'hierarchy')
             ? Object.values(await getDisplayedBookmarks())
             : await filterManager.getFilteredBookmarks();
 
@@ -2082,6 +2235,8 @@ async function renderBookmarksList() {
         // 根据视图模式选择渲染器
         if (viewMode === 'group') {
             currentRenderer = new GroupedBookmarkRenderer(bookmarksList, bookmarks);
+        } else if (viewMode === 'hierarchy') {
+            currentRenderer = new HierarchicalBookmarkRenderer(bookmarksList, bookmarks);
         } else {
             currentRenderer = new BookmarkRenderer(bookmarksList, bookmarks);
         }
@@ -2191,8 +2346,10 @@ class BookmarkRenderer {
             this.loadingIndicator.parentNode.removeChild(this.loadingIndicator);
             this.loadingIndicator = null;
         }
-        // 清空容器
+        // 重置容器的 className 为原始值
         if (this.container) {
+            this.container.className = 'bookmarks-list';
+            // 清空容器
             this.container.innerHTML = '';
         }
         // 重置状态
@@ -2631,9 +2788,522 @@ class GroupedBookmarkRenderer extends BookmarkRenderer {
     }
 
     cleanup() {
+        // 重置容器的 className 为原始值
+        this.container.className = 'bookmarks-list';
+        // 清空内容
         this.container.innerHTML = '';
     }
 }
+
+/**
+ * 层级标签展示渲染器
+ * 以树形结构展示标签，点击标签筛选书签
+ */
+class HierarchicalBookmarkRenderer extends BookmarkRenderer {
+    constructor(container, bookmarks, config = {}) {
+        super(container, bookmarks);
+        this.rendererType = 'hierarchy';
+
+        // 配置项（预留扩展性）
+        this.config = {
+            layout: config.layout || 'split-horizontal',
+            defaultView: config.defaultView || 'all',
+            showFilter: config.showFilter || false,
+            treeWidth: config.treeWidth || 220,
+            defaultExpanded: config.defaultExpanded || 'first-level',
+            sortBy: config.sortBy || 'count',
+            showCount: config.showCount !== false
+        };
+
+        // 状态管理
+        this.tagHierarchy = null;
+        this.selectedTag = null;
+        this.expandedTags = new Set();
+        this.filteredBookmarks = [];
+        this.availableTags = new Set();
+        this.tagCounts = new Map();
+        this.displayCount = 0;
+        this.isLoading = false;
+
+        // 为了兼容性，添加 bookmarks 别名
+        this.bookmarks = this.allBookmarks;
+    }
+
+    /**
+     * 初始化渲染器
+     */
+    async initialize(state = {}) {
+        try {
+            // 加载展开状态
+            const savedStates = await LocalStorageMgr.getHierarchyExpandedStates() || [];
+            this.expandedTags = new Set(savedStates);
+
+            // 加载保存的宽度
+            const savedWidth = await LocalStorageMgr.getHierarchyTreeWidth();
+            if (savedWidth) {
+                this.config.treeWidth = savedWidth;
+            }
+
+            // 创建布局
+            this.createLayout();
+
+            // 设置拖拽功能
+            this.setupResizeHandle();
+
+            // 构建标签树
+            this.buildTagHierarchy();
+
+            // 渲染标签树
+            this.renderTagTree();
+
+            // 默认显示全部书签
+            this.selectTag(null);
+
+        } catch (error) {
+            logger.error('初始化层级视图失败:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * 创建左右分栏布局
+     */
+    createLayout() {
+        this.container.innerHTML = '';
+        this.container.className = 'hierarchy-split-container';
+
+        // 左侧标签树容器
+        this.tagTreeContainer = document.createElement('div');
+        this.tagTreeContainer.className = 'hierarchy-tag-tree';
+        this.tagTreeContainer.style.width = `${this.config.treeWidth}px`;
+        this.tagTreeContainer.style.minWidth = `${this.config.treeWidth}px`;
+
+        // 添加拖拽分隔条
+        this.resizeHandle = document.createElement('div');
+        this.resizeHandle.className = 'hierarchy-resize-handle';
+        this.tagTreeContainer.appendChild(this.resizeHandle);
+
+        // 右侧书签列表容器
+        this.bookmarkListContainer = document.createElement('div');
+        this.bookmarkListContainer.className = 'hierarchy-bookmark-list';
+
+        this.container.appendChild(this.tagTreeContainer);
+        this.container.appendChild(this.bookmarkListContainer);
+    }
+
+    /**
+     * 设置拖拽调整宽度功能
+     */
+    setupResizeHandle() {
+        let isResizing = false;
+        let startX = 0;
+        let startWidth = 0;
+
+        const onMouseDown = (e) => {
+            isResizing = true;
+            startX = e.clientX;
+            startWidth = this.tagTreeContainer.offsetWidth;
+            this.resizeHandle.classList.add('resizing');
+
+            // 防止文本选择
+            e.preventDefault();
+            document.body.style.userSelect = 'none';
+            document.body.style.cursor = 'col-resize';
+        };
+
+        const onMouseMove = (e) => {
+            if (!isResizing) return;
+
+            const deltaX = e.clientX - startX;
+            const newWidth = startWidth + deltaX;
+
+            // 限制最小和最大宽度
+            const minWidth = 140;
+            const maxWidth = 400;
+            const constrainedWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
+
+            this.tagTreeContainer.style.width = `${constrainedWidth}px`;
+            this.tagTreeContainer.style.minWidth = `${constrainedWidth}px`;
+        };
+
+        const onMouseUp = async () => {
+            if (!isResizing) return;
+
+            isResizing = false;
+            this.resizeHandle.classList.remove('resizing');
+            document.body.style.userSelect = '';
+            document.body.style.cursor = '';
+
+            // 保存新的宽度
+            const newWidth = this.tagTreeContainer.offsetWidth;
+            this.config.treeWidth = newWidth;
+            await LocalStorageMgr.setHierarchyTreeWidth(newWidth);
+        };
+
+        this.resizeHandle.addEventListener('mousedown', onMouseDown);
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+
+        // 保存事件处理器引用，用于清理
+        this.resizeHandlers = {
+            mouseMove: onMouseMove,
+            mouseUp: onMouseUp
+        };
+    }
+
+    /**
+     * 构建标签层级结构
+     */
+    buildTagHierarchy() {
+        // 收集所有标签和计数
+        this.availableTags.clear();
+        this.tagCounts.clear();
+
+        // 防御性检查
+        if (!this.bookmarks || !Array.isArray(this.bookmarks)) {
+            logger.warn('书签数据无效，使用空数组');
+            this.bookmarks = [];
+            this.tagHierarchy = {};
+            return;
+        }
+
+        this.bookmarks.forEach(bookmark => {
+            const tags = bookmark.tags || [];
+            tags.forEach(tag => {
+                if (!tag) return;
+
+                this.availableTags.add(tag);
+                this.tagCounts.set(tag, (this.tagCounts.get(tag) || 0) + 1);
+
+                // 为层级标签的每一级也计数
+                if (tag.includes('/')) {
+                    const parts = tag.split('/');
+                    let currentPath = '';
+                    parts.forEach((part, index) => {
+                        currentPath += (index > 0 ? '/' : '') + part;
+                        if (currentPath !== tag) {
+                            this.tagCounts.set(currentPath, (this.tagCounts.get(currentPath) || 0) + 1);
+                        }
+                    });
+                }
+            });
+        });
+
+        // 构建层级结构
+        const hierarchy = {};
+
+        Array.from(this.availableTags).forEach(tag => {
+            if (!tag) return;
+
+            const parts = tag.split('/');
+            let currentLevel = hierarchy;
+
+            parts.forEach((part, index) => {
+                const trimmedPart = part.trim();
+                if (!trimmedPart) return;
+
+                const fullPath = parts.slice(0, index + 1).join('/');
+
+                if (!currentLevel[trimmedPart]) {
+                    currentLevel[trimmedPart] = {
+                        fullPath: fullPath,
+                        count: this.tagCounts.get(fullPath) || 0,
+                        children: {},
+                        expanded: this.expandedTags.has(fullPath)
+                    };
+                }
+
+                currentLevel = currentLevel[trimmedPart].children;
+            });
+        });
+
+        this.tagHierarchy = hierarchy;
+    }
+
+    /**
+     * 渲染标签树
+     */
+    renderTagTree() {
+        this.tagTreeContainer.innerHTML = '';
+
+        // 重新创建拖拽分隔条
+        this.resizeHandle = document.createElement('div');
+        this.resizeHandle.className = 'hierarchy-resize-handle';
+        this.tagTreeContainer.appendChild(this.resizeHandle);
+
+        // 重新绑定拖拽事件
+        this.setupResizeHandle();
+
+        // 添加"全部书签"选项
+        const allBookmarksNode = document.createElement('div');
+        allBookmarksNode.className = 'hierarchy-tag-node all-bookmarks';
+        if (!this.selectedTag) {
+            allBookmarksNode.classList.add('selected');
+        }
+        allBookmarksNode.innerHTML = `
+            <span class="expand-placeholder"></span>
+            <span class="tag-name">全部书签</span>
+            <span class="tag-count">${this.bookmarks.length}</span>
+        `;
+        allBookmarksNode.addEventListener('click', () => this.selectTag(null));
+        this.tagTreeContainer.appendChild(allBookmarksNode);
+
+        // 渲染标签树
+        const treeContainer = document.createElement('div');
+        treeContainer.className = 'hierarchy-tree-container';
+
+        Object.entries(this.tagHierarchy)
+            .sort(([labelA, nodeA], [labelB, nodeB]) => {
+                if (this.config.sortBy === 'count') {
+                    const countDiff = nodeB.count - nodeA.count;
+                    if (countDiff === 0) {
+                        return labelA.localeCompare(labelB, 'zh-CN');
+                    }
+                    return countDiff;
+                } else {
+                    return labelA.localeCompare(labelB, 'zh-CN');
+                }
+            })
+            .forEach(([label, node]) => {
+                this.renderTagNode(node, label, treeContainer, 0);
+            });
+
+        this.tagTreeContainer.appendChild(treeContainer);
+    }
+
+    /**
+     * 递归渲染标签节点
+     */
+    renderTagNode(node, label, container, level = 0) {
+        const nodeElement = document.createElement('div');
+        nodeElement.className = 'hierarchy-tag-node';
+        nodeElement.style.paddingLeft = `${level * 16 + 8}px`;
+
+        const hasChildren = Object.keys(node.children).length > 0;
+        const isSelected = this.selectedTag === node.fullPath;
+
+        // 创建节点内容
+        const expandBtn = hasChildren ?
+            `<span class="expand-btn">${node.expanded ? '▼' : '▶'}</span>` :
+            '<span class="expand-placeholder"></span>';
+
+        nodeElement.innerHTML = `
+            ${expandBtn}
+            <span class="tag-name ${isSelected ? 'selected' : ''}">${label}</span>
+            ${this.config.showCount ? `<span class="tag-count">${node.count}</span>` : ''}
+        `;
+
+        // 展开/折叠按钮点击事件
+        const expandBtnElement = nodeElement.querySelector('.expand-btn');
+        if (expandBtnElement) {
+            expandBtnElement.addEventListener('click', (e) => {
+                e.stopPropagation();
+                node.expanded = !node.expanded;
+
+                // 更新展开状态
+                if (node.expanded) {
+                    this.expandedTags.add(node.fullPath);
+                } else {
+                    this.expandedTags.delete(node.fullPath);
+                }
+
+                // 保存状态
+                this.saveExpandedStates();
+
+                // 重新渲染标签树
+                this.renderTagTree();
+            });
+        }
+
+        // 标签名称点击事件
+        const tagNameElement = nodeElement.querySelector('.tag-name');
+        tagNameElement.addEventListener('click', () => {
+            this.selectTag(node.fullPath);
+        });
+
+        container.appendChild(nodeElement);
+
+        // 如果展开且有子节点，渲染子节点
+        if (hasChildren && node.expanded) {
+            const childrenContainer = document.createElement('div');
+            childrenContainer.className = 'hierarchy-tag-children';
+
+            Object.entries(node.children)
+                .sort(([labelA, nodeA], [labelB, nodeB]) => {
+                    if (this.config.sortBy === 'count') {
+                        const countDiff = nodeB.count - nodeA.count;
+                        if (countDiff === 0) {
+                            return labelA.localeCompare(labelB, 'zh-CN');
+                        }
+                        return countDiff;
+                    } else {
+                        return labelA.localeCompare(labelB, 'zh-CN');
+                    }
+                })
+                .forEach(([childLabel, childNode]) => {
+                    this.renderTagNode(childNode, childLabel, childrenContainer, level + 1);
+                });
+
+            container.appendChild(childrenContainer);
+        }
+    }
+
+    /**
+     * 选择标签并筛选书签
+     */
+    selectTag(tagPath) {
+        this.selectedTag = tagPath;
+
+        // 重新渲染标签树以更新选中状态
+        this.renderTagTree();
+
+        // 筛选书签
+        this.filterBookmarksByTag(tagPath);
+
+        // 重置显示计数
+        this.displayCount = 0;
+
+        // 渲染书签列表
+        this.renderBookmarkList();
+    }
+
+    /**
+     * 根据标签筛选书签（支持前缀匹配）
+     */
+    filterBookmarksByTag(tagPath) {
+        if (!tagPath) {
+            // 显示全部书签
+            this.filteredBookmarks = [...this.bookmarks];
+        } else {
+            // 筛选包含该标签或其子标签的书签
+            this.filteredBookmarks = this.bookmarks.filter(bookmark => {
+                const tags = bookmark.tags || [];
+                return tags.some(tag =>
+                    tag === tagPath || tag.startsWith(tagPath + '/')
+                );
+            });
+        }
+    }
+
+    /**
+     * 渲染书签列表
+     */
+    async renderBookmarkList() {
+        this.bookmarkListContainer.innerHTML = '';
+
+        // 创建书签列表容器
+        const listElement = document.createElement('ul');
+        listElement.className = 'bookmarks-list';
+
+        // 显示前 50 条书签
+        const itemsToShow = Math.min(this.displayCount + 50, this.filteredBookmarks.length);
+
+        for (let i = this.displayCount; i < itemsToShow; i++) {
+            const bookmark = this.filteredBookmarks[i];
+            const bookmarkElement = await this.createBookmarkElement(bookmark);
+            listElement.appendChild(bookmarkElement);
+        }
+
+        this.displayCount = itemsToShow;
+        this.bookmarkListContainer.appendChild(listElement);
+
+        // 设置无限滚动
+        this.setupInfiniteScroll();
+
+        // 如果没有书签，显示空状态
+        if (this.filteredBookmarks.length === 0) {
+            const emptyState = document.createElement('div');
+            emptyState.className = 'empty-state';
+            emptyState.innerHTML = `
+                <div class="empty-message">
+                    <svg viewBox="0 0 24 24" width="48" height="48">
+                        <path fill="currentColor" d="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M7,6H17V19H7V6M9,8V17H11V8H9M13,8V17H15V8H13Z" />
+                    </svg>
+                    <p>该标签下暂无书签</p>
+                </div>
+            `;
+            this.bookmarkListContainer.appendChild(emptyState);
+        }
+    }
+
+    /**
+     * 设置无限滚动
+     */
+    setupInfiniteScroll() {
+        const listElement = this.bookmarkListContainer.querySelector('.bookmarks-list');
+        if (!listElement) return;
+
+        // 移除旧的滚动监听器
+        if (this.scrollHandler) {
+            this.bookmarkListContainer.removeEventListener('scroll', this.scrollHandler);
+        }
+
+        // 创建新的滚动监听器
+        this.scrollHandler = async () => {
+            const scrollTop = this.bookmarkListContainer.scrollTop;
+            const scrollHeight = this.bookmarkListContainer.scrollHeight;
+            const clientHeight = this.bookmarkListContainer.clientHeight;
+
+            // 当滚动到底部附近时加载更多
+            if (scrollTop + clientHeight >= scrollHeight - 100) {
+                if (this.displayCount < this.filteredBookmarks.length && !this.isLoading) {
+                    this.isLoading = true;
+
+                    const itemsToShow = Math.min(this.displayCount + 25, this.filteredBookmarks.length);
+
+                    for (let i = this.displayCount; i < itemsToShow; i++) {
+                        const bookmark = this.filteredBookmarks[i];
+                        const bookmarkElement = await this.createBookmarkElement(bookmark);
+                        listElement.appendChild(bookmarkElement);
+                    }
+
+                    this.displayCount = itemsToShow;
+                    this.isLoading = false;
+                }
+            }
+        };
+
+        this.bookmarkListContainer.addEventListener('scroll', this.scrollHandler);
+    }
+
+    /**
+     * 保存展开状态
+     */
+    async saveExpandedStates() {
+        try {
+            await LocalStorageMgr.setHierarchyExpandedStates(Array.from(this.expandedTags));
+        } catch (error) {
+            logger.error('保存展开状态失败:', error);
+        }
+    }
+
+    /**
+     * 清理资源
+     */
+    cleanup() {
+        // 移除滚动监听器
+        if (this.scrollHandler) {
+            this.bookmarkListContainer.removeEventListener('scroll', this.scrollHandler);
+        }
+
+        // 移除拖拽事件监听器
+        if (this.resizeHandlers) {
+            document.removeEventListener('mousemove', this.resizeHandlers.mouseMove);
+            document.removeEventListener('mouseup', this.resizeHandlers.mouseUp);
+        }
+
+        // 重置样式
+        document.body.style.userSelect = '';
+        document.body.style.cursor = '';
+
+        // 重置容器的 className 为原始值
+        this.container.className = 'bookmarks-list';
+
+        // 清空内容
+        this.container.innerHTML = '';
+    }
+}
+
 
 class SettingsDialog {
     constructor() {

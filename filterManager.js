@@ -86,7 +86,9 @@ class TagFilter extends BookmarkFilter {
     updateAvailableTags(bookmarks) {
         this.availableTags.clear();
         bookmarks.forEach(bookmark => {
-            bookmark.tags.forEach(tag => this.availableTags.add(tag));
+            // 优先使用层级标签，如果没有则使用扁平标签
+            const tags = bookmark.hierarchicalTags || bookmark.tags || [];
+            tags.forEach(tag => this.availableTags.add(tag));
         });
         logger.debug('updateAvailableTags 完成，数量:', this.availableTags.size);
     }
@@ -94,60 +96,162 @@ class TagFilter extends BookmarkFilter {
     async updateFilterCounts(bookmarks) {
         this.filterCounts.clear();
         bookmarks.forEach(bookmark => {
-            bookmark.tags.forEach(tag => {
+            const tags = bookmark.hierarchicalTags || bookmark.tags || [];
+            tags.forEach(tag => {
                 this.filterCounts.set(tag, (this.filterCounts.get(tag) || 0) + 1);
+
+                // 为层级标签的每一级也计数
+                if (tag.includes('/')) {
+                    const parts = tag.split('/');
+                    let currentPath = '';
+                    parts.forEach((part, index) => {
+                        currentPath += (index > 0 ? '/' : '') + part;
+                        if (currentPath !== tag) {
+                            this.filterCounts.set(currentPath, (this.filterCounts.get(currentPath) || 0) + 1);
+                        }
+                    });
+                }
             });
         });
+    }
+
+    /**
+     * 构建标签层级结构
+     * @returns {Object} 层级结构对象
+     */
+    buildTagHierarchy() {
+        const hierarchy = {};
+
+        Array.from(this.availableTags).forEach(tag => {
+            if (!tag) return;
+
+            const parts = tag.split('/');
+            let currentLevel = hierarchy;
+
+            parts.forEach((part, index) => {
+                const trimmedPart = part.trim();
+                if (!trimmedPart) return;
+
+                const fullPath = parts.slice(0, index + 1).join('/');
+
+                if (!currentLevel[trimmedPart]) {
+                    currentLevel[trimmedPart] = {
+                        fullPath: fullPath,
+                        count: this.filterCounts.get(fullPath) || 0,
+                        children: {},
+                        expanded: false
+                    };
+                }
+
+                currentLevel = currentLevel[trimmedPart].children;
+            });
+        });
+
+        return hierarchy;
+    }
+
+    /**
+     * 递归渲染标签树节点
+     * @param {Object} node - 节点对象
+     * @param {string} label - 节点标签
+     * @param {HTMLElement} container - 容器元素
+     * @param {number} level - 层级深度
+     */
+    renderTagNode(node, label, container, level = 0) {
+        const nodeElement = document.createElement('div');
+        nodeElement.className = 'filter-tree-node';
+        nodeElement.style.paddingLeft = `${level * 16}px`;
+
+        const hasChildren = Object.keys(node.children).length > 0;
+        const isSelected = this.tempFilters.has(node.fullPath);
+
+        nodeElement.innerHTML = `
+            ${hasChildren ? `<span class="expand-btn">${node.expanded ? '▼' : '▶'}</span>` : '<span class="expand-placeholder"></span>'}
+            <span class="filter-name ${isSelected ? 'selected' : ''}">${label}</span>
+            <span class="filter-count">${node.count}</span>
+        `;
+
+        // 展开/折叠按钮点击事件
+        const expandBtn = nodeElement.querySelector('.expand-btn');
+        if (expandBtn) {
+            expandBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                node.expanded = !node.expanded;
+
+                // 更新按钮图标
+                expandBtn.textContent = node.expanded ? '▼' : '▶';
+
+                // 查找并显示/隐藏子节点容器
+                const childrenContainer = nodeElement.nextElementSibling;
+                if (childrenContainer && childrenContainer.classList.contains('filter-tree-children')) {
+                    childrenContainer.style.display = node.expanded ? 'flex' : 'none';
+                }
+            });
+        }
+
+        // 标签名称点击事件
+        const filterName = nodeElement.querySelector('.filter-name');
+        filterName.addEventListener('click', () => {
+            filterName.classList.toggle('selected');
+            if (filterName.classList.contains('selected')) {
+                this.tempFilters.add(node.fullPath);
+            } else {
+                this.tempFilters.delete(node.fullPath);
+            }
+        });
+
+        container.appendChild(nodeElement);
+
+        // 如果有子节点，总是渲染它们（但可能隐藏）
+        if (hasChildren) {
+            const childrenContainer = document.createElement('div');
+            childrenContainer.className = 'filter-tree-children';
+            childrenContainer.style.display = node.expanded ? 'flex' : 'none';
+
+            Object.entries(node.children)
+                .sort(([labelA, nodeA], [labelB, nodeB]) => {
+                    const countDiff = nodeB.count - nodeA.count;
+                    if (countDiff === 0) {
+                        return labelA.localeCompare(labelB, 'zh-CN');
+                    }
+                    return countDiff;
+                })
+                .forEach(([childLabel, childNode]) => {
+                    this.renderTagNode(childNode, childLabel, childrenContainer, level + 1);
+                });
+
+            container.appendChild(childrenContainer);
+        }
     }
 
     renderFilterContent(container) {
-        this.tempFilters = new Set(this.activeFilters);
-        const tagList = document.createElement('div');
-        tagList.className = 'filter-list';
-        
-        Array.from(this.availableTags)
-            .sort((a, b) => {
-                const countDiff = (this.filterCounts.get(b) || 0) - (this.filterCounts.get(a) || 0);
+        // 构建层级结构
+        const hierarchy = this.buildTagHierarchy();
+
+        // 创建树形列表容器
+        const tagTree = document.createElement('div');
+        tagTree.className = 'filter-tree';
+
+        // 渲染顶级节点
+        Object.entries(hierarchy)
+            .sort(([labelA, nodeA], [labelB, nodeB]) => {
+                const countDiff = nodeB.count - nodeA.count;
                 if (countDiff === 0) {
-                    return a.localeCompare(b, 'zh-CN');
+                    return labelA.localeCompare(labelB, 'zh-CN');
                 }
                 return countDiff;
             })
-            .forEach(tag => {
-            const tagItem = document.createElement('div');
-            tagItem.className = 'filter-item';
-            if (this.tempFilters.has(tag)) {
-                tagItem.classList.add('selected');
-            }
-            tagItem.innerHTML = `
-                <span class="filter-name">${tag}</span>
-                <span class="filter-count">${this.filterCounts.get(tag) || 0}</span>
-            `;
-            
-            tagItem.addEventListener('click', () => {
-                tagItem.classList.toggle('selected');
-                if (tagItem.classList.contains('selected')) {
-                    this.tempFilters.add(tag);
-                } else {
-                    this.tempFilters.delete(tag);
-                }
+            .forEach(([label, node]) => {
+                this.renderTagNode(node, label, tagTree, 0);
             });
-            
-            tagList.appendChild(tagItem);
-        });
-        
-        container.appendChild(tagList);
+
+        container.appendChild(tagTree);
     }
 
     refreshFilterContent(container) {
-        const tagList = container?.querySelector('.filter-list');
-        if (!tagList) return;
-        
-        // 更新每个标签的选中状态
-        tagList.querySelectorAll('.filter-item').forEach(tagItem => {
-            const tag = tagItem.textContent;
-            tagItem.classList.toggle('selected', this.tempFilters.has(tag));
-        });
+        // 清空容器并重新渲染
+        container.innerHTML = '';
+        this.renderFilterContent(container);
     }
 
     clearFilter() {
@@ -162,7 +266,23 @@ class TagFilter extends BookmarkFilter {
         if (this.activeFilters.size === 0) return bookmarks;
 
         return bookmarks.filter(bookmark => {
-            return bookmark.tags.some(tag => this.activeFilters.has(tag));
+            const tags = bookmark.hierarchicalTags || bookmark.tags || [];
+
+            return tags.some(tag => {
+                // 精确匹配
+                if (this.activeFilters.has(tag)) {
+                    return true;
+                }
+
+                // 前缀匹配：如果选择了"技术/前端"，则匹配"技术/前端/React"
+                for (const filterTag of this.activeFilters) {
+                    if (tag.startsWith(filterTag + '/')) {
+                        return true;
+                    }
+                }
+
+                return false;
+            });
         });
     }
 }
@@ -508,6 +628,7 @@ class FilterManager {
         
         // 渲染筛选内容
         const content = menu.querySelector('.filter-menu-content');
+        filter.tempFilters = new Set(filter.activeFilters);
         filter.renderFilterContent(content);
 
         const doClose = () => {

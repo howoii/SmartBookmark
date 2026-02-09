@@ -2905,15 +2905,17 @@ class ImportExportSettingsTab extends BaseSettingsTab {
                 parentPath
             });
             const apiService = await ConfigManager.getEmbeddingService();
-            const tags = await generateTags({}, bookmark);
+            const hierarchicalTags = await generateHierarchicalTags({}, bookmark);
             const parentTitles = parentPath.map(p => p.title).filter(p => p);
             const folderTags = this.keepFolderTags.checked ? parentTitles.slice(1) : [];
-            const finalTags = [...new Set([...folderTags, ...tags])];
+            const finalTags = [...new Set([...folderTags, ...hierarchicalTags])];
 
             const bookmarkInfo = {
                 url: bookmark.url,
                 title: bookmark.title,
                 tags: finalTags,
+                hierarchicalTags: finalTags,
+                tagVersion: 2,
                 excerpt: '',
                 savedAt: getDateTimestamp(bookmark.dateAdded),
                 useCount: 0,
