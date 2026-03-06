@@ -1,6 +1,6 @@
-<p align="center">
-  <img src="icons/saved_48.png" alt="Logo" width="48" height="48" style="vertical-align: middle;">
-  <strong style="font-size: 1.8em;">Smart Bookmark</strong>
+<p align="center" style="display: flex; align-items: center; justify-content: center; gap: 0.5em;">
+  <img src="icons/saved_48.png" alt="Logo" width="48" height="48">
+  <strong style="font-size: 2.5em;">Smart Bookmark</strong>
 </p>
 
 <p align="center">
@@ -48,13 +48,7 @@
 
 ## 项目介绍
 
-Smart Bookmark 是一款基于 AI 的智能书签管理 Chrome 扩展，支持 Chrome 与 Edge 浏览器。
-
-你是否也曾遇到这些困扰：收藏的书签越来越多，却懒得整理文件夹；想找某个网页时，只记得大概内容却想不起标题；手动打标签太繁琐，久而久之书签成了「收藏夹吃灰」…… Smart Bookmark 正是为解决这些痛点而生。
-
-通过接入大语言模型，插件能够在你收藏网页时**自动生成标签**，在搜索时**理解自然语言**。同时支持 WebDAV 同步、自定义筛选、批量操作等功能，让书签管理真正变得智能而高效。
-
-插件完全免费，你只需配置自己的 API Key（或使用 Ollama 本地模型），即可享受 AI 驱动的书签管理体验。
+Smart Bookmark 是一款基于 AI 的智能书签管理 Chrome/Edge 扩展。收藏时**自动生成标签**，搜索时**理解自然语言**，支持 WebDAV 同步、自定义筛选、批量操作等。插件免费，配置 API Key 或使用 Ollama 本地模型即可使用。
 
 ---
 
