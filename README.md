@@ -1,5 +1,4 @@
 <h1 align="center">
-  <img src="icons/saved_48.png" alt="Logo" width="48" height="48" style="vertical-align: middle;">
   Smart Bookmark
 </h1>
 
