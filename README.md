@@ -1,7 +1,7 @@
-<p align="center" style="display: flex; align-items: center; justify-content: center; gap: 0.5em;">
-  <img src="icons/saved_48.png" alt="Logo" width="48" height="48">
-  <strong style="font-size: 2.5em;">Smart Bookmark</strong>
-</p>
+<h1 align="center">
+  <img src="icons/saved_48.png" alt="Logo" width="48" height="48" style="vertical-align: middle;">
+  Smart Bookmark
+</h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/version-1.2.5-blue" alt="version">
