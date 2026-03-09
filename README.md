@@ -16,32 +16,16 @@
 <p align="center">
   <a href="#项目介绍">项目介绍</a>
   ·
-  <a href="#快速开始">快速开始</a>
-  ·
   <a href="#功能特性">功能特性</a>
   ·
-  <a href="#插件截图">插件截图</a>
+  <a href="#快速开始">快速开始</a>
   ·
   <a href="#开发计划">开发计划</a>
   ·
   <a href="#常见问题">常见问题</a>
+  ·
+  <a href="README_EN.md">English</a>
 </p>
-
----
-
-## 目录
-
-- [项目介绍](#项目介绍)
-- [功能特性](#功能特性)
-- [快速开始](#快速开始)
-- [插件截图](#插件截图)
-- [使用成本](#使用成本)
-- [开发计划](#开发计划)
-- [常见问题](#常见问题)
-- [本地开发](#本地开发)
-- [贡献指南](#贡献指南)
-- [致谢](#致谢)
-- [许可证](#许可证)
 
 ---
 
@@ -115,12 +99,6 @@ Smart Bookmark 是一款基于 AI 的智能书签管理 Chrome/Edge 扩展。收
 
 ---
 
-## 使用成本
-
-插件**完全免费**！用户只需提供自己的模型 API Key。经过实际测试，**1 元的 Token 足够使用一个多月**，高效又实惠，轻松享受 AI 的强大能力！
-
----
-
 ## 开发计划
 
 ### 已完成 ✅
@@ -148,39 +126,89 @@ Smart Bookmark 是一款基于 AI 的智能书签管理 Chrome/Edge 扩展。收
 
 ## 常见问题
 
-<details>
-<summary><b>为什么需要配置 API Key？</b></summary>
+### 为什么需要配置 API Key？
 
-插件的 AI 功能（如自动生成标签、语义化搜索、书签摘要等）均依赖大语言模型。本插件不内置 AI 服务，而是调用 OpenAI、通义千问、智谱 GLM 等第三方接口，因此需要你自行配置 API Key。使用 Ollama 等本地模型时，也需在设置中完成相应的 API 配置。
+插件的 AI 功能（如自动生成标签、语义化搜索、书签摘要等）均依赖大语言模型。本插件不内置 AI 服务，而是调用 OpenAI、通义千问、智谱 GLM 等第三方接口，因此需要你自行配置 API Key。
+
+使用 Ollama 等本地模型时，也需在设置中完成相应的 API 配置。
+
+### 如何接入 Ollama 本地模型？
+
+<details>
+<summary>点击查看详细步骤</summary>
+
+1. **安装 Ollama**
+   访问 [Ollama 官网](https://ollama.com/) 下载安装
+
+2. **设置允许跨域并启动**
+
+   **macOS：**
+   ```bash
+   launchctl setenv OLLAMA_ORIGINS "*"
+   # 然后启动 Ollama App
+   ```
+
+   **Windows：**
+   - 打开「控制面板」→「系统属性」→「环境变量」
+   - 在用户环境变量中新建：
+     - 变量名：`OLLAMA_HOST`，变量值：`0.0.0.0`
+     - 变量名：`OLLAMA_ORIGINS`，变量值：`*`
+   - 启动 Ollama App
+
+   **Linux：**
+   ```bash
+   OLLAMA_ORIGINS="*" ollama serve
+   ```
+
+3. **在 Smart Bookmark 中配置**
+   - 进入「设置」→「API 服务」→ 选择「自定义服务」
+   - API 接口地址：`http://localhost:11434/v1`
+   - API Key：`ollama`
+   - 模型：选择你本地安装的模型（如 `llama3`、`qwen2`）
 
 </details>
 
+### 如何使用 WebDAV 同步？
+
 <details>
-<summary><b>如何接入 Ollama 本地模型？</b></summary>
+<summary>点击查看详细步骤</summary>
 
-**第一步：安装 Ollama**
+1. 进入 **设置** → **同步** → 找到 **WebDAV** 卡片
+2. 点击「设置」按钮，填写：
+   - **服务器地址**：WebDAV 服务的完整 URL（如 `https://dav.jianguoyun.com/dav/`）
+   - **用户名** 和 **密码**
+   - **同步文件夹**：服务器上存储数据的路径（默认 `/bookmarks`）
+3. 点击「测试连接」验证配置是否正确
+4. 选择要同步的数据：书签、设置、智能标签、API 服务配置
+5. 开启「自动同步」并设置同步间隔（5 分钟～24 小时）
+6. 选择冲突解决策略：**合并**（推荐）、本地优先或远程优先
+7. 保存后开启 WebDAV 开关，可点击「立即同步」手动触发
 
-从 [Ollama 官网](https://ollama.com/) 下载并安装。
+**推荐云盘**：[坚果云](https://help.jianguoyun.com/?p=2064)、[InfiniCLOUD](https://infini-cloud.net/) 等支持 WebDAV 的服务。
 
-**第二步：设置跨域并启动**
+</details>
 
-| 系统 | 操作 |
+### 为什么生成标签失败了？
+
+可能的原因包括：
+
+| 原因 | 说明 |
 |------|------|
-| macOS | 终端执行 `launchctl setenv OLLAMA_ORIGINS "*"`，再启动 Ollama App |
-| Windows | 控制面板 → 系统属性 → 环境变量 → 新建用户变量 `OLLAMA_HOST=0.0.0.0` 和 `OLLAMA_ORIGINS=*`，再启动 App |
-| Linux | 终端执行 `OLLAMA_ORIGINS="*" ollama serve` |
+| **模型类型不支持** | 需使用**对话模型**（Chat 模型），不支持推理模型。请在 API 设置中配置文本模型，如 `gpt-3.5-turbo`、`qwen-turbo` 等 |
+| **余额不足** | 检查对应 API 服务的账户余额是否充足 |
+| **网络问题** | 无法访问 API 服务（如境外服务需代理），或请求超时 |
+| **API 配置错误** | 检查 API Key、接口地址、模型名称是否正确 |
 
-**第三步：在插件中配置**
+建议先在设置中点击「验证」测试 API 连接是否正常。
 
-打开插件设置 → API 配置 → 选择「自定义服务」，填写：
+### 如何修改快捷键？
 
-| 配置项 | 填写内容 |
-|--------|----------|
-| API 接口地址 | `http://localhost:11434/v1` |
-| API Key | `ollama` |
-| 模型 | 选择你本地已安装的模型（如 `llama3`、`qwen2` 等） |
+插件的快捷键由浏览器管理，需在扩展快捷键页面修改：
 
-</details>
+- **Chrome**：地址栏输入 `chrome://extensions/shortcuts` 回车
+- **Edge**：地址栏输入 `edge://extensions/shortcuts` 回车
+
+在列表中找到 Smart Bookmark，点击对应快捷键旁的铅笔图标即可修改。也可通过 **设置** → **基本设置** → **快捷键设置** → 点击「设置快捷键」按钮快速跳转。
 
 ---
 
