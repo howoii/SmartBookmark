@@ -112,12 +112,12 @@ Smart Bookmark is an AI-powered bookmark manager extension for Chrome and Edge. 
 - [x] AI-generated bookmark summaries
 - [x] Edge Add-ons store
 - [x] Multi-language support
+- [x] Directory view
 
 ### Planned 📋
 
 - [ ] Smart tag recommendations
 - [ ] Custom prompts
-- [ ] Hierarchical tags and AI auto-classification
 - [ ] Batch organize historical bookmarks
 
 ---
