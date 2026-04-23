@@ -10,6 +10,7 @@ class BookmarkEditManager {
         this.bookmarkList = elements.bookmarkList;
         this.selectAllCheckbox = elements.selectAllCheckbox;
         this.selectedCountElement = elements.selectedCountElement;
+        this.batchMoveButton = elements.batchMoveButton;
         this.batchDeleteButton = elements.batchDeleteButton;
         this.batchOpenButton = elements.batchOpenButton;
         this.exitEditModeButton = elements.exitEditModeButton;
@@ -19,8 +20,11 @@ class BookmarkEditManager {
         this.showStatus = callbacks.showStatus;
         this.showDialog = callbacks.showDialog;
         this.afterDelete = callbacks.afterDelete;
+        this.onBatchMove = callbacks.onBatchMove;
+        this.onExitEditMode = callbacks.onExitEditMode;
         
         this.allBookmarks = []; // 用于存储所有书签
+        this.isDirectoryView = false; // 目录视图下选择集按 nodeKey
         this.lastSelectedBookmark = null; // 用于存储上一次选中的书签元素
         
         this.bindEvents();
@@ -34,20 +38,37 @@ class BookmarkEditManager {
         this.selectAllCheckbox.addEventListener('change', () => {
             this.toggleSelectAll(this.selectAllCheckbox.checked);
         });
-        
+
+        // 批量移动
+        if (this.batchMoveButton) {
+            this.batchMoveButton.addEventListener('click', () => {
+                if (this.onBatchMove) this.onBatchMove(this);
+            });
+        }
+
         // 批量删除
         this.batchDeleteButton.addEventListener('click', () => {
             this.batchDelete();
         });
-        
+
         // 批量打开
         this.batchOpenButton.addEventListener('click', () => {
             this.batchOpen();
         });
-        
+
         // 退出编辑模式
         this.exitEditModeButton.addEventListener('click', () => {
             this.exitEditMode();
+        });
+
+        // ESC 键退出编辑模式
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.isEditMode) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                this.exitEditMode();
+            }
         });
     }
     
@@ -58,7 +79,8 @@ class BookmarkEditManager {
     initialize(bookmarks) {
         this.isEditMode = false;
         this.selectedBookmarks.clear();
-        this.allBookmarks = bookmarks;
+        this.allBookmarks = bookmarks || [];
+        this.isDirectoryView = this.allBookmarks.some(b => b && b._nodeKey);
     }
     
     /**
@@ -87,10 +109,12 @@ class BookmarkEditManager {
         // 更新全选复选框状态
         this.updateSelectAllCheckbox();
 
-        // 刷新选中书签项的选择状态
-        const url = selectedItem.dataset.url;
-        if (url) {
-            this.refreshBookmarkSelectionByUrl(url, selectedItem);
+        // 刷新选中书签项的选择状态（目录视图下同 URL 不联动，仅刷新当前项）
+        if (this.isDirectoryView) {
+            this.refreshBookmarkSelection(selectedItem);
+        } else {
+            const url = selectedItem.dataset.url;
+            if (url) this.refreshBookmarkSelectionByUrl(url, selectedItem);
         }
     }
     
@@ -103,6 +127,8 @@ class BookmarkEditManager {
         this.isEditMode = false;
         this.container.classList.remove('edit-mode');
         
+        if (this.onExitEditMode) this.onExitEditMode();
+
         // 取消所有选中状态
         this.selectedBookmarks.clear();
         this.lastSelectedBookmark = null;
@@ -158,10 +184,12 @@ class BookmarkEditManager {
         // 更新全选复选框状态
         this.updateSelectAllCheckbox();
 
-        // 刷新所有url相同的书签项
-        const url = bookmarkItem.dataset.url;
-        if (url) {
-            this.refreshBookmarkSelectionByUrl(url, bookmarkItem);
+        // 目录视图下同 URL 不联动；列表视图下刷新所有同 URL 项
+        if (this.isDirectoryView) {
+            this.refreshBookmarkSelection(bookmarkItem);
+        } else {
+            const url = bookmarkItem.dataset.url;
+            if (url) this.refreshBookmarkSelectionByUrl(url, bookmarkItem);
         }
     }
     
@@ -209,10 +237,8 @@ class BookmarkEditManager {
         if (typeof bookmarkItem === 'string') {
             this.selectedBookmarks.add(bookmarkItem);
         } else {
-            const url = bookmarkItem.dataset.url;
-            if (url) {
-                this.selectedBookmarks.add(url);
-            }
+            const key = this.isDirectoryView ? bookmarkItem.dataset.nodeKey : bookmarkItem.dataset.url;
+            if (key) this.selectedBookmarks.add(key);
         }
     }
     
@@ -224,10 +250,8 @@ class BookmarkEditManager {
         if (typeof bookmarkItem === 'string') {
             this.selectedBookmarks.delete(bookmarkItem);
         } else {
-            const url = bookmarkItem.dataset.url;
-            if (url) {
-                this.selectedBookmarks.delete(url);
-            }
+            const key = this.isDirectoryView ? bookmarkItem.dataset.nodeKey : bookmarkItem.dataset.url;
+            if (key) this.selectedBookmarks.delete(key);
         }
     }
     
@@ -266,7 +290,8 @@ class BookmarkEditManager {
         });
         if (selectAll) {
             this.allBookmarks.forEach(bookmark => {
-                this.addToSelection(bookmark.url);
+                const key = this.isDirectoryView ? bookmark._nodeKey : bookmark.url;
+                if (key) this.addToSelection(key);
             });
         }
         
@@ -281,72 +306,60 @@ class BookmarkEditManager {
     
     /**
      * 批量删除选中的书签
+     * 目录视图下按 nodeKey 删除；列表视图下按 url 删除
      */
     async batchDelete() {
         if (this.selectedBookmarks.size === 0) return;
         
-        // 确认删除
         if (!this.showDialog || !this.showStatus) {
             logger.error('批量删除书签失败: 缺少showDialog或showStatus');
             return;
         }
         
-        const confirmMessage = `确定要删除选中的 ${this.selectedBookmarks.size} 个书签吗？此操作不可撤销。`;
+        const confirmMessage = i18n.getMessage('popup_batch_delete_confirm', [this.selectedBookmarks.size]);
         this.showDialog({
-            title: '批量删除',
+            title: i18n.getMessage('popup_batch_delete_title'),
             message: confirmMessage,
-            primaryText: '删除',
-            secondaryText: '取消',
+            primaryText: i18n.getMessage('action_delete_bookmark'),
+            secondaryText: i18n.getMessage('ui_button_cancel'),
             onPrimary: async () => {
-                // 执行删除操作
-                const urlsToDelete = Array.from(this.selectedBookmarks);
+                const keysToDelete = Array.from(this.selectedBookmarks);
+                this.showStatus(i18n.getMessage('popup_batch_delete_deleting'), false);
                 
-                // 显示状态消息
-                this.showStatus('正在删除书签...', false);
-                
-                try {
-                    // 根据书签类型分别处理
-                    const userBookmarks = [];
-                    const chromeBookmarksToDelete = [];
-                    const userBookmarksToDelete = [];
-
-                    for (const url of urlsToDelete) {
-                        // 查找匹配的书签对象
+                const bookmarksToDelete = [];
+                if (this.isDirectoryView) {
+                    for (const nodeKey of keysToDelete) {
+                        const bookmark = this.allBookmarks.find(bm => bm._nodeKey === nodeKey);
+                        if (bookmark) bookmarksToDelete.push(bookmark);
+                    }
+                } else {
+                    for (const url of keysToDelete) {
                         const bookmark = this.allBookmarks.find(bm => bm.url === url);
-                        if (bookmark) {
-                            if (bookmark.source === BookmarkSource.CHROME) {
-                                chromeBookmarksToDelete.push(bookmark.chromeId);
-                            } else {
-                                userBookmarks.push(bookmark);
-                                userBookmarksToDelete.push(bookmark.url);
-                            }
-                        }
+                        if (bookmark) bookmarksToDelete.push(bookmark);
                     }
-
-                    if (userBookmarksToDelete.length > 0) {
-                        await LocalStorageMgr.removeBookmarks(userBookmarksToDelete);
-                    }
-
-                    if (chromeBookmarksToDelete.length > 0) {
-                        for (const chromeId of chromeBookmarksToDelete) {
-                            await chrome.bookmarks.remove(chromeId);
-                        }
-                    }
-                    
-                    // 显示成功消息
-                    this.showStatus(`成功删除 ${urlsToDelete.length} 个书签`, false);
-                    
-                    // 退出编辑模式
-                    this.exitEditMode();
-
-                    // 删除完成后刷新列表
-                    if (this.afterDelete) {
-                        this.afterDelete();
-                    }
-                } catch (error) {
-                    logger.error('批量删除书签失败:', error);
-                    this.showStatus('删除书签失败，请重试', true);
                 }
+
+                let failCount = 0;
+                for (const bookmark of bookmarksToDelete) {
+                    try {
+                        await bookmarkOps.deleteBookmark(bookmark);
+                    } catch (e) {
+                        logger.error('删除书签失败:', bookmark, e);
+                        failCount++;
+                    }
+                }
+
+                const successCount = bookmarksToDelete.length - failCount;
+                if (failCount === 0) {
+                    this.showStatus(i18n.getMessage('popup_batch_delete_success', [keysToDelete.length]), false);
+                } else if (successCount > 0) {
+                    this.showStatus(i18n.getMessage('popup_delete_partial_success') + ` (${successCount}/${bookmarksToDelete.length})`, false);
+                } else {
+                    this.showStatus(i18n.getMessage('popup_batch_delete_failed'), true);
+                }
+
+                this.exitEditMode();
+                if (this.afterDelete) this.afterDelete();
             }
         });
     }
@@ -359,13 +372,29 @@ class BookmarkEditManager {
         return this.isEditMode;
     }
 
+    getSelectedBookmarksList() {
+        const keys = Array.from(this.selectedBookmarks);
+        if (this.isDirectoryView) {
+            return keys
+                .map(nk => this.allBookmarks.find(b => b._nodeKey === nk))
+                .filter(Boolean);
+        }
+        return keys
+            .map(url => this.allBookmarks.find(b => b.url === url))
+            .filter(Boolean);
+    }
+
     /**
      * 批量打开选中的书签
      */
     async batchOpen() {
         if (this.selectedBookmarks.size === 0) return;
         
-        const urlsToOpen = Array.from(this.selectedBookmarks);
+        const urlsToOpen = this.isDirectoryView
+            ? Array.from(this.selectedBookmarks)
+                .map(nk => this.allBookmarks.find(b => b._nodeKey === nk)?.url)
+                .filter(Boolean)
+            : Array.from(this.selectedBookmarks);
         const bookmarkCount = urlsToOpen.length;
         
         // 定义打开书签的函数
@@ -382,7 +411,7 @@ class BookmarkEditManager {
                 }
             } catch (error) {
                 logger.error('批量打开书签失败:', error);
-                this.showStatus('打开书签失败，请重试', true);
+                this.showStatus(i18n.getMessage('popup_batch_open_failed'), true);
             }
         };
         
@@ -393,12 +422,12 @@ class BookmarkEditManager {
                 return;
             }
             
-            const confirmMessage = `您选择了 ${bookmarkCount} 个书签，一次性打开过多标签页可能会导致浏览器卡顿。确定要继续吗？`;
+            const confirmMessage = i18n.getMessage('popup_batch_open_warning', [bookmarkCount]);
             this.showDialog({
-                title: '批量打开提醒',
+                title: i18n.getMessage('popup_batch_open_title'),
                 message: confirmMessage,
-                primaryText: '打开',
-                secondaryText: '取消',
+                primaryText: i18n.getMessage('action_open'),
+                secondaryText: i18n.getMessage('ui_button_cancel'),
                 onPrimary: openBookmarks
             });
         } else {
@@ -442,8 +471,8 @@ class BookmarkEditManager {
         const checkbox = bookmarkItem.querySelector('.bookmark-checkbox input');
         if (!checkbox) return;
 
-        const url = bookmarkItem.dataset.url;
-        const isSelected = this.selectedBookmarks.has(url);
+        const key = this.isDirectoryView ? bookmarkItem.dataset.nodeKey : bookmarkItem.dataset.url;
+        const isSelected = key ? this.selectedBookmarks.has(key) : false;
         if (isSelected) {
             checkbox.checked = true;
             bookmarkItem.classList.add('selected');

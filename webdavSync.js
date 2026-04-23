@@ -179,12 +179,10 @@ class WebDAVSyncManager {
             // 获取书签数据
             if (this.syncConfig.syncData.bookmarks) {
                 localData.data.bookmarks = await LocalStorageMgr.getBookmarksList();
-                // 不同步书签的向量数据，避免同步大体积数据
+                // 不同步书签的向量数据，避免同步大体积数据；排除内部字段
                 localData.data.bookmarks = localData.data.bookmarks.map(bookmark => {
-                    return {
-                        ...bookmark,
-                        embedding: null
-                    };
+                    const sanitized = LocalStorageMgr.sanitizeBookmarkForExport(bookmark);
+                    return { ...sanitized, embedding: null };
                 });
             }
             
@@ -431,12 +429,20 @@ class WebDAVSyncManager {
 
             const localBookmarks = await LocalStorageMgr.getBookmarksList();
             const diffResult = this.diffBookmarks(localBookmarks, bookmarks);
+            const renamedBookmarks = detectLikelyRenamedBookmarks(localBookmarks, bookmarks, diffResult);
             logger.debug('同步书签差异', diffResult);
             
             if (overwrite) {
+                await syncExistingBrowserBookmarksForExtensionChanges({
+                    removedUrls: diffResult.removed,
+                    updatedBookmarks: diffResult.added.concat(diffResult.updated),
+                    renamedBookmarks,
+                });
+
                 if (diffResult.added.length > 0 || diffResult.updated.length > 0) {
                     const bookmarks = diffResult.added.concat(diffResult.updated);
-                    await LocalStorageMgr.setBookmarks(bookmarks, { noSync: true });
+                    const cleanedBookmarks = bookmarks.map(b => LocalStorageMgr.sanitizeBookmarkForStorage(b));
+                    await LocalStorageMgr.setBookmarks(cleanedBookmarks, { noSync: true });
                 }
                 if (diffResult.removed.length > 0) {
                     await LocalStorageMgr.removeBookmarks(diffResult.removed, { noSync: true });
@@ -444,7 +450,13 @@ class WebDAVSyncManager {
             } else {
                 const bookmarks = diffResult.added.concat(diffResult.updated);
                 if (bookmarks.length > 0) {
-                    await LocalStorageMgr.setBookmarks(bookmarks, { noSync: true });
+                    await syncExistingBrowserBookmarksForExtensionChanges({
+                        updatedBookmarks: bookmarks,
+                        renamedBookmarks,
+                    });
+
+                    const cleanedBookmarks = bookmarks.map(b => LocalStorageMgr.sanitizeBookmarkForStorage(b));
+                    await LocalStorageMgr.setBookmarks(cleanedBookmarks, { noSync: true });
                 }
             }
 
@@ -977,40 +989,19 @@ class WebDAVSyncManager {
     }
 
     diffBookmarks(localBookmarks, remoteBookmarks) {
-        const localBookmarksMap = new Map(localBookmarks.map(bookmark => [bookmark.url, bookmark]));
-        const remoteBookmarksMap = new Map(remoteBookmarks.map(bookmark => [bookmark.url, bookmark]));
+        const diffResult = diffBookmarkCollections(localBookmarks, remoteBookmarks);
 
-        const diffResult = {
-            added: [],
-            removed: [],
-            updated: [],
-            same: []
-        };
-        
         for (const bookmark of localBookmarks) {
-            const remoteBookmark = remoteBookmarksMap.get(bookmark.url);
-            if (remoteBookmark) {
-                if (this.isBookmarkChanged(bookmark, remoteBookmark)) {
-                    // 检查是否要保留本地的向量数据（如果embeddingText没有变化，则保留本地的向量数据）
-                    const localEmbeddingText = makeEmbeddingText(bookmark);
-                    const remoteEmbeddingText = makeEmbeddingText(remoteBookmark);
-                    if (localEmbeddingText === remoteEmbeddingText) {
-                        remoteBookmark.embedding = bookmark.embedding;
-                    }
-                    diffResult.updated.push(remoteBookmark);
-                } else if (remoteBookmark.embedding && !bookmark.embedding) {
-                    diffResult.updated.push(remoteBookmark);
-                } else {
-                    diffResult.same.push(bookmark);
-                }
-            } else {
-                diffResult.removed.push(bookmark.url);
-            }
-        }
+            const remoteBookmark = remoteBookmarks.find(item => item.url === bookmark.url);
+            if (!remoteBookmark) continue;
 
-        for (const bookmark of remoteBookmarks) {
-            if (!localBookmarksMap.has(bookmark.url)) {
-                diffResult.added.push(bookmark);
+            if (diffResult.updated.includes(remoteBookmark)) {
+                // 检查是否要保留本地的向量数据（如果embeddingText没有变化，则保留本地的向量数据）
+                const localEmbeddingText = makeEmbeddingText(bookmark);
+                const remoteEmbeddingText = makeEmbeddingText(remoteBookmark);
+                if (localEmbeddingText === remoteEmbeddingText) {
+                    remoteBookmark.embedding = bookmark.embedding;
+                }
             }
         }
 
@@ -1018,10 +1009,7 @@ class WebDAVSyncManager {
     }
 
     isBookmarkChanged(localBookmark, remoteBookmark) {
-        const localBookmarkMeta = this.getBookmarkMeta(localBookmark);
-        const remoteBookmarkMeta = this.getBookmarkMeta(remoteBookmark);
-        
-        return JSON.stringify(localBookmarkMeta) !== JSON.stringify(remoteBookmarkMeta);
+        return isBookmarkContentChanged(localBookmark, remoteBookmark);
     }
 
     getBookmarkMeta(bookmark) {

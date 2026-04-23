@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/browserBookmarkSelector.css">
     <link rel="stylesheet" href="css/popup.css">
 </head>
 
@@ -45,7 +46,7 @@
                             <path fill="currentColor" d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,7C13.4,7 14.8,8.1 14.8,9.5V11C15.4,11 16,11.6 16,12.3V15.8C16,16.4 15.4,17 14.7,17H9.2C8.6,17 8,16.4 8,15.7V12.2C8,11.6 8.6,11 9.2,11V9.5C9.2,8.1 10.6,7 12,7M12,8.2C11.2,8.2 10.5,8.7 10.5,9.5V11H13.5V9.5C13.5,8.7 12.8,8.2 12,8.2Z"/>
                         </svg>
                     </div>
-                    <button id="save-page" class="icon-button" title="为此页面添加书签 Cmd/Ctrl+B">
+                    <button id="save-page" class="icon-button" data-i18n-title="popup_toolbar_button_save_title">
                         <svg class="save-icon" viewBox="0 0 24 24" width="20" height="20">
                             <path fill="currentColor" d="M12,2L15.09,8.26L22,9.27L17,14.14L18.18,21.02L12,17.77L5.82,21.02L7,14.14L2,9.27L8.91,8.26L12,2" />
                         </svg>
@@ -54,9 +55,9 @@
                         </svg>
                     </button>
                     <div class="bookmark-count-wrapper">
-                        <span id="bookmark-count" class="bookmark-count" data-count="0">书签</span>
+                        <span id="bookmark-count" class="bookmark-count" data-count="0" data-i18n="popup_toolbar_bookmark_count">书签</span>
                     </div>
-                    <button id="sync-button" class="icon-button sync-button" title="同步书签">
+                    <button id="sync-button" class="icon-button sync-button" data-i18n-title="popup_toolbar_button_sync_title">
                         <svg class="sync-icon syncing-icon" viewBox="0 0 24 24" width="16" height="16">
                             <path fill="currentColor" d="M12,18A6,6 0 0,1 6,12C6,11 6.25,10.03 6.7,9.2L5.24,7.74C4.46,8.97 4,10.43 4,12A8,8 0 0,0 12,20V23L16,19L12,15M12,4V1L8,5L12,9V6A6,6 0 0,1 18,12C18,13 17.75,13.97 17.3,14.8L18.76,16.26C19.54,15.03 20,13.57 20,12A8,8 0 0,0 12,4Z"/>
                         </svg>
@@ -72,13 +73,13 @@
                 </div>
 
                 <div class="toolbar-actions">
-                    <button id="toggle-search" class="icon-button" title="搜索书签 Cmd/Ctrl+K">
+                    <button id="toggle-search" class="icon-button" data-i18n-title="popup_toolbar_button_search_title">
                         <svg viewBox="0 0 24 24" width="20" height="20">
                             <path fill="currentColor"
                                 d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" />
                         </svg>
                     </button>
-                    <button id="open-settings" class="icon-button" title="打开设置">
+                    <button id="open-settings" class="icon-button" data-i18n-title="popup_toolbar_button_settings_title">
                         <svg viewBox="0 0 24 24" width="20" height="20">
                             <path fill="currentColor" d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
                         </svg>
@@ -89,8 +90,8 @@
             <!-- 搜索视图 -->
             <div class="toolbar-search">
                 <div class="search-input-wrapper">
-                    <input type="text" id="search-input" placeholder="Cmd/Ctrl+K 搜索书签...">
-                    <button id="close-search" class="icon-button" title="关闭搜索">
+                    <input type="text" id="search-input" data-i18n="popup_search_input_placeholder" placeholder="Cmd/Ctrl+K 搜索书签...">
+                    <button id="close-search" class="icon-button" data-i18n-title="popup_toolbar_button_close_search_title">
                         <svg viewBox="0 0 24 24" width="24" height="24">
                             <path fill="currentColor"
                                 d="M7,6C7,5.4 7.4,5 8,5H16V7H8V17H16V19H8C7.4,19 7,18.6 7,18V6M16,11V9L20,12L16,15V13H12V11H16Z" />
@@ -105,51 +106,97 @@
             <!-- 添加书签列表容器 -->
             <div class="controls-container">
                 <div class="controls-left-group">
-                    <div class="view-mode-switch">
-                        <button class="view-mode-button" data-mode="list" title="列表视图">
-                            <svg viewBox="0 0 24 24" width="16" height="16">
+                    <div class="view-mode-container">
+                        <button class="view-mode-button" id="view-mode-trigger" data-mode="list" data-i18n-title="popup_view_mode_list_title">
+                            <svg class="view-mode-icon view-mode-list-icon" viewBox="0 0 24 24" width="16" height="16">
                                 <path fill="currentColor" d="M3,4H21V8H3V4M3,10H21V14H3V10M3,16H21V20H3V16Z"/>
                             </svg>
-                        </button>
-                        <button class="view-mode-button" data-mode="group" title="分组视图">
-                            <svg viewBox="0 0 24 24" width="16" height="16">
+                            <svg class="view-mode-icon view-mode-group-icon" viewBox="0 0 24 24" width="16" height="16" style="display: none;">
                                 <path fill="currentColor" d="M3,3H11V11H3V3M3,13H11V21H3V13M13,3H21V11H13V3M13,13H21V21H13V13Z"/>
                             </svg>
+                            <svg class="view-mode-icon view-mode-directory-icon" viewBox="0 0 24 24" width="16" height="16" style="display: none;">
+                                <path fill="currentColor" d="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z"/>
+                            </svg>
                         </button>
+                        <div class="view-mode-dropdown" id="view-mode-dropdown">
+                            <div class="view-mode-option" data-mode="list">
+                                <svg viewBox="0 0 24 24" width="16" height="16">
+                                    <path fill="currentColor" d="M3,4H21V8H3V4M3,10H21V14H3V10M3,16H21V20H3V16Z"/>
+                                </svg>
+                                <span data-i18n="popup_view_mode_list_title">列表</span>
+                            </div>
+                            <div class="view-mode-option" data-mode="group">
+                                <svg viewBox="0 0 24 24" width="16" height="16">
+                                    <path fill="currentColor" d="M3,3H11V11H3V3M3,13H11V21H3V13M13,3H21V11H13V3M13,13H21V21H13V13Z"/>
+                                </svg>
+                                <span data-i18n="popup_view_mode_group_title">分组</span>
+                            </div>
+                            <div class="view-mode-option" data-mode="directory">
+                                <svg viewBox="0 0 24 24" width="16" height="16">
+                                    <path fill="currentColor" d="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z"/>
+                                </svg>
+                                <span data-i18n="popup_view_mode_directory_title">目录</span>
+                            </div>
+                        </div>
                     </div>
                     <div class="filter-container">
                         <button class="filter-button" id="filter-button">
                             <svg viewBox="0 0 24 24" width="16" height="16">
                                 <path fill="currentColor" d="M14,12V19.88C14.04,20.18 13.94,20.5 13.71,20.71C13.32,21.1 12.69,21.1 12.3,20.71L10.29,18.7C10.06,18.47 9.96,18.16 10,17.87V12H9.97L4.21,4.62C3.87,4.19 3.95,3.56 4.38,3.22C4.57,3.08 4.78,3 5,3V3H19V3C19.22,3 19.43,3.08 19.62,3.22C20.05,3.56 20.13,4.19 19.79,4.62L14.03,12H14Z" />
                             </svg>
-                            <span>筛选</span>
+                            <span data-i18n="popup_filter_button_text">筛选</span>
                         </button>
-                        <div class="filter-dropdown" id="filter-dropdown">
-                            <!-- 筛选选项将由 JavaScript 动态添加 -->
-                        </div>
                     </div>
                     <div class="sort-container">
                         <button class="sort-button" id="sort-button">
-                            <img src="icons/sort-saved-desc.svg" alt="最新收藏" class="sort-icon">
+                            <img src="icons/sort-saved-desc.svg" data-i18n-alt="popup_sort_option_newest" alt="最新收藏" class="sort-icon">
                         </button>
                         <div class="sort-dropdown" id="sort-dropdown">
                             <div class="sort-option" data-value="savedAt_desc">
-                                <img src="icons/sort-saved-desc.svg" alt="最新收藏" class="sort-icon">
-                                最新收藏
+                                <img src="icons/sort-saved-desc.svg" data-i18n-alt="popup_sort_option_newest" alt="最新收藏" class="sort-icon">
+                                <span data-i18n="popup_sort_option_newest">最新收藏</span>
                             </div>
                             <div class="sort-option" data-value="savedAt_asc">
-                                <img src="icons/sort-saved-asc.svg" alt="最早收藏" class="sort-icon">
-                                最早收藏
+                                <img src="icons/sort-saved-asc.svg" data-i18n-alt="popup_sort_option_oldest" alt="最早收藏" class="sort-icon">
+                                <span data-i18n="popup_sort_option_oldest">最早收藏</span>
                             </div>
                             <div class="sort-option" data-value="useCount">
-                                <img src="icons/sort-use-count.svg" alt="使用最多" class="sort-icon">
-                                使用最多
+                                <img src="icons/sort-use-count.svg" data-i18n-alt="popup_sort_option_most_used" alt="使用最多" class="sort-icon">
+                                <span data-i18n="popup_sort_option_most_used">使用最多</span>
                             </div>
                             <div class="sort-option" data-value="lastUsed">
-                                <img src="icons/sort-latest.svg" alt="最近使用" class="sort-icon">
-                                最近使用
+                                <img src="icons/sort-latest.svg" data-i18n-alt="popup_sort_option_recent_used" alt="最近使用" class="sort-icon">
+                                <span data-i18n="popup_sort_option_recent_used">最近使用</span>
                             </div>
                         </div>
+                    </div>
+                    <div class="directory-actions-container" id="directory-actions-container" style="display: none;">
+                        <button type="button" class="directory-action-btn" id="directory-expand-all" data-i18n-title="popup_directory_expand_all" title="">
+                            <svg class="directory-action-icon directory-action-icon-stroke" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                                <path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" d="M7 9L12 4L17 9"/>
+                                <path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" d="M7 15L12 20L17 15"/>
+                            </svg>
+                        </button>
+                        <button type="button" class="directory-action-btn" id="directory-collapse-all" data-i18n-title="popup_directory_collapse_all" title="">
+                            <svg class="directory-action-icon directory-action-icon-stroke" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                                <path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" d="M7 5L12 9L17 5"/>
+                                <path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" d="M7 19L12 15L17 19"/>
+                            </svg>
+                        </button>
+                        <button type="button" class="directory-action-btn" id="directory-locate-current" data-i18n-title="popup_directory_locate_current" title="">
+                            <svg class="directory-action-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                                <path fill="currentColor" d="M10.6 1.5h2.8v7h-2.8zM10.6 15.5h2.8v7h-2.8zM1.5 10.6h7v2.8h-7zM15.5 10.6h7v2.8h-7z"/>
+                                <circle cx="12" cy="12" r="5.75" fill="none" stroke="currentColor" stroke-width="1.75"/>
+                                <circle cx="12" cy="12" r="1.65" fill="currentColor"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="group-actions-container" id="group-actions-container" style="display: none;">
+                        <button type="button" class="directory-action-btn" id="group-manage-btn" data-i18n-title="popup_manage_group" title="">
+                            <svg class="directory-action-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
                 
@@ -158,14 +205,14 @@
                         <svg class="notice-icon" viewBox="0 0 24 24" width="16" height="16">
                             <path fill="currentColor" d="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
                         </svg>
-                        配置 API 服务
+                        <span data-i18n="popup_notice_api_config">配置 API 服务</span>
                     </a>
                 </div>
                 <div id="regenerating-embeddings-status" class="regenerating-status" style="display: none;">
                     <svg viewBox="0 0 24 24" width="14" height="14">
                         <path fill="currentColor" d="M12,6V9L16,5L12,1V4A8,8 0 0,0 4,12C4,13.57 4.46,15.03 5.24,16.26L6.7,14.8C6.25,13.97 6,13 6,12A6,6 0 0,1 12,6M18.76,7.74L17.3,9.2C17.74,10.04 18,11 18,12A6,6 0 0,1 12,18V15L8,19L12,23V20A8,8 0 0,0 20,12C20,10.43 19.54,8.97 18.76,7.74Z" />
                     </svg>
-                    <span class="status-text">索引更新中</span>
+                    <span class="status-text" data-i18n="popup_status_index_updating">索引更新中</span>
                 </div>
             </div>
             
@@ -173,29 +220,18 @@
             <div class="edit-toolbar">
                 <div class="select-all-container">
                     <input type="checkbox" id="select-all-checkbox">
-                    <label for="select-all-checkbox">全选</label>
+                    <label for="select-all-checkbox" data-i18n="popup_edit_toolbar_select_all">全选</label>
                 </div>
                 <div class="edit-toolbar-counter">
                     (<span id="selected-count">0</span>)
                 </div>
                 <div class="edit-toolbar-actions">
-                    <button id="batch-open-btn" class="icon-button" title="打开选中项">
-                        <svg viewBox="0 0 24 24" width="20" height="20">
-                            <path fill="currentColor" d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"/>
-                        </svg>
-                    </button>
-                    <button id="batch-delete-btn" class="icon-button danger-icon-button" title="删除选中项">
-                        <svg viewBox="0 0 24 24" width="20" height="20">
-                            <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
-                        </svg>
-                    </button>
+                    <button id="batch-move-btn" class="icon-button" data-i18n-title="popup_edit_toolbar_batch_move_title"></button>
+                    <button id="batch-open-btn" class="icon-button" data-i18n-title="popup_edit_toolbar_batch_open_title"></button>
+                    <button id="batch-delete-btn" class="icon-button danger-icon-button" data-i18n-title="popup_edit_toolbar_batch_delete_title"></button>
+                    <span class="edit-toolbar-divider"></span>
+                    <button id="exit-edit-mode-btn" class="icon-button" data-i18n-title="popup_edit_toolbar_exit_title"></button>
                 </div>
-
-                <button id="exit-edit-mode-btn" class="icon-button" title="退出编辑模式">
-                    <svg viewBox="0 0 24 24" width="24" height="24">
-                        <path fill="currentColor" d="M7,6C7,5.4 7.4,5 8,5H16V7H8V17H16V19H8C7.4,19 7,18.6 7,18V6M16,11V9L20,12L16,15V13H12V11H16Z" />
-                    </svg>
-                </button>
             </div>
             
             <div class="bookmarks-container">
@@ -203,7 +239,7 @@
                 <ul id="bookmarks-list" class="bookmarks-list">
                     <li class="loading-state">
                         <div class="loading-spinner"></div>
-                        <div class="loading-text">正在加载书签...</div>
+                        <div class="loading-text" data-i18n="popup_status_loading">正在加载书签...</div>
                     </li>
                 </ul>
             </div>
@@ -220,27 +256,17 @@
                 <div class="search-edit-toolbar">
                     <div class="select-all-container">
                         <input type="checkbox" id="search-select-all-checkbox">
-                        <label for="search-select-all-checkbox">全选</label>
+                        <label for="search-select-all-checkbox" data-i18n="popup_edit_toolbar_select_all">全选</label>
                     </div>
                     <div class="search-edit-toolbar-counter">
                         (<span id="search-selected-count">0</span>)
                     </div>
                     <div class="search-edit-toolbar-actions">
-                        <button id="search-batch-open-btn" class="icon-button" title="打开选中项">
-                            <svg viewBox="0 0 24 24" width="20" height="20">
-                                <path fill="currentColor" d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"/>
-                            </svg>
-                        </button>
-                        <button id="search-batch-delete-btn" class="icon-button danger-icon-button" title="删除选中项">
-                            <svg viewBox="0 0 24 24" width="20" height="20">
-                                <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
-                            </svg>
-                        </button>
-                        <button id="search-exit-edit-mode-btn" class="icon-button" title="退出编辑模式">
-                            <svg viewBox="0 0 24 24" width="24" height="24">
-                                <path fill="currentColor" d="M7,6C7,5.4 7.4,5 8,5H16V7H8V17H16V19H8C7.4,19 7,18.6 7,18V6M16,11V9L20,12L16,15V13H12V11H16Z" />
-                            </svg>
-                        </button>
+                        <button id="search-batch-move-btn" class="icon-button" data-i18n-title="popup_edit_toolbar_batch_move_title"></button>
+                        <button id="search-batch-open-btn" class="icon-button" data-i18n-title="popup_edit_toolbar_batch_open_title"></button>
+                        <button id="search-batch-delete-btn" class="icon-button danger-icon-button" data-i18n-title="popup_edit_toolbar_batch_delete_title"></button>
+                        <span class="edit-toolbar-divider"></span>
+                        <button id="search-exit-edit-mode-btn" class="icon-button" data-i18n-title="popup_edit_toolbar_exit_title"></button>
                     </div>
                 </div>
                 
@@ -254,7 +280,7 @@
             <div class="update-overlay"></div>
             <div class="update-notification-content">
                 <div class="update-notification-header">
-                    <h3>新版本更新</h3>
+                    <h3 data-i18n="popup_update_notification_title">新版本更新</h3>
                     <button id="close-update-notification" class="close-notification-btn">
                         <svg viewBox="0 0 24 24" width="20" height="20">
                             <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
@@ -265,8 +291,24 @@
                     <!-- 更新内容将由JavaScript动态插入 -->
                 </div>
                 <div class="update-notification-footer">
-                    <a href="#" id="view-all-updates" class="view-all-updates">查看所有更新</a>
+                    <a href="#" id="view-all-updates" class="view-all-updates" data-i18n="popup_update_view_all">查看所有更新</a>
                 </div>
+            </div>
+        </div>
+
+        <!-- 筛选面板：底部滑出半屏双列布局 -->
+        <div class="filter-panel" id="filter-panel">
+            <div class="filter-panel-backdrop"></div>
+            <div class="filter-panel-inner">
+                <nav class="filter-categories-nav" id="filter-categories-nav">
+                    <!-- 左列：筛选分类由 JS 动态添加 -->
+                </nav>
+                <div class="filter-options-area" id="filter-options-area">
+                    <!-- 右列：当前分类的筛选项由 JS 动态添加 -->
+                </div>
+                <footer class="filter-panel-footer">
+                    <button type="button" class="filter-panel-clear" id="filter-panel-clear" data-i18n="popup_filter_clear">清除</button>
+                </footer>
             </div>
         </div>
     </div>
@@ -279,12 +321,20 @@
                         <img src="" alt="">
                     </div>
                     <h3 class="page-title" contenteditable="true" spellcheck="false" title=""></h3>
+                    <button id="translate-title-btn" class="translate-title-btn" title="" data-i18n-title="ui_button_translate_title">
+                        <svg class="icon-normal" viewBox="0 0 24 24" width="16" height="16" xmlns="http://www.w3.org/2000/svg">
+                            <path fill="currentColor" d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/>
+                        </svg>
+                        <svg class="icon-loading" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="4" y="4" width="8" height="8" fill="currentColor" />
+                        </svg>
+                    </button>
                 </div>
                 <div class="page-url" spellcheck="false" title=""></div>
             </div>
             <div class="excerpt-container">
-                <textarea id="page-excerpt" class="page-excerpt" placeholder="添加或编辑书签摘要..." spellcheck="false" maxlength="500"></textarea>
-                <button id="generate-excerpt-btn" class="generate-excerpt-btn" title="AI生成摘要">
+                <textarea id="page-excerpt" class="page-excerpt" data-i18n="popup_tags_excerpt_placeholder" placeholder="添加或编辑书签摘要..." spellcheck="false" maxlength="500"></textarea>
+                <button id="generate-excerpt-btn" class="generate-excerpt-btn" data-i18n-title="popup_tags_generate_excerpt_title">
                     <svg class="icon-normal" t="1746761538879" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="17630" width="20" height="20" xmlns:xlink="http://www.w3.org/1999/xlink">
                         <path d="M732.672 610.176c22.08-1.472 11.776 50.112 45.952 82.112 34.176 32 87.36 20.928 88.704 43.968 0.576 9.408-8.32 14.336-21.12 18.88l-19.904 6.656c-14.72 5.12-30.592 11.648-42.24 23.68-28.928 30.208-22.592 75.008-46.272 76.16-23.744 1.088-10.56-45.632-48.192-77.12-37.632-31.424-82.368-22.656-82.368-45.056s49.024-9.28 81.984-43.264c33.024-34.048 21.376-84.608 43.52-86.016z m63.552-408.96c37.888 36.352 48.704 117.632 22.336 164.288-20.864 36.864-415.04 430.464-453.44 453.824-48.448 29.44-160.832 43.52-195.328 10.496-34.368-33.024-18.88-154.24 7.68-194.56 10.176-15.424 94.208-103.36 187.52-197.76L473.6 329.088l33.792-33.152c61.824-60.352 111.232-106.304 123.712-113.152 51.136-27.904 126.528-18.56 165.12 18.432zM610.304 476.608L522.24 388.48 380.16 531.584c-72.768 74.24-132.352 136.448-138.56 145.92-3.008 4.48-10.112 31.552-13.44 57.536a239.168 239.168 0 0 0-2.112 29.056l0.32 8.96 23.424-1.152 11.584-1.152c26.752-3.392 53.632-10.88 63.808-17.024l4.416-3.328 12.224-10.56c33.856-30.464 110.08-104.832 187.776-182.208l27.584-27.648 53.056-53.312z m57.6-226.56l-4.48 3.2-7.936 6.656c-15.808 13.888-44.032 40.832-78.592 74.688l87.232 87.168 50.56-52.48 23.296-25.088c7.552-8.448 12.352-14.208 13.76-16.64 9.28-16.384 3.584-59.264-8.704-71.04-14.208-13.632-53.12-18.496-75.136-6.464zM252.992 183.488c14.464-0.96 7.68 33.984 30.08 55.68 22.464 21.76 57.344 14.272 58.24 29.888 0.896 15.68-35.584 12.992-54.592 33.408-19.072 20.48-14.848 50.88-30.4 51.648-15.552 0.768-6.912-30.912-31.616-52.288-24.704-21.376-54.016-15.36-54.016-30.592 0-15.168 32.128-6.336 53.76-29.44 21.632-23.04 14.08-57.344 28.544-58.304z" p-id="17631" fill="currentColor"></path>
                     </svg>
@@ -295,22 +345,30 @@
                 <div class="char-counter"><span id="char-count">0</span>/500</div>
             </div>
             <div class="tags-container">
-                <div class="recommended-tags"></div>
                 <div id="tags-list" class="tags-list"></div>
                 <div class="tag-input-container">
-                    <input type="text" id="new-tag-input" placeholder="输入标签按回车键添加...">
+                    <input type="text" id="new-tag-input" data-i18n="ui_input_tags" placeholder="输入标签按回车键添加...">
+                    <button id="generate-tags-btn" class="generate-tags-btn" data-i18n-title="popup_tags_generate_tags_title">
+                        <svg class="icon-normal" viewBox="0 0 24 24" width="16" height="16" xmlns="http://www.w3.org/2000/svg">
+                            <path fill="currentColor" d="M12 2L13.76 7.24L19 9L13.76 10.76L12 16L10.24 10.76L5 9L10.24 7.24L12 2ZM5 14L5.94 17.06L9 18L5.94 18.94L5 22L4.06 18.94L1 18L4.06 17.06L5 14ZM19 12L20.41 15.59L24 17L20.41 18.41L19 22L17.59 18.41L14 17L17.59 15.59L19 12Z"/>
+                        </svg>
+                        <svg class="icon-loading" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="4" y="4" width="8" height="8" fill="currentColor" />
+                        </svg>
+                    </button>
                 </div>
             </div>
+            <div id="browser-bookmark-selector"></div>
             <div class="dialog-buttons">
                 <div class="left-buttons">
-                    <button id="cancel-tags-btn">取消</button>
-                    <button id="save-tags-btn">保存</button>
+                    <button id="cancel-tags-btn" data-i18n="ui_button_cancel">取消</button>
+                    <button id="save-tags-btn" data-i18n="ui_button_save">保存</button>
                 </div>
                 <button id="delete-bookmark-btn" class="danger-button">
                     <svg viewBox="0 0 24 24" width="16" height="16">
                         <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
                     </svg>
-                    删除
+                    <span data-i18n="action_delete_bookmark">删除</span>
                 </button>
             </div>
         </div>
@@ -318,7 +376,7 @@
     <div id="settings-dialog" class="dialog">
         <div class="dialog-content settings-dialog-content">
             <div class="dialog-header">
-                <h3>设置</h3>
+                <h3 data-i18n="page_settings_title">设置</h3>
                 <button class="close-dialog-btn">
                     <svg viewBox="0 0 24 24" width="20" height="20">
                         <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
@@ -327,20 +385,11 @@
             </div>
             <div class="settings-sections">
                 <section class="settings-section">
-                    <h4>通用</h4>
+                    <h4 data-i18n="popup_settings_section_general">通用</h4>
                     <div class="settings-group">
-                        <label class="settings-item toggle-switch">
-                            <div class="settings-text">
-                                <span data-tooltip="在侧边栏列表中显示浏览器书签">显示浏览器书签</span>
-                            </div>
-                            <div class="switch-container">  
-                                <input type="checkbox" id="show-chrome-bookmarks">
-                                <span class="switch-slider"></span>
-                            </div>
-                        </label>
                         <label class="settings-item toggle-switch" id="auto-focus-search-container">
                             <div class="settings-text">
-                                <span data-tooltip="打开扩展时自动将光标定位到搜索框">打开时自动聚焦搜索框</span>
+                                <span data-tooltip="" data-i18n="popup_settings_auto_focus_search" data-i18n-tooltip="popup_settings_auto_focus_search_tooltip">打开时自动聚焦搜索框</span>
                             </div>
                             <div class="switch-container">
                                 <input type="checkbox" id="auto-focus-search">
@@ -349,7 +398,7 @@
                         </label>
                         <label class="settings-item toggle-switch">
                             <div class="settings-text">
-                                <span data-tooltip="开启后将在新标签页打开书签">在新标签页打开书签</span>
+                                <span data-tooltip="" data-i18n="popup_settings_open_new_tab" data-i18n-tooltip="popup_settings_open_new_tab_tooltip">在新标签页打开书签</span>
                             </div>
                             <div class="switch-container">
                                 <input type="checkbox" id="open-in-new-tab">
@@ -358,20 +407,20 @@
                         </label>
                         <div class="settings-item theme-selector-item">
                             <div class="settings-text">
-                                <span data-tooltip="改变界面颜色">主题</span>
+                                <span data-tooltip="" data-i18n="setting_general_theme" data-i18n-tooltip="popup_settings_theme_tooltip">主题</span>
                             </div>
                             <div class="theme-selector-popup">
-                                <div class="theme-option-popup" data-theme="light" title="浅色">
+                                <div class="theme-option-popup" data-theme="light" data-i18n-title="popup_settings_theme_light">
                                     <svg viewBox="0 0 24 24" width="16" height="16">
                                         <path fill="currentColor" d="M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,2L14.39,5.42C13.65,5.15 12.84,5 12,5C11.16,5 10.35,5.15 9.61,5.42L12,2M3.34,7L7.5,6.65C6.9,7.16 6.36,7.78 5.94,8.5C5.5,9.24 5.25,10 5.11,10.79L3.34,7M3.36,17L5.12,13.23C5.26,14 5.53,14.78 5.95,15.5C6.37,16.24 6.91,16.86 7.5,17.37L3.36,17M20.65,7L18.88,10.79C18.74,10 18.47,9.23 18.05,8.5C17.63,7.78 17.1,7.15 16.5,6.64L20.65,7M20.64,17L16.5,17.36C17.09,16.85 17.62,16.22 18.04,15.5C18.46,14.77 18.73,14 18.87,13.21L20.64,17M12,22L9.59,18.56C10.33,18.83 11.14,19 12,19C12.82,19 13.63,18.83 14.37,18.56L12,22Z"/>
                                     </svg>
                                 </div>
-                                <div class="theme-option-popup" data-theme="dark" title="深色">
+                                <div class="theme-option-popup" data-theme="dark" data-i18n-title="popup_settings_theme_dark">
                                     <svg viewBox="0 0 24 24" width="16" height="16">
                                         <path fill="currentColor" d="M12,3C7.03,3 3,7.03 3,12C3,16.97 7.03,21 12,21C16.97,21 21,16.97 21,12C21,7.03 16.97,3 12,3M12,19C8.14,19 5,15.86 5,12C5,8.14 8.14,5 12,5C15.86,5 19,8.14 19,12C19,15.86 15.86,19 12,19M12,17C14.76,17 17,14.76 17,12C17,9.24 14.76,7 12,7V17Z"/>
                                     </svg>
                                 </div>
-                                <div class="theme-option-popup" data-theme="system" title="设备">
+                                <div class="theme-option-popup" data-theme="system" data-i18n-title="popup_settings_theme_system">
                                     <svg viewBox="0 0 24 24" width="16" height="16">
                                         <path fill="currentColor" d="M12,18V6A6,6 0 0,1 18,12A6,6 0 0,1 12,18M20,15.31L23.31,12L20,8.69V4H15.31L12,0.69L8.69,4H4V8.69L0.69,12L4,15.31V20H8.69L12,23.31L15.31,20H20V15.31Z"/>
                                     </svg>
@@ -380,14 +429,37 @@
                         </div>
                     </div>
                 </section>
-                <!-- 可以添加更多设置部分 -->
                 <section class="settings-section">
-                    <h4>隐私</h4>
+                    <h4 data-i18n="popup_settings_section_ai">AI</h4>
+                    <div class="settings-group">
+                        <div class="settings-item">
+                            <div class="settings-text">
+                                <span data-tooltip="" data-i18n="setting_ai_target_language" data-i18n-tooltip="popup_settings_target_language_tooltip">目标语言</span>
+                            </div>
+                            <select id="popup-ai-target-language" class="settings-select">
+                            </select>
+                        </div>
+                        <div class="settings-item popup-model-selector" id="popup-model-selector">
+                            <div class="popup-service-row">
+                                <span class="popup-service-label" data-i18n="settings_services_tab_chat">文本模型</span>
+                                <select id="popup-chat-service-select" class="settings-select">
+                                </select>
+                            </div>
+                            <div class="popup-service-row">
+                                <span class="popup-service-label" data-i18n="settings_services_tab_embedding">向量模型</span>
+                                <select id="popup-embedding-service-select" class="settings-select">
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section class="settings-section">
+                    <h4 data-i18n="popup_settings_section_privacy">隐私</h4>
                     <div class="settings-group">
                         <label class="settings-item toggle-switch">
                             <div class="settings-text">
-                                <span data-tooltip="自动识别隐私相关页面（如银行、邮箱等），并自动启用隐私模式">自动检测隐私页面</span>
-                                <a href="#" id="privacy-settings-link" class="settings-link" title="更多隐私设置">
+                                <span data-tooltip="" data-i18n="popup_settings_auto_privacy" data-i18n-tooltip="popup_settings_auto_privacy_tooltip">自动检测隐私页面</span>
+                                <a href="#" id="privacy-settings-link" class="settings-link" data-i18n-title="popup_settings_privacy_more_title">
                                     <svg viewBox="0 0 24 24" width="16" height="16">
                                         <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.5" />
                                         <path d="M10.5,8L14.5,12L10.5,16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
@@ -401,7 +473,7 @@
                         </label>
                         <label class="settings-item toggle-switch" id="manual-privacy-container">
                             <div class="settings-text">
-                                <span data-tooltip="手动开启隐私模式，开启后不会访问页面内容">启用隐私模式</span>
+                                <span data-tooltip="" data-i18n="popup_settings_manual_privacy" data-i18n-tooltip="popup_settings_manual_privacy_tooltip">启用隐私模式</span>
                             </div>
                             <div class="switch-container">
                                 <input type="checkbox" id="manual-privacy-mode">
@@ -414,34 +486,34 @@
             <!-- 新增底部栏 -->
             <div class="settings-footer">
                 <div class="left-group">
-                    <button id="open-settings-page" class="icon-button" title="更多设置">
+                    <button id="open-settings-page" class="icon-button" data-i18n-title="popup_settings_footer_more_title">
                         <svg viewBox="0 0 24 24" width="20" height="20">
                             <path fill="currentColor" d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
                         </svg>
                     </button>
-                    <button id="keyboard-shortcuts" class="icon-button" title="键盘快捷键">
+                    <button id="keyboard-shortcuts" class="icon-button" data-i18n-title="popup_settings_footer_shortcuts_title">
                         <svg viewBox="0 0 24 24" width="20" height="20">
                             <path fill="currentColor" d="M19 10H17V8H19M19 13H17V11H19M16 10H14V8H16M16 13H14V11H16M16 17H8V15H16M7 10H5V8H7M7 13H5V11H7M8 11H10V13H8M8 8H10V10H8M11 11H13V13H11M11 8H13V10H11M20 5H4C2.89 5 2 5.89 2 7V17C2 18.11 2.9 19 4 19H20C21.11 19 22 18.11 22 17V7C22 5.89 21.1 5 20 5Z" />
                         </svg>
                     </button>
-                    <button id="show-update-log" class="icon-button" title="新变化">
+                    <button id="show-update-log" class="icon-button" data-i18n-title="popup_settings_footer_changelog_title">
                         <svg viewBox="0 0 24 24" width="20" height="20">
                             <path fill="currentColor" d="M18,22A2,2 0 0,0 20,20V4C20,2.89 19.1,2 18,2H12V9L9.5,7.5L7,9V2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18M13,15V13H16V15H13M13,11H16V9H13V11Z" />
                         </svg>
                     </button>
                 </div>
                 <div class="right-group">
-                    <button id="donate-button" class="icon-button" title="捐赠支持">
+                    <button id="donate-button" class="icon-button" data-i18n-title="popup_settings_footer_donate_title">
                         <svg viewBox="0 0 24 24" width="20" height="20">
                             <path fill="currentColor" d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z" />
                         </svg>
                     </button>
-                    <button id="feedback-button" class="icon-button" title="提交反馈">
+                    <button id="feedback-button" class="icon-button" data-i18n-title="popup_settings_footer_feedback_title">
                         <svg viewBox="0 0 24 24" width="20" height="20">
                             <path fill="currentColor" d="M12,3C6.5,3 2,6.58 2,11C2.05,13.15 3.06,15.17 4.75,16.5C4.75,17.1 4.33,18.67 2,21C2,21 5.55,21 8.47,18.5C9.57,18.82 10.76,19 12,19C17.5,19 22,15.42 22,11C22,6.58 17.5,3 12,3M7,10C7.83,10 8.5,10.67 8.5,11.5C8.5,12.33 7.83,13 7,13C6.17,13 5.5,12.33 5.5,11.5C5.5,10.67 6.17,10 7,10M12,10C12.83,10 13.5,10.67 13.5,11.5C13.5,12.33 12.83,13 12,13C11.17,13 10.5,12.33 10.5,11.5C10.5,10.67 11.17,10 12,10M17,10C17.83,10 18.5,10.67 18.5,11.5C18.5,12.33 17.83,13 17,13C16.17,13 15.5,12.33 15.5,11.5C15.5,10.67 16.17,10 17,10Z" />
                         </svg>
                     </button>
-                    <button id="store-review-button" class="icon-button" title="去商店评价">
+                    <button id="store-review-button" class="icon-button" data-i18n-title="popup_settings_footer_review_title">
                         <svg viewBox="0 0 24 24" width="20" height="20">
                             <path fill="currentColor" d="M23,10C23,8.89 22.1,8 21,8H14.68L15.64,3.43C15.66,3.33 15.67,3.22 15.67,3.11C15.67,2.7 15.5,2.32 15.23,2.05L14.17,1L7.59,7.58C7.22,7.95 7,8.45 7,9V19A2,2 0 0,0 9,21H18C18.83,21 19.54,20.5 19.84,19.78L22.86,12.73C22.95,12.5 23,12.26 23,12V10M1,21H5V9H1V21Z" />
                         </svg>
@@ -453,7 +525,7 @@
     <div id="sync-status-dialog" class="dialog">
         <div class="dialog-content sync-status-dialog-content">
             <div class="dialog-header">
-                <h3>同步</h3>
+                <h3 data-i18n="popup_sync_dialog_title">同步</h3>
                 <button class="close-dialog-btn">
                     <svg viewBox="0 0 24 24" width="20" height="20">
                         <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
@@ -468,17 +540,40 @@
     <div id="alert-dialog" class="dialog">
         <div class="dialog-content alert-dialog-content">
             <div class="dialog-header">
-                <h3 class="alert-title">提示</h3>
+                <h3 class="alert-title" data-i18n="popup_alert_title">提示</h3>
             </div>
             <div class="alert-content">
                 <p class="alert-message"></p>
+                <div class="alert-extra"></div>
             </div>
             <div class="alert-buttons">
-                <button class="secondary-button" id="alert-secondary-btn">取消</button>
-                <button class="primary-button" id="alert-primary-btn">确定</button>
+                <div class="alert-buttons-left"></div>
+                <div class="alert-buttons-actions">
+                    <button class="secondary-button" id="alert-secondary-btn" data-i18n="ui_button_cancel">取消</button>
+                    <button class="primary-button" id="alert-primary-btn" data-i18n="popup_alert_confirm">确定</button>
+                </div>
             </div>
         </div>
     </div>
+    <div id="folder-input-dialog" class="dialog">
+        <div class="dialog-content alert-dialog-content folder-input-dialog-content">
+            <div class="dialog-header">
+                <h3 id="folder-input-dialog-title" data-i18n="popup_directory_folder_create_title">新建目录</h3>
+            </div>
+            <div class="alert-content folder-input-dialog-body">
+                <input type="text" id="folder-input-field" maxlength="120" data-i18n-placeholder="popup_directory_folder_input_placeholder" placeholder="输入目录名称">
+            </div>
+            <div class="alert-buttons">
+                <div class="alert-buttons-left"></div>
+                <div class="alert-buttons-actions">
+                    <button class="secondary-button" id="folder-input-cancel-btn" data-i18n="ui_button_cancel">取消</button>
+                    <button class="primary-button" id="folder-input-confirm-btn" data-i18n="popup_directory_folder_create_confirm">创建</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="folder-move-selector-root" class="directory-folder-move-selector-root" hidden></div>
+    <div id="batch-move-selector-root" class="batch-move-selector-root" hidden></div>
     <!-- 添加筛选菜单模板 -->
     <template id="filter-menu-template">
         <div class="filter-menu">
@@ -489,8 +584,7 @@
                 <!-- 筛选内容将由 JavaScript 动态添加 -->
             </div>
             <div class="filter-menu-footer">
-                <button class="secondary-button" id="clear-filter">清除</button>
-                <button class="primary-button" id="apply-filter">应用</button>
+                <button class="secondary-button" id="clear-filter" data-i18n="popup_filter_clear">清除</button>
             </div>
         </div>
     </template>
@@ -503,8 +597,8 @@
             </div>
             <div class="sync-service-details">
                 <div class="sync-time-container">
-                    <span class="sync-label">上次同步：</span>
-                    <span class="sync-time">从未同步</span>
+                    <span class="sync-label" data-i18n="popup_sync_last_sync_label">上次同步：</span>
+                    <span class="sync-time" data-i18n="popup_sync_never">从未同步</span>
                 </div>
                 <div class="sync-result-container">
                     <span class="sync-result">-</span>
@@ -515,9 +609,9 @@
                     <svg viewBox="0 0 24 24" width="16" height="16">
                         <path fill="currentColor" d="M12,18A6,6 0 0,1 6,12C6,11 6.25,10.03 6.7,9.2L5.24,7.74C4.46,8.97 4,10.43 4,12A8,8 0 0,0 12,20V23L16,19L12,15M12,4V1L8,5L12,9V6A6,6 0 0,1 18,12C18,13 17.75,13.97 17.3,14.8L18.76,16.26C19.54,15.03 20,13.57 20,12A8,8 0 0,0 12,4Z"/>
                     </svg>
-                    <span>同步</span>
+                    <span data-i18n="popup_sync_button_text">同步</span>
                 </button>
-                <button class="sync-settings-button icon-button" title="设置">
+                <button class="sync-settings-button icon-button" data-i18n-title="popup_sync_settings_title">
                     <svg viewBox="0 0 24 24" width="16" height="16">
                         <path fill="currentColor" d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
                     </svg>
@@ -539,13 +633,19 @@
     <script src="settingsManager.js"></script>
     <script src="statsManager.js"></script>
     <script src="util.js"></script>
+    <script src="browserBookmarkSelector.js"></script>
+    <script src="directoryViewData.js"></script>
     <script src="api.js"></script>
+    <script src="folderRecommender.js"></script>
     <script src="themeManager.js"></script>
+    <script src="lib/lucide-icons.js"></script>
+    <script src="iconPicker.js"></script>
     <script src="customFilter.js"></script>
     <script src="syncSettingManager.js"></script>
     <script src="filterManager.js"></script>
     <script src="search.js"></script>
     <script src="bookmarkEditManager.js"></script>
+    <script src="bookmarkOps.js"></script>
     <script src="popup.js"></script>
 </body>
 

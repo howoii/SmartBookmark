@@ -350,7 +350,7 @@ class AutoSyncManager {
                 clearTimeout(this.scheduledWebdavSyncDebounceTimer);
             }
             
-            const reason = data.reason || '未指定原因';
+            const reason = data.reason || i18n.getMessage('autosync_reason_unspecified');
             logger.debug(`webdav 预定同步请求 (${reason})，将在25秒后触发同步`);
             
             this.scheduledWebdavSyncDebounceTimer = setTimeout(async () => {
@@ -395,7 +395,7 @@ class AutoSyncManager {
                 clearTimeout(this.scheduledCloudSyncDebounceTimer);
             }
             
-            const reason = data.reason || '未指定原因';
+            const reason = data.reason || i18n.getMessage('autosync_reason_unspecified');
             logger.debug(`cloud 预定同步请求 (${reason})，将在25秒后触发同步`);
             
             this.scheduledCloudSyncDebounceTimer = setTimeout(async () => {
@@ -454,7 +454,7 @@ class AutoSyncManager {
         if (!isLocked) {
             return {
                 success: false,
-                error: `同步操作正在进行中，请稍后再试`
+                error: i18n.getMessage('autosync_error_syncing')
             };
         }
         
@@ -470,7 +470,7 @@ class AutoSyncManager {
                 logger.warn('WebDAV配置无效，跳过同步');
                 return {
                     success: false,
-                    error: 'WebDAV配置无效，请先完成配置'
+                    error: i18n.getMessage('autosync_error_webdav_config_invalid')
                 };
             }
             
@@ -509,14 +509,14 @@ class AutoSyncManager {
         if (!FEATURE_FLAGS.ENABLE_CLOUD_SYNC) {
             return {
                 success: false,
-                error: '云同步功能已禁用'
+                error: i18n.getMessage('autosync_error_cloud_sync_disabled')
             };
         }
         const isLocked = await this.lockSync('cloud');
         if (!isLocked) {
             return {
                 success: false,
-                error: `同步操作正在进行中，请稍后再试`
+                error: i18n.getMessage('autosync_error_syncing')
             };
         }
         try {
@@ -526,7 +526,7 @@ class AutoSyncManager {
             if (!valid) {
                 return {
                     success: false,
-                    error: '云同步配置无效，请先完成配置'
+                    error: i18n.getMessage('autosync_error_cloud_config_invalid')
                 };
             }
             

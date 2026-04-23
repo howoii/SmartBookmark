@@ -57,36 +57,38 @@ class WebDAVClient {
      * @returns {string} 格式化的错误信息
      */
     formatErrorMessage(status, statusText, operation, customMessage = null) {
-        let message = `${operation}失败 (status: ${status})`;
+        const operationKey = operation || 'webdav_operation';
+        let message = i18n.getMessage('webdav_error_operation_failed', [operation, status]);
         
         // 添加状态码特定的错误描述
         if (customMessage) {
             message += `: ${customMessage}`;
         } else {
+            let statusErrorKey = null;
             switch (status) {
                 case 401:
-                    message += `: 认证失败，请检查用户名和密码`;
+                    statusErrorKey = 'webdav_error_401';
                     break;
                 case 403:
-                    message += `: 权限不足，服务器拒绝访问`;
+                    statusErrorKey = 'webdav_error_403';
                     break;
                 case 404:
-                    message += `: 资源不存在`;
+                    statusErrorKey = 'webdav_error_404';
                     break;
                 case 405:
-                    message += `: 方法不允许，服务器不支持该操作`;
+                    statusErrorKey = 'webdav_error_405';
                     break;
                 case 409:
-                    message += `: 资源冲突，可能是父文件夹不存在`;
+                    statusErrorKey = 'webdav_error_409';
                     break;
                 case 500:
-                    message += `: 服务器内部错误`;
+                    statusErrorKey = 'webdav_error_500';
                     break;
                 case 501:
-                    message += `: 服务器不支持该功能`;
+                    statusErrorKey = 'webdav_error_501';
                     break;
                 case 507:
-                    message += `: 存储空间不足`;
+                    statusErrorKey = 'webdav_error_507';
                     break;
                 default:
                     if (statusText) {
@@ -94,10 +96,13 @@ class WebDAVClient {
                     }
                     break;
             }
+            if (statusErrorKey) {
+                message += `: ${i18n.getMessage(statusErrorKey)}`;
+            }
         }
         
         // 添加通用解决建议
-        message += `。请检查服务器配置或网络连接`;
+        message += i18n.getMessage('webdav_error_suggestion');
         
         return message;
     }
@@ -122,32 +127,32 @@ class WebDAVClient {
             if (!response.ok) {
                 switch (response.status) {
                     case 401:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '连接测试', '认证失败，用户名或密码错误'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_test_connection'), i18n.getMessage('webdav_error_401_test')));
                     case 403:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '连接测试', '权限被拒绝，无法访问该目录'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_test_connection'), i18n.getMessage('webdav_error_403_test')));
                     case 404:
                         // 文件夹不存在，尝试创建
                         return await this.createFolder(path);
                     case 405:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '连接测试', '服务器不支持WebDAV方法'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_test_connection'), i18n.getMessage('webdav_error_405_test')));
                     case 500:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '连接测试', '服务器内部错误'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_test_connection'), i18n.getMessage('webdav_error_500')));
                     default:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '连接测试'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_test_connection')));
                 }
             }
             
             // 尝试解析返回的XML，确认是WebDAV服务器
             const text = await response.text();
             if (!text.includes('DAV:') && !text.includes('<d:')) {
-                throw new Error('连接测试失败: 服务器响应不是有效的WebDAV格式，请确认URL是否正确');
+                throw new Error(i18n.getMessage('webdav_error_invalid_response'));
             }
             
             return true;
         } catch (error) {
             // 处理网络错误
             if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-                throw new Error('连接测试失败: 无法连接到服务器，请检查URL是否正确或网络连接是否正常');
+                throw new Error(i18n.getMessage('webdav_error_connection_failed'));
             }
             
             // 重新抛出其他错误
@@ -172,15 +177,15 @@ class WebDAVClient {
             if (!response.ok) {
                 switch (response.status) {
                     case 401:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '创建文件夹', '认证错误'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_create_folder'), i18n.getMessage('webdav_error_401')));
                     case 403:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '创建文件夹', '权限不足'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_create_folder'), i18n.getMessage('webdav_error_403')));
                     case 405:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '创建文件夹', '文件夹已存在或服务器不支持创建文件夹'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_create_folder'), i18n.getMessage('webdav_error_405_create')));
                     case 409:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '创建文件夹', '父文件夹不存在'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_create_folder'), i18n.getMessage('webdav_error_409')));
                     default:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '创建文件夹'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_create_folder')));
                 }
             }
             
@@ -207,15 +212,15 @@ class WebDAVClient {
             if (!response.ok) {
                 switch (response.status) {
                     case 401:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '上传文件', '认证失败'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_upload_file'), i18n.getMessage('webdav_error_401')));
                     case 403:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '上传文件', '权限不足'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_upload_file'), i18n.getMessage('webdav_error_403')));
                     case 409:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '上传文件', '远程文件夹不存在'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_upload_file'), i18n.getMessage('webdav_error_409_upload')));
                     case 507:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '上传文件', '服务器存储空间不足'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_upload_file'), i18n.getMessage('webdav_error_507')));
                     default:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '上传文件'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_upload_file')));
                 }
             }
             
@@ -238,13 +243,13 @@ class WebDAVClient {
             if (!response.ok) {
                 switch (response.status) {
                     case 401:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '下载文件', '认证失败'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_download_file'), i18n.getMessage('webdav_error_401')));
                     case 403:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '下载文件', '权限不足'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_download_file'), i18n.getMessage('webdav_error_403')));
                     case 404:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '下载文件', '文件不存在'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_download_file'), i18n.getMessage('webdav_error_404_file')));
                     default:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '下载文件'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_download_file')));
                 }
             }
             
@@ -275,15 +280,15 @@ class WebDAVClient {
             if (!response.ok) {
                 switch (response.status) {
                     case 401:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '删除', '认证失败'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_delete'), i18n.getMessage('webdav_error_401')));
                     case 403:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '删除', '权限不足'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_delete'), i18n.getMessage('webdav_error_403')));
                     case 404:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '删除', '文件或文件夹不存在'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_delete'), i18n.getMessage('webdav_error_404_delete')));
                     case 423:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '删除', '资源被锁定'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_delete'), i18n.getMessage('webdav_error_423')));
                     default:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '删除'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_delete')));
                 }
             }
             
@@ -304,13 +309,13 @@ class WebDAVClient {
             if (!response.ok) {
                 switch (response.status) {
                     case 401:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '访问服务器文件', '认证失败'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_access_file'), i18n.getMessage('webdav_error_401')));
                     case 403:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '访问服务器文件', '权限不足'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_access_file'), i18n.getMessage('webdav_error_403')));
                     case 404:
                         return false;
                     default:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '访问服务器文件'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_access_file')));
                 }
             }
             return true;
@@ -334,7 +339,7 @@ class WebDAVClient {
             });
             
             if (!response.ok) {
-                throw new Error(this.formatErrorMessage(response.status, response.statusText, '获取文件信息'));
+                throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_get_file_info')));
             }
             
             const text = await response.text();
@@ -382,13 +387,13 @@ class WebDAVClient {
             if (!response.ok) {
                 switch (response.status) {
                     case 401:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '获取目录列表', '认证失败'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_list_directory'), i18n.getMessage('webdav_error_401')));
                     case 403:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '获取目录列表', '权限不足'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_list_directory'), i18n.getMessage('webdav_error_403')));
                     case 404:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '获取目录列表', '目录不存在'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_list_directory'), i18n.getMessage('webdav_error_404_directory')));
                     default:
-                        throw new Error(this.formatErrorMessage(response.status, response.statusText, '获取目录列表'));
+                        throw new Error(this.formatErrorMessage(response.status, response.statusText, i18n.getMessage('webdav_operation_list_directory')));
                 }
             }
             

@@ -2,3 +2,6 @@ build/
 .DS_Store
 .idea
 .vscode
+.codex
+.trae
+.claude

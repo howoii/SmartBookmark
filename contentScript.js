@@ -6,7 +6,7 @@
     window[INIT_FLAG] = true;
     // ... 其余代码
 
-    const SB_DEBUG = true;
+    const SB_DEBUG = false;
 
     const logger = {
         log: (...args) => {
@@ -14,7 +14,7 @@
                 console.log('%c[Content Script]', 'color: blue; font-weight: bold;', ...args);
             }
         },
-        error: (...args) => {
+        error: (...args) => {l
             if (SB_DEBUG) {
                 console.log('%c[Content Script]', 'color: red; font-weight: bold;', ...args);
             }
@@ -53,10 +53,10 @@
 
     function cleanContent(content) {
         return content
-            .replace(/\s+/g, ' ')           // 将多个空白字符替换为单个空格
-            .replace(/[\r\n]+/g, ' ')       // 将换行符替换为空格
-            .replace(/\t+/g, ' ')           // 将制表符替换为空格
-            .trim();                        // 去除首尾空白
+            .replace(/[ \t\f\r]*[\r\n]+[ \t\f\r]*/g, '\n')  // 删除换行之间的空白符，并将换行统一为 \n
+            .replace(/\n{2,}/g, '\n')                        // 将多个换行替换为单个换行
+            .replace(/ +/g, ' ')                             // 将多个连续空格替换为单个空格
+            .trim();                                         // 去除首尾空白
     }
 
     async function extractContent() {
@@ -66,10 +66,21 @@
             const documentClone = document.cloneNode(true);
             logger.log('文档克隆完成');
 
-            const isReaderable = isProbablyReaderable(documentClone);
+            // const isReaderable = isProbablyReaderable(documentClone);
+            const isReaderable = true; // 关闭readerable检查, 优先保证内容准确性，牺牲token使用量
             logger.log('isReaderable:', isReaderable);
 
-            const article = new Readability(documentClone).parse();
+            // 配置 Readability 选项
+            const readabilityOptions = {
+                debug: false, 
+                charThreshold: 300,  // 降低字符阈值，适应更多文章
+                nbTopCandidates: 7,  // 增加候选元素数量
+                linkDensityModifier: 0.1,  // 稍微放宽链接密度限制
+                classesToPreserve: ['page', 'content', 'article', 'main'],  // 保留常见的内容类名
+                keepClasses: false  // 不保留所有类名，保持清理
+            };
+
+            const article = new Readability(documentClone, readabilityOptions).parse();
             logger.log('Readability 解析结果:', article);
 
             const metadata = extractMetadata();

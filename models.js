@@ -35,6 +35,7 @@ class UnifiedBookmark {
             this.tags = data.tags;
             this.excerpt = data.excerpt;
             this.embedding = data.embedding;
+            this.folderTags = Array.isArray(data.folderTags) ? [...data.folderTags] : [];
             // 这里需要确保日期格式的一致性
             this.savedAt = data.savedAt ? getDateTimestamp(data.savedAt) : Date.now();
             this.useCount = data.useCount;
@@ -43,7 +44,9 @@ class UnifiedBookmark {
             this.embedModel = data.embedModel;
             this.isCached = data.isCached;
         } else {
-            this.tags = [...data.folderTags || []];
+            // chrome_only 书签默认无标签，不把目录路径作为标签
+            this.tags = [];
+            this.folderTags = Array.isArray(data.folderTags) ? [...data.folderTags] : [];
             this.excerpt = '';
             this.embedding = null;
             // Chrome书签的日期是时间戳（毫秒）

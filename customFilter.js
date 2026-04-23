@@ -3,14 +3,18 @@ class CustomFilter {
     constructor() {
         this.STORAGE_KEY = 'customFilters';
         this.STORAGE_KEY_ORDER = 'customFiltersOrder';
+        this.STORAGE_KEY_HIDDEN = 'customFiltersHidden';
+        this.ARCHIVE_KEY = 'customFiltersArchive';
+        this.MAX_ARCHIVES = 10;
         this.rules = [];
         this.orderedIds = [];
+        this.hiddenIds = [];
         this.initialized = false;
         // 内置的筛选规则
         this.builtInRules = [
             {
                 id: 'recent-bookmarks',
-                name: '今日添加',
+                name: i18n.getMessage('settings_filters_built_in_rule_today_added'),
                 isBuiltIn: true,
                 conditions: [
                     {
@@ -22,7 +26,7 @@ class CustomFilter {
             },
             {
                 id: 'today-used',
-                name: '今日使用',
+                name: i18n.getMessage('settings_filters_built_in_rule_today_used'),
                 isBuiltIn: true,
                 conditions: [
                     {
@@ -39,11 +43,12 @@ class CustomFilter {
         if (this.initialized) return;
         
         try {
-            // 从存储中加载规则
             const stored = await chrome.storage.sync.get(this.STORAGE_KEY);
             this.rules = stored[this.STORAGE_KEY] || [];
             const storedOrder = await chrome.storage.sync.get(this.STORAGE_KEY_ORDER);
             this.orderedIds = storedOrder[this.STORAGE_KEY_ORDER] || [];
+            const storedHidden = await chrome.storage.sync.get(this.STORAGE_KEY_HIDDEN);
+            this.hiddenIds = storedHidden[this.STORAGE_KEY_HIDDEN] || [];
             this.initialized = true;
         } catch (error) {
             logger.error('初始化筛选规则失败:', error);
@@ -63,6 +68,7 @@ class CustomFilter {
                 [this.STORAGE_KEY_ORDER]: orderedIds
             });
             this.orderedIds = orderedIds;
+            await this.archiveCurrentState('reorder');
         } catch (error) {
             logger.error('保存筛选规则顺序失败:', error);
         }
@@ -84,6 +90,7 @@ class CustomFilter {
             await chrome.storage.sync.set({
                 [this.STORAGE_KEY]: this.rules
             });
+            await this.archiveCurrentState('save_rule');
             return true;
         } catch (error) {
             logger.error('保存筛选规则失败:', error);
@@ -91,13 +98,17 @@ class CustomFilter {
         }
     }
 
-    // 删除规则
+    // 删除规则（同步清理 hiddenIds 和 groupSort 中的孤立数据）
     async deleteRule(ruleId) {
         try {
             this.rules = this.rules.filter(r => r.id !== ruleId);
+            this.hiddenIds = this.hiddenIds.filter(id => id !== ruleId);
             await chrome.storage.sync.set({
-                [this.STORAGE_KEY]: this.rules
+                [this.STORAGE_KEY]: this.rules,
+                [this.STORAGE_KEY_HIDDEN]: this.hiddenIds
             });
+            await this.archiveCurrentState('delete_rule');
+
             return true;
         } catch (error) {
             logger.error('删除筛选规则失败:', error);
@@ -105,9 +116,94 @@ class CustomFilter {
         }
     }
 
+    async toggleHidden(ruleId) {
+        const idx = this.hiddenIds.indexOf(ruleId);
+        if (idx === -1) {
+            this.hiddenIds.push(ruleId);
+        } else {
+            this.hiddenIds.splice(idx, 1);
+        }
+        try {
+            await chrome.storage.sync.set({
+                [this.STORAGE_KEY_HIDDEN]: this.hiddenIds
+            });
+            await this.archiveCurrentState('toggle_hidden');
+        } catch (error) {
+            logger.error('保存隐藏状态失败:', error);
+        }
+    }
+
+    isHidden(ruleId) {
+        return this.hiddenIds.includes(ruleId);
+    }
+
+    getVisibleRules() {
+        return this.getRules().filter(rule => !this.hiddenIds.includes(rule.id));
+    }
+
     async reloadRules() {
         this.initialized = false;
         await this.init();
+    }
+
+    async archiveCurrentState(trigger) {
+        try {
+            if (!this.initialized) {
+                await this.init();
+            }
+            const archives = await this.getArchives();
+            const now = Date.now();
+            archives.unshift({
+                id: now.toString(),
+                timestamp: now,
+                trigger,
+                snapshot: {
+                    rules: JSON.parse(JSON.stringify(this.rules)),
+                    orderedIds: [...this.orderedIds],
+                    hiddenIds: [...this.hiddenIds]
+                }
+            });
+            if (archives.length > this.MAX_ARCHIVES) {
+                archives.splice(this.MAX_ARCHIVES);
+            }
+            await LocalStorageMgr.set(this.ARCHIVE_KEY, archives);
+        } catch (error) {
+            logger.error('存档筛选规则失败:', error);
+        }
+    }
+
+    async getArchives() {
+        try {
+            const archives = await LocalStorageMgr.get(this.ARCHIVE_KEY);
+            return archives || [];
+        } catch (error) {
+            logger.error('获取筛选规则存档失败:', error);
+            return [];
+        }
+    }
+
+    async restoreFromArchive(archiveId) {
+        try {
+            const archives = await this.getArchives();
+            const archive = archives.find(a => a.id === archiveId);
+            if (!archive) {
+                logger.error('未找到指定存档:', archiveId);
+                return false;
+            }
+            this.rules = archive.snapshot.rules;
+            this.orderedIds = archive.snapshot.orderedIds;
+            this.hiddenIds = archive.snapshot.hiddenIds || [];
+            await chrome.storage.sync.set({
+                [this.STORAGE_KEY]: this.rules,
+                [this.STORAGE_KEY_ORDER]: this.orderedIds,
+                [this.STORAGE_KEY_HIDDEN]: this.hiddenIds
+            });
+            await this.archiveCurrentState('restore');
+            return true;
+        } catch (error) {
+            logger.error('恢复筛选规则存档失败:', error);
+            return false;
+        }
     }
 
     // 获取所有规则
@@ -133,7 +229,8 @@ class CustomFilter {
         await this.reloadRules();
         return {
             rules: this.rules || [],
-            orderedIds: this.orderedIds || []
+            orderedIds: this.orderedIds || [],
+            hiddenIds: this.hiddenIds || []
         };
     }
 
@@ -143,7 +240,7 @@ class CustomFilter {
             if (!this.initialized) {
                 await this.init();
             }
-    
+
             // 验证导入的数据格式
             if (!Array.isArray(filters.rules) || !Array.isArray(filters.orderedIds)) {
                 logger.error('导入的筛选规则格式无效');
@@ -158,9 +255,7 @@ class CustomFilter {
                 }
                 return true;
             });
-            // 根据模式处理规则导入
             if (!overwrite) {
-                // 合并模式：保留现有规则，添加新规则
                 const existingIds = new Set(this.rules.map(rule => rule.id));
                 const filteredRules = newRules.filter(rule => {
                     return !existingIds.has(rule.id);
@@ -168,17 +263,23 @@ class CustomFilter {
                 
                 this.rules = [...this.rules, ...filteredRules];
                 this.orderedIds = filters.orderedIds || [];
+                // 合并模式：保留本地隐藏状态，合并远端新增的
+                if (Array.isArray(filters.hiddenIds)) {
+                    const mergedHidden = new Set([...this.hiddenIds, ...filters.hiddenIds]);
+                    this.hiddenIds = [...mergedHidden];
+                }
             } else {
-                // 覆盖模式：完全替换现有规则
                 this.rules = newRules;
                 this.orderedIds = filters.orderedIds || [];
+                this.hiddenIds = Array.isArray(filters.hiddenIds) ? filters.hiddenIds : [];
             }
     
-            // 保存更新
             await chrome.storage.sync.set({
                 [this.STORAGE_KEY]: this.rules,
-                [this.STORAGE_KEY_ORDER]: this.orderedIds
+                [this.STORAGE_KEY_ORDER]: this.orderedIds,
+                [this.STORAGE_KEY_HIDDEN]: this.hiddenIds
             });
+            await this.archiveCurrentState('import');
     
         } catch (error) {
             logger.error('导入筛选规则失败:', error);
@@ -334,48 +435,61 @@ class CustomFilter {
 
 class CustomFilterConditions {
     static fields = [
-        { value: 'title', label: '标题', isNumber: false, operatorGroup: 'text'},
-        { value: 'domain', label: '域名', isNumber: false, operatorGroup: 'text' },
-        { value: 'url', label: '链接', isNumber: false, operatorGroup: 'text' },
-        { value: 'tag', label: '标签', isNumber: false, operatorGroup: 'textArray' },
-        { value: 'create', label: '创建时间', isNumber: true, unit: '天', operatorGroup: 'number' },
-        { value: 'lastUse', label: '上次使用', isNumber: true, unit: '天', operatorGroup: 'number' },
-        { value: 'use', label: '使用次数', isNumber: true, unit: '次', operatorGroup: 'number' }
+        { value: 'title', label: i18n.getMessage('settings_filters_field_title'), isNumber: false, operatorGroup: 'text'},
+        { value: 'domain', label: i18n.getMessage('settings_filters_field_domain'), isNumber: false, operatorGroup: 'text' },
+        { value: 'url', label: i18n.getMessage('settings_filters_field_url'), isNumber: false, operatorGroup: 'text' },
+        { value: 'tag', label: i18n.getMessage('settings_filters_field_tag'), isNumber: false, operatorGroup: 'textArray' },
+        { value: 'create', label: i18n.getMessage('settings_filters_field_create'), isNumber: true, unit: i18n.getMessage('settings_filters_unit_days'), operatorGroup: 'number' },
+        { value: 'lastUse', label: i18n.getMessage('settings_filters_field_last_use'), isNumber: true, unit: i18n.getMessage('settings_filters_unit_days'), operatorGroup: 'number' },
+        { value: 'use', label: i18n.getMessage('settings_filters_field_use'), isNumber: true, unit: i18n.getMessage('settings_filters_unit_times'), operatorGroup: 'number' }
     ];
         
     static operators = {
         text: [
-            { value: 'is', label: '等于'},
-            { value: 'isNot', label: '不等于' },
-            { value: 'has', label: '包含', isArray: true },
-            { value: 'notHas', label: '不包含', isArray: true }
+            { value: 'is', label: i18n.getMessage('settings_filters_operator_is')},
+            { value: 'isNot', label: i18n.getMessage('settings_filters_operator_is_not') },
+            { value: 'has', label: i18n.getMessage('settings_filters_operator_has'), isArray: true },
+            { value: 'notHas', label: i18n.getMessage('settings_filters_operator_not_has'), isArray: true }
         ],
         number: [
-            { value: '>', label: '大于' },
-            { value: '<', label: '小于' },
-            { value: '=', label: '等于' }
+            { value: '>', label: i18n.getMessage('settings_filters_operator_greater') },
+            { value: '<', label: i18n.getMessage('settings_filters_operator_less') },
+            { value: '=', label: i18n.getMessage('settings_filters_operator_equal') }
         ],
         textArray: [
-            { value: 'is', label: '等于', isArray: true },
-            { value: 'isNot', label: '不等于', isArray: true },
-            { value: 'has', label: '包含', isArray: true },
-            { value: 'notHas', label: '不包含', isArray: true }
+            { value: 'is', label: i18n.getMessage('settings_filters_operator_is'), isArray: true },
+            { value: 'isNot', label: i18n.getMessage('settings_filters_operator_is_not'), isArray: true },
+            { value: 'has', label: i18n.getMessage('settings_filters_operator_has'), isArray: true },
+            { value: 'notHas', label: i18n.getMessage('settings_filters_operator_not_has'), isArray: true }
         ],
     };
 
     static getFields() {
-        return this.fields;
+        // 返回字段副本
+        return this.fields.map(field => ({ ...field }));
     }
     
     static getFieldSettings(field) {
-        return this.fields.find(f => f.value === field);
+        const fieldDef = this.fields.find(f => f.value === field);
+        if (!fieldDef) return null;
+        
+        // 返回字段设置的副本
+        return { ...fieldDef };
     }
 
     static getOperators(operatorGroup) {
         if (!operatorGroup) {
-            return this.operators;
+            // 返回所有操作符组
+            const result = {};
+            for (const [key, ops] of Object.entries(this.operators)) {
+                result[key] = ops.map(op => ({ ...op }));
+            }
+            return result;
         }
-        return this.operators[operatorGroup];
+        const ops = this.operators[operatorGroup];
+        if (!ops) return null;
+        // 返回操作符副本
+        return ops.map(op => ({ ...op }));
     }
 
     static getOperatorSetting(operatorGroup, operator) {

@@ -66,7 +66,7 @@ class BaseSyncService {
             const timeString = lastSyncTime.toLocaleString();
             
             if (status.lastSyncResult === 'success') {
-                this.statusText.textContent = `上次同步: ${timeString}`;
+                this.statusText.textContent = i18n.getMessage('sync_last_sync_time', [timeString]);
                 this.statusContainer.classList.remove('error');
                 this.statusContainer.classList.add('success');
                 this.successIcon.classList.add('show');
@@ -79,7 +79,7 @@ class BaseSyncService {
                 this.errorIcon.classList.add('show');
             }
         } else {
-            this.statusText.textContent = '上次同步: 从未同步';
+            this.statusText.textContent = i18n.getMessage('sync_never_synced');
             this.statusContainer.classList.remove('success', 'error');
             this.successIcon.classList.remove('show');
             this.errorIcon.classList.remove('show');
@@ -141,10 +141,10 @@ class BaseSyncService {
 
             await this.updateAutoSync(enabled);
 
-            showToast(enabled ? '已开启自动同步' : '已关闭自动同步');
+            showToast(enabled ? i18n.getMessage('sync_auto_sync_enabled') : i18n.getMessage('sync_auto_sync_disabled'));
         } catch (error) {
             logger.error('更新自动同步设置失败:', error);
-            showToast('更新自动同步设置失败', true);
+            showToast(i18n.getMessage('sync_auto_sync_update_failed'), true);
             await this.updateServiceCardUI();
         }
     }
@@ -170,7 +170,7 @@ class BaseSyncService {
             // 执行同步
             await this.syncNow(config);
 
-            showToast('同步完成');
+            showToast(i18n.getMessage('sync_completed'));
         } catch (error) {
             logger.error(`${this.serviceId}同步失败:`, error);
             showToast(error.message, true);
@@ -354,10 +354,10 @@ class CloudSyncService extends BaseSyncService {
             
             // 关闭对话框
             this.hideConfigDialog();
-            showToast('云同步配置已保存');
+            showToast(i18n.getMessage('sync_cloud_config_saved'));
         } catch (error) {
             logger.error('保存云同步配置失败:', error);
-            showToast('保存配置失败', true);
+            showToast(i18n.getMessage('sync_config_save_failed'), true);
         }
     }
 
@@ -371,14 +371,15 @@ class CloudSyncService extends BaseSyncService {
                 type: MessageType.RESET_CLOUD_SYNC_CACHE
             }, (response) => {
                 if (response && response.success) {
-                    showToast('同步缓存已重置');
+                    showToast(i18n.getMessage('sync_cache_reset_success'));
                 } else {
-                    showToast(`重置同步缓存失败: ${response?.error || '未知错误'}`, true);
+                    const errorMsg = response?.error || i18n.getMessage('sync_error_unknown');
+                    showToast(i18n.getMessage('sync_cache_reset_failed', [errorMsg]), true);
                 }
             });
         } catch (error) {
             logger.error('重置同步缓存失败:', error);
-            showToast(`重置同步缓存失败: ${error.message}`, true);
+            showToast(i18n.getMessage('sync_cache_reset_failed', [error.message]), true);
         }
     }
 
@@ -386,7 +387,7 @@ class CloudSyncService extends BaseSyncService {
         if (!FEATURE_FLAGS.ENABLE_CLOUD_SYNC) {
             return {
                 valid: false,
-                error: '云同步功能已禁用'
+                error: i18n.getMessage('sync_cloud_disabled')
             };
         }
         // 云同步需要登录才能使用
@@ -394,12 +395,12 @@ class CloudSyncService extends BaseSyncService {
 
         return {
             valid: valid,
-            error: '请先登录账号'
+            error: i18n.getMessage('sync_please_login')
         };
     }
 
     async handleAutoSyncToggleFailed() {
-        showToast('请先登录账号', true);
+        showToast(i18n.getMessage('sync_please_login'), true);
     }
 
     /**
@@ -407,7 +408,7 @@ class CloudSyncService extends BaseSyncService {
      */
     async syncNow(config) {
         if (!FEATURE_FLAGS.ENABLE_CLOUD_SYNC) {
-            throw new Error('云同步功能已禁用');
+            throw new Error(i18n.getMessage('sync_cloud_disabled'));
         }
         try {
             // 向background脚本发送执行云同步的消息
@@ -423,7 +424,7 @@ class CloudSyncService extends BaseSyncService {
                     if (response.success) {
                         resolve(response.result);
                     } else {
-                        reject(new Error(response.error || '同步失败'));
+                        reject(new Error(response.error || i18n.getMessage('sync_failed')));
                     }
                 });
             });
@@ -564,7 +565,7 @@ class WebDAVSyncService extends BaseSyncService {
         if (!config.server.url) {
             return {
                 valid: false,
-                error: '服务器地址不能为空'
+                error: i18n.getMessage('sync_webdav_error_url_empty')
             };
         }
 
@@ -573,7 +574,7 @@ class WebDAVSyncService extends BaseSyncService {
         } catch {
             return {
                 valid: false,
-                error: '无效的服务器地址'
+                error: i18n.getMessage('sync_webdav_error_url_invalid')
             };
         }
 
@@ -581,7 +582,7 @@ class WebDAVSyncService extends BaseSyncService {
         if (!config.server.username || !config.server.password) {
             return {
                 valid: false,
-                error: '用户名和密码不能为空'
+                error: i18n.getMessage('sync_webdav_error_credentials_empty')
             };
         }
 
@@ -591,7 +592,7 @@ class WebDAVSyncService extends BaseSyncService {
             if (isNaN(interval) || interval < 5 || interval > 1440) {
                 return {
                     valid: false,
-                    error: '同步间隔必须在5分钟-24小时之间'
+                    error: i18n.getMessage('sync_webdav_error_interval_invalid')
                 };
             }
         }
@@ -601,7 +602,7 @@ class WebDAVSyncService extends BaseSyncService {
         if (!hasSelectedData) {
             return {
                 valid: false,
-                error: '请至少选择一项要同步的数据'
+                error: i18n.getMessage('sync_webdav_error_no_data_selected')
             };
         }
 
@@ -630,10 +631,10 @@ class WebDAVSyncService extends BaseSyncService {
 
             // 关闭对话框
             this.hideConfigDialog();
-            showToast('WebDAV 配置已保存');
+            showToast(i18n.getMessage('sync_webdav_config_saved'));
         } catch (error) {
             logger.error('保存WebDAV配置失败:', error);
-            showToast('保存配置失败', true);
+            showToast(i18n.getMessage('sync_config_save_failed'), true);
         }
     }
 
@@ -676,13 +677,13 @@ class WebDAVSyncService extends BaseSyncService {
             // 禁用测试按钮
             testBtn.disabled = true;
             testBtn.classList.add('testing');
-            testBtnText.textContent = '测试中...';
+            testBtnText.textContent = i18n.getMessage('sync_webdav_testing');
 
             // 执行连接测试
             await this.testConnection(config);
             
             // 如果没有抛出错误，则测试成功
-            showToast('连接测试成功！WebDAV服务器配置有效');
+            showToast(i18n.getMessage('sync_webdav_test_success'));
         } catch (error) {
             logger.error('WebDAV连接测试失败:', error);
             showToast(`${error.message}`, true);
@@ -690,7 +691,7 @@ class WebDAVSyncService extends BaseSyncService {
             // 恢复测试按钮
             testBtn.disabled = false;
             testBtn.classList.remove('testing');
-            testBtnText.textContent = '测试连接';
+            testBtnText.textContent = i18n.getMessage('sync_webdav_test_connection');
         }
     }
 

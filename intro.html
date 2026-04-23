@@ -3,24 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>欢迎使用 Smart Bookmark</title>
+    <title data-i18n="intro_title">欢迎使用 Smart Bookmark</title>
     <link rel="stylesheet" href="css/intro.css">
 </head>
 <body>
     <div class="container">
         <header>
             <img src="icons/saved_128.png" alt="Smart Bookmark Logo" class="logo">
-            <h1>欢迎使用 Smart Bookmark</h1>
-            <p class="subtitle">学习如何使用Smart Bookmark</p>
+            <h1 data-i18n="intro_title">欢迎使用 Smart Bookmark</h1>
+            <p class="subtitle" data-i18n="intro_subtitle">学习如何使用Smart Bookmark</p>
         </header>
 
         <main class="steps-container">
-            <button class="carousel-button prev" aria-label="上一步">
+            <button class="carousel-button prev" aria-label="" data-i18n-aria-label="intro_prev_step">
                 <svg viewBox="0 0 24 24" class="arrow-icon">
                     <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
                 </svg>
             </button>
-            <button class="carousel-button next" aria-label="下一步">
+            <button class="carousel-button next" aria-label="" data-i18n-aria-label="intro_next_step">
                 <svg viewBox="0 0 24 24" class="arrow-icon">
                     <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
                 </svg>
@@ -31,57 +31,57 @@
                     <div class="step active">
                         <div class="step-header">
                             <div class="step-number">1</div>
-                            <h2>固定到工具栏</h2>
+                            <h2 data-i18n="intro_step1_title">固定到工具栏</h2>
                         </div>
-                        <div class="video-container">
+                        <div class="video-container" data-click-to-enlarge="">
                             <video class="tutorial-video" autoplay muted playsinline>
                                 <source src="videos/open-sidebar.mp4" type="video/mp4">
-                                您的浏览器不支持视频播放。
+                                <span data-i18n="intro_video_not_supported">您的浏览器不支持视频播放。</span>
                             </video>
                         </div>
-                        <p>将扩展程序固定在工具栏，方便快速访问。</p>
+                        <p data-i18n="intro_step1_description">将扩展程序固定在工具栏，方便快速访问。</p>
                     </div>
 
                     <div class="step">
                         <div class="step-header">
                             <div class="step-number">2</div>
-                            <h2>配置API服务</h2>
+                            <h2 data-i18n="intro_step2_title">配置API服务</h2>
                         </div>
                         <div class="video-container">
                             <video class="tutorial-video" autoplay muted playsinline>
                                 <source src="videos/config-api.mp4" type="video/mp4">
-                                您的浏览器不支持视频播放。
+                                <span data-i18n="intro_video_not_supported">您的浏览器不支持视频播放。</span>
                             </video>
                         </div>
-                        <p>设置API服务以启用智能标签和语义化搜索功能。</p>
+                        <p data-i18n="intro_step2_description">设置API服务以启用智能标签和语义化搜索功能。</p>
                     </div>
 
                     <div class="step">
                         <div class="step-header">
                             <div class="step-number">3</div>
-                            <h2>收藏网页书签</h2>
+                            <h2 data-i18n="intro_step3_title">收藏网页书签</h2>
                         </div>
                         <div class="video-container">
                             <video class="tutorial-video" autoplay muted playsinline>
                                 <source src="videos/save-bookmark.mp4" type="video/mp4">
-                                您的浏览器不支持视频播放。
+                                <span data-i18n="intro_video_not_supported">您的浏览器不支持视频播放。</span>
                             </video>
                         </div>
-                        <p>一键收藏网页，智能生成标签并支持自定义编辑</p>
+                        <p data-i18n="intro_step3_description">一键收藏网页，智能生成标签并支持自定义编辑</p>
                     </div>
 
                     <div class="step">
                         <div class="step-header">
                             <div class="step-number">4</div>
-                            <h2>快捷搜索</h2>
+                            <h2 data-i18n="intro_step4_title">快捷搜索</h2>
                         </div>
                         <div class="video-container">
                             <video class="tutorial-video" autoplay muted playsinline>
                                 <source src="videos/quick-search.mp4" type="video/mp4">
-                                您的浏览器不支持视频播放。
+                                <span data-i18n="intro_video_not_supported">您的浏览器不支持视频播放。</span>
                             </video>
                         </div>
-                        <p>在地址栏输入"sb"关键字，快速搜索您的书签。</p>
+                        <p data-i18n="intro_step4_description">在地址栏输入"sb"关键字，快速搜索您的书签。</p>
                     </div>
                 </div>
             </div>
@@ -95,15 +95,15 @@
         </main>
 
         <section class="shortcuts-container">
-            <h2>快捷键指南</h2>
+            <h2 data-i18n="intro_shortcuts_title">快捷键指南</h2>
             <div class="shortcuts-grid">
                 <div class="shortcut-card">
                     <div class="shortcut-key">Cmd/Ctrl + B</div>
-                    <div class="shortcut-description">快速添加书签</div>
+                    <div class="shortcut-description" data-i18n="intro_shortcut_add_bookmark">快速添加书签</div>
                 </div>
                 <div class="shortcut-card">
                     <div class="shortcut-key">Cmd/Ctrl + K</div>
-                    <div class="shortcut-description">快速搜索书签</div>
+                    <div class="shortcut-description" data-i18n="intro_shortcut_search_bookmark">快速搜索书签</div>
                 </div>
             </div>
             <div class="shortcuts-footer">
@@ -111,13 +111,13 @@
                     <svg class="button-icon" viewBox="0 0 24 24">
                         <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
                     </svg>
-                    自定义快捷键
+                    <span data-i18n="intro_customize_shortcuts">自定义快捷键</span>
                 </button>
             </div>
         </section>
 
         <footer>
-            <button id="start-using" class="primary-button">开始使用</button>
+            <button id="start-using" class="primary-button" data-i18n="intro_start_using">开始使用</button>
         </footer>
     </div>
 
@@ -135,6 +135,7 @@
     <script src="common.js"></script>
     <script src="env.js"></script>
     <script src="logger.js"></script>
+    <script src="i18n.js"></script>
     <script src="storageManager.js"></script>
     <script src="intro.js"></script>
 </body>

@@ -56,6 +56,7 @@ class OverviewSettingsTab extends BaseSettingsTab {
         this.sitesDisplayCountContainer = document.getElementById('sites-display-count-container');
         this.showSearchHistory = document.getElementById('show-search-history');
         this.clearSearchHistory = document.getElementById('clear-search-history');
+        this.autoGenerateTags = document.getElementById('auto-generate-tags');
 
         // 添加快捷键相关元素
         this.quickSaveShortcut = document.getElementById('quickSave-shortcut');
@@ -75,14 +76,47 @@ class OverviewSettingsTab extends BaseSettingsTab {
         this.handleSitesDisplayCountChange = this.handleSitesDisplayCountChange.bind(this);
         this.handleSearchHistoryChange = this.handleSearchHistoryChange.bind(this);
         this.handleClearSearchHistory = this.handleClearSearchHistory.bind(this);
+        this.handleAutoGenerateTagsChange = this.handleAutoGenerateTagsChange.bind(this);
     }
 
     async initialize() {
         await this.initializeSearchSettings();
+        await this.initializeAILanguageSettings();
         await this.initializeThemeSettings();
         await this.checkLoginStatus();
         await this.initializeShortcuts();
         this.setupEventListeners();
+    }
+
+    async initializeAILanguageSettings() {
+        const targetLanguageSelect = document.getElementById('ai-target-language');
+        if (!targetLanguageSelect) return;
+
+        targetLanguageSelect.innerHTML = '';
+        for (const [code, name] of Object.entries(AI_SUPPORTED_LANGUAGES)) {
+            const option = document.createElement('option');
+            option.value = code;
+            option.textContent = AI_LANGUAGE_DISPLAY_NAMES[code] || name;
+            targetLanguageSelect.appendChild(option);
+        }
+
+        const targetLanguage = await SettingsManager.get('ai.targetLanguage') || AI_DEFAULT_TARGET_LANGUAGE;
+        targetLanguageSelect.value = targetLanguage;
+
+        targetLanguageSelect.addEventListener('change', async (e) => {
+            const newLanguage = e.target.value;
+            try {
+                await updateSettingsWithSync({
+                    ai: {
+                        targetLanguage: newLanguage
+                    }
+                });
+                showToast(i18n.getMessage('settings_services_ai_target_language_updated'));
+            } catch (error) {
+                logger.error('更新目标语言设置失败:', error);
+                showToast(i18n.getMessage('settings_services_ai_target_language_update_failed'), true);
+            }
+        });
     }
 
     async initializeSearchSettings() {
@@ -96,6 +130,9 @@ class OverviewSettingsTab extends BaseSettingsTab {
         this.sitesDisplayCount.value = settings.search.sitesDisplayCount || 10;
         this.sitesDisplayCountContainer.style.display = 
             (sitesDisplay === 'pinned' || sitesDisplay === 'none') ? 'none' : 'flex';
+
+        const autoGenerateTags = settings.ai?.autoGenerateTags !== false;
+        this.autoGenerateTags.checked = autoGenerateTags;
     }
 
     async initializeThemeSettings() {
@@ -135,10 +172,10 @@ class OverviewSettingsTab extends BaseSettingsTab {
                 mode: theme
             });
             this.updateThemeUI(theme);
-            showToast('主题设置已更新');
+            showToast(i18n.getMessage('settings_overview_theme_updated'));
         } catch (error) {
             logger.error('更新主题失败:', error);
-            showToast('主题设置更新失败', true);
+            showToast(i18n.getMessage('settings_overview_theme_update_failed'), true);
         }
     }
 
@@ -152,6 +189,8 @@ class OverviewSettingsTab extends BaseSettingsTab {
         // 添加网站显示设置的事件监听
         this.quickSearchSitesDisplay.addEventListener('change', this.handleSitesDisplayChange);
         this.sitesDisplayCount.addEventListener('change', this.handleSitesDisplayCountChange);
+
+        this.autoGenerateTags.addEventListener('change', this.handleAutoGenerateTagsChange);
     }
 
     async checkLoginStatus() {
@@ -184,6 +223,12 @@ class OverviewSettingsTab extends BaseSettingsTab {
         this.actionDiv.innerHTML = '';
         this.statusDiv.appendChild(content.querySelector('.status-box'));
         this.actionDiv.appendChild(content.querySelector('.status-actions'));
+        
+        // 更新国际化文本
+        if (typeof i18n !== 'undefined') {
+            i18n.updateNodeText(this.statusDiv);
+            i18n.updateNodeText(this.actionDiv);
+        }
     }
 
     showLoggedOutState() {
@@ -216,6 +261,12 @@ class OverviewSettingsTab extends BaseSettingsTab {
         this.actionDiv.innerHTML = '';
         this.statusDiv.appendChild(content.querySelector('.status-box'));
         this.actionDiv.appendChild(content.querySelector('.status-actions'));
+        
+        // 更新国际化文本
+        if (typeof i18n !== 'undefined') {
+            i18n.updateNodeText(this.statusDiv);
+            i18n.updateNodeText(this.actionDiv);
+        }
     }
 
     async handleLogout() {
@@ -233,7 +284,7 @@ class OverviewSettingsTab extends BaseSettingsTab {
                     maxResults: value
                 }
             });
-            showToast('设置已保存');
+            showToast(i18n.getMessage('settings_saved'));
         } else {
             this.maxSearchResults.value = 50; // 重置为默认值
         }
@@ -249,7 +300,7 @@ class OverviewSettingsTab extends BaseSettingsTab {
                     omniboxSearchLimit: value
                 }
             });
-            showToast('设置已保存');
+            showToast(i18n.getMessage('settings_saved'));
         } else {
             this.omniboxSearchLimit.value = 5; // 重置为默认值
         }
@@ -264,10 +315,10 @@ class OverviewSettingsTab extends BaseSettingsTab {
                 
                 switch (command.name) {
                     case 'quick-save':
-                        this.quickSaveShortcut.textContent = command.shortcut || '未设置';
+                        this.quickSaveShortcut.textContent = command.shortcut || i18n.getMessage('settings_overview_shortcut_not_set');
                         break;
                     case 'quick-search':
-                        this.quickSearchShortcut.textContent = command.shortcut || '未设置';
+                        this.quickSearchShortcut.textContent = command.shortcut || i18n.getMessage('settings_overview_shortcut_not_set');
                         break;
                 }
             });
@@ -297,17 +348,17 @@ class OverviewSettingsTab extends BaseSettingsTab {
                     sitesDisplay: displayType
                 }
             });
-            showToast('设置已保存');
+            showToast(i18n.getMessage('settings_saved'));
         } catch (error) {
             logger.error('保存网站显示设置失败:', error);
-            showToast('保存设置失败: ' + error.message, true);
+            showToast(i18n.getMessage('settings_save_failed', [error.message]), true);
         }
     }
 
     async handleSitesDisplayCountChange() {
         let count = parseInt(this.sitesDisplayCount.value);
         if (isNaN(count)) {
-            showToast('显示数量必须是数字', true);
+            showToast(i18n.getMessage('settings_overview_search_sites_count_invalid'), true);
             return;
         }
         if (count < 1) {
@@ -325,10 +376,10 @@ class OverviewSettingsTab extends BaseSettingsTab {
                     sitesDisplayCount: count
                 }
             });
-            showToast('设置已保存');
+            showToast(i18n.getMessage('settings_saved'));
         } catch (error) {
             logger.error('保存显示数量设置失败:', error);
-            showToast('保存设置失败: ' + error.message, true);
+            showToast(i18n.getMessage('settings_save_failed', [error.message]), true);
         }
     }
 
@@ -340,22 +391,36 @@ class OverviewSettingsTab extends BaseSettingsTab {
                     showSearchHistory: showSearchHistory
                 }
             });
-            showToast('设置已保存');
+            showToast(i18n.getMessage('settings_saved'));
         } catch (error) {
             logger.error('保存搜索历史显示设置失败:', error);
-            showToast('保存设置失败: ' + error.message, true);
+            showToast(i18n.getMessage('settings_save_failed', [error.message]), true);
+        }
+    }
+
+    async handleAutoGenerateTagsChange() {
+        try {
+            await updateSettingsWithSync({
+                ai: {
+                    autoGenerateTags: this.autoGenerateTags.checked
+                }
+            });
+            showToast(i18n.getMessage('settings_saved'));
+        } catch (error) {
+            logger.error('保存自动生成标签设置失败:', error);
+            showToast(i18n.getMessage('settings_save_failed', [error.message]), true);
         }
     }
 
     async handleClearSearchHistory() {
         try {
-            if (confirm('确定要清除所有搜索历史记录吗？此操作无法撤销。')) {
+            if (confirm(i18n.getMessage('settings_overview_search_history_clear_confirm'))) {
                 await searchManager.searchHistoryManager.clearHistory();
-                showToast('搜索历史已清除');
+                showToast(i18n.getMessage('settings_overview_search_history_cleared'));
             }
         } catch (error) {
             logger.error('清除搜索历史失败:', error);
-            showToast('清除搜索历史失败: ' + error.message, true);
+            showToast(i18n.getMessage('settings_overview_search_history_clear_failed', [error.message]), true);
         }
     }
 
@@ -440,14 +505,14 @@ class PrivacySettingsTab extends BaseSettingsTab {
 
         try {
             if (!this.isValidDomainPattern(domain)) {
-                throw new Error('无效的域名格式');
+                throw new Error(i18n.getMessage('settings_privacy_domain_invalid'));
             }
 
             const settings = await SettingsManager.getAll();
             const customDomains = settings.privacy.customDomains || [];
             
             if (customDomains.includes(domain)) {
-                throw new Error('该域名已存在');
+                throw new Error(i18n.getMessage('settings_privacy_domain_exists'));
             }
 
             await updateSettingsWithSync({
@@ -555,15 +620,15 @@ class ServicesSettingsTab extends BaseSettingsTab {
 
         const config = await ConfigManager.findServiceById(serviceId);
         if (!config) {
-            showToast('服务配置不存在', true);
+            showToast(i18n.getMessage('settings_services_config_not_found'), true);
             return;
         }
 
         try {
             await navigator.clipboard.writeText(JSON.stringify(config));
-            showToast('配置已复制到剪贴板');
+            showToast(i18n.getMessage('settings_services_config_copied'));
         } catch (error) {
-            showToast('复制失败：' + error.message, true);
+            showToast(i18n.getMessage('settings_services_config_copy_failed', [error.message]), true);
         }
     }
 
@@ -575,11 +640,11 @@ class ServicesSettingsTab extends BaseSettingsTab {
             try {
                 config = JSON.parse(text);
             } catch (error) {
-                throw new Error('配置格式不正确, 请检查剪贴板内容');
+                throw new Error(i18n.getMessage('settings_services_config_invalid'));
             }
 
             if (!config.id || !config.name || !config.baseUrl) {
-                throw new Error('配置格式不正确, 请检查剪贴板内容');
+                throw new Error(i18n.getMessage('settings_services_config_invalid'));
             }
 
             const dialog = this.customServiceDialog;
@@ -605,7 +670,7 @@ class ServicesSettingsTab extends BaseSettingsTab {
             showToast(`${config.name} 配置已粘贴`);
         } catch (error) {
             if (error.message.includes('Read permission denied')) {
-                showToast('没有权限，请允许此网站查看剪贴板', true);
+                showToast(i18n.getMessage('settings_services_clipboard_permission_denied'), true);
             } else {
                 showToast(error.message, true);
             }
@@ -663,11 +728,13 @@ class ServicesSettingsTab extends BaseSettingsTab {
         // 添加自定义服务
         const customServices = await ConfigManager.getCustomServices();
         for (const service of Object.values(customServices)) {
-            // 向Chat服务选择器添加选项
-            this.addOptionToServiceSelect(chatServiceSelect, service.id, service.name, service.id === chatServiceId);
+            if (service.chatModel) {
+                this.addOptionToServiceSelect(chatServiceSelect, service.id, service.name, service.id === chatServiceId);
+            }
             
-            // 向Embedding服务选择器添加选项
-            this.addOptionToServiceSelect(embedServiceSelect, service.id, service.name, service.id === embedServiceId);
+            if (service.embedModel) {
+                this.addOptionToServiceSelect(embedServiceSelect, service.id, service.name, service.id === embedServiceId);
+            }
 
             // 添加服务卡片
             const isChatActive = chatServiceId === service.id;
@@ -684,7 +751,11 @@ class ServicesSettingsTab extends BaseSettingsTab {
         // 为选择器添加变更事件处理程序
         chatServiceSelect.addEventListener('change', async (e) => {
             logger.debug('更改Chat服务', e.target.value);
-            await ConfigManager.setServiceType('chat', e.target.value);
+            const result = await ConfigManager.setServiceType('chat', e.target.value);
+            if (!result) {
+                await this.refreshServiceList();
+                return;
+            }
             this.updateActiveService(e.target.value, null);
 
             sendMessageSafely({
@@ -697,7 +768,11 @@ class ServicesSettingsTab extends BaseSettingsTab {
 
         embedServiceSelect.addEventListener('change', async (e) => {
             logger.debug('更改Embedding服务', e.target.value);
-            await ConfigManager.setServiceType('embedding', e.target.value);
+            const result = await ConfigManager.setServiceType('embedding', e.target.value);
+            if (!result) {
+                await this.refreshServiceList();
+                return;
+            }
             this.updateActiveService(null, e.target.value);
 
             // 嵌入式模型变更需要重新计算书签向量
@@ -804,15 +879,15 @@ class ServicesSettingsTab extends BaseSettingsTab {
                 </div>
             </div>
             <p class="service-description">
-                ${isCustom ? '自定义API服务' : service.description || ''}
+                ${isCustom ? i18n.getMessage('settings_services_custom_api_service') : (service.description || '')}
             </p>
             <div class="service-status">
-                <div class="api-status ${configured ? 'configured' : ''}">未配置</div>
-                <div class="model-type-tag chat ${isChatActive ? 'active' : ''}">文本</div>
-                <div class="model-type-tag embedding ${isEmbedActive ? 'active' : ''}">向量</div>
+                <div class="api-status ${configured ? 'configured' : ''}">${i18n.getMessage('settings_services_not_configured')}</div>
+                <div class="model-type-tag chat ${isChatActive ? 'active' : ''}">${i18n.getMessage('settings_services_text_model')}</div>
+                <div class="model-type-tag embedding ${isEmbedActive ? 'active' : ''}">${i18n.getMessage('settings_services_embedding_model')}</div>
             </div>
             ${isCustom ? `
-                <button class="delete-service-btn" title="删除服务">
+                <button class="delete-service-btn" title="${i18n.getMessage('settings_services_delete_service')}">
                     <svg viewBox="0 0 24 24" width="16" height="16">
                         <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
                     </svg>
@@ -894,14 +969,14 @@ class ServicesSettingsTab extends BaseSettingsTab {
         card.innerHTML = `
             <div class="add-custom-content">
                 <div class="add-icon">+</div>
-                <div class="add-text">添加 OpenAI 兼容服务</div>
+                <div class="add-text">${i18n.getMessage('settings_services_add_openai_compatible')}</div>
             </div>
         `;
 
         card.addEventListener('click', async () => {
             const customServices = await ConfigManager.getCustomServices();
             if (Object.keys(customServices).length >= MAX_CUSTOM_SERVICES) {
-                showToast(`最多只能添加${MAX_CUSTOM_SERVICES}个自定义服务`, true);
+                showToast(i18n.getMessage('settings_services_max_custom_services', [MAX_CUSTOM_SERVICES]), true);
                 return;
             }
             this.showCustomServiceDialog();
@@ -947,7 +1022,7 @@ class ServicesSettingsTab extends BaseSettingsTab {
         apiServiceStatus.addEventListener('click', async () => {
             try {
                 await navigator.clipboard.writeText(apiServiceStatus.textContent);
-                showToast('已复制到剪贴板');
+                showToast(i18n.getMessage('settings_services_copied_to_clipboard'));
             } catch (err) {
                 logger.error('复制失败:', err);
             }
@@ -991,15 +1066,15 @@ class ServicesSettingsTab extends BaseSettingsTab {
         const apiServiceStatus = dialog.querySelector('.api-service-status');
             
         try {
-            this.updateStatus(apiServiceStatus, '正在保存...', 'verifying');
+            this.updateStatus(apiServiceStatus, i18n.getMessage('settings_services_saving'), 'verifying');
             verifyIcon.classList.remove('success', 'error');
 
             const apiKey = apiKeyInput.value.trim();
             const setting = {
                 chatModel: chatModelInput.value.trim()
             };
-            await ConfigManager.saveBuiltinAPIKey(this.currentService.id, apiKey, setting);
-            this.updateStatus(apiServiceStatus, '保存成功', 'success');
+            await ConfigManager.saveBuiltinAPIKey(this.currentService.id, apiKey, setting, this.verifyAbortController?.signal);
+            this.updateStatus(apiServiceStatus, i18n.getMessage('settings_services_save_success'), 'success');
             await this.updateServiceCardStatus(this.currentService.id);
 
             await this.autoCheckActiveService(this.currentService.id);
@@ -1012,8 +1087,13 @@ class ServicesSettingsTab extends BaseSettingsTab {
                 }
             });
         } catch (error) {
-            this.updateStatus(apiServiceStatus, error.message, 'error');
-            verifyIcon.classList.add('error');
+            if (isUserCanceledError(error)) {
+                logger.debug('[取消功能] 保存内置服务配置已取消');
+                this.updateStatus(apiServiceStatus, i18n.getMessage('settings_services_test_cancelled'), '');
+            } else {
+                this.updateStatus(apiServiceStatus, error.message, 'error');
+                verifyIcon.classList.add('error');
+            }
         }
     }
 
@@ -1044,17 +1124,22 @@ class ServicesSettingsTab extends BaseSettingsTab {
         const apiServiceStatus = dialog.querySelector('.api-service-status'); 
 
         try {
-            this.updateStatus(apiServiceStatus, '正在验证...', 'verifying');
+            this.updateStatus(apiServiceStatus, i18n.getMessage('settings_services_verifying'), 'verifying');
             verifyIcon.classList.remove('success', 'error');
             
             const chatModel = chatModelInput.value.trim();
             const apiKey = apiKeyInput.value.trim();
-            await ConfigManager.verifyAPIKey(this.currentService.id, apiKey, chatModel);
-            this.updateStatus(apiServiceStatus, 'API Key 有效', 'success');
+            await ConfigManager.verifyAPIKey(this.currentService.id, apiKey, chatModel, this.verifyAbortController?.signal);
+            this.updateStatus(apiServiceStatus, i18n.getMessage('settings_services_api_key_valid'), 'success');
             verifyIcon.classList.add('success');
         } catch (error) {
-            this.updateStatus(apiServiceStatus, error.message, 'error');
-            verifyIcon.classList.add('error');
+            if (isUserCanceledError(error)) {
+                logger.debug('[取消功能] 验证 API Key 已取消');
+                this.updateStatus(apiServiceStatus, i18n.getMessage('settings_services_test_cancelled'), '');
+            } else {
+                this.updateStatus(apiServiceStatus, error.message, 'error');
+                verifyIcon.classList.add('error');
+            }
         }
     }
 
@@ -1064,7 +1149,7 @@ class ServicesSettingsTab extends BaseSettingsTab {
         const apiKey = service.apiKey;
         this.currentService = service;
         
-        dialog.querySelector('.service-name').textContent = `${service.name} 配置`;
+        dialog.querySelector('.service-name').textContent = `${service.name} ${i18n.getMessage('settings_services_config')}`;
         dialog.querySelector('.get-key-link').href = service.getKeyUrl;
         dialog.querySelector('.model-pricing-link').href = service.pricingUrl;
         
@@ -1073,6 +1158,10 @@ class ServicesSettingsTab extends BaseSettingsTab {
         
         dialog.querySelector('.api-service-status').textContent = '';
         dialog.querySelector('.verify-icon').classList.remove('success', 'error');
+
+        // 创建新的 AbortController，用于在关闭弹窗时取消正在进行的 API 验证请求
+        this.verifyAbortController = new AbortController();
+        logger.debug('[取消功能] 服务配置弹窗已打开，已创建 verifyAbortController');
 
         // 更新模型信息
         const chatModelInput = dialog.querySelector('.chat-model input');
@@ -1088,6 +1177,12 @@ class ServicesSettingsTab extends BaseSettingsTab {
     }
 
     closeServiceConfigDialog() {
+        // 取消正在进行的 API 验证请求
+        if (this.verifyAbortController) {
+            logger.debug('[取消功能] 服务配置弹窗关闭，已触发 verifyAbortController.abort()');
+            this.verifyAbortController.abort();
+            this.verifyAbortController = null;
+        }
         this.serviceConfigDialog.classList.remove('show');
         this.currentService = null;
     }
@@ -1184,12 +1279,16 @@ class ServicesSettingsTab extends BaseSettingsTab {
             el.textContent = '';
             el.className = 'test-status';
         });
+
+        // 创建新的 AbortController，用于在关闭弹窗时取消正在进行的 API 测试请求
+        this.testAbortController = new AbortController();
+        logger.debug('[取消功能] 自定义服务弹窗已打开，已创建 testAbortController');
         
         dialog.classList.add('show');
     }
 
     async deleteCustomService(serviceId) {
-        if (!confirm('确定要删除这个自定义服务吗？')) {
+        if (!confirm(i18n.getMessage('settings_services_delete_confirm'))) {
             return;
         }
 
@@ -1219,7 +1318,7 @@ class ServicesSettingsTab extends BaseSettingsTab {
                 }
             });
         } catch (error) {
-            showToast('删除服务失败: ' + error.message, true);
+            showToast(i18n.getMessage('settings_services_delete_failed', [error.message]), true);
         }
     }
 
@@ -1248,17 +1347,17 @@ class ServicesSettingsTab extends BaseSettingsTab {
 
         // 验证必填字段
         if (!config.name || !config.baseUrl || !config.apiKey ) {
-            showToast('请填写服务名称、API接口地址和API Key', true);
+            showToast(i18n.getMessage('settings_services_custom_required_fields'), true);
             return;
         }
 
         if (!config.chatModel && !config.embedModel) {
-            showToast('文本模型和向量模型至少填写一个', true);
+            showToast(i18n.getMessage('settings_services_custom_at_least_one_model'), true);
             return;
         }
 
         if (isNaN(config.highSimilarity) || config.highSimilarity < 0 || config.highSimilarity > 1) {
-            showToast('相似度阈值必须在0-1之间', true);
+            showToast(i18n.getMessage('settings_services_custom_similarity_range'), true);
             return;
         }
 
@@ -1271,36 +1370,53 @@ class ServicesSettingsTab extends BaseSettingsTab {
             // 先测试 Chat 接口
             if (config.chatModel && (chatModelChanged || baseInfoChanged)) {
                 const chatStatus = dialog.querySelector('.test-status[data-type="chat"]');
-                chatStatus.textContent = '验证中...';
+                chatStatus.textContent = i18n.getMessage('settings_services_test_verifying');
                 chatStatus.className = 'test-status testing';
                 
                 try {
-                    await ConfigManager.testChatAPI(config.baseUrl, config.apiKey, config.chatModel);
-                    chatStatus.textContent = '验证成功';
+                    const thinkingParam = config.thinkingParam || DEFAULT_THINKING_PARAM;
+                    const chatResult = await ConfigManager.testChatAPI(
+                        config.baseUrl, config.apiKey, config.chatModel,
+                        this.testAbortController?.signal, thinkingParam
+                    );
+                    config.supportsThinkingParam = chatResult.supportsThinkingParam;
+                    chatStatus.textContent = i18n.getMessage('settings_services_test_success');
                     chatStatus.className = 'test-status success';
                 } catch (error) {
+                    if (isUserCanceledError(error)) {
+                        logger.debug('[取消功能] 保存时 Chat 测试已取消');
+                        chatStatus.textContent = i18n.getMessage('settings_services_test_cancelled');
+                        chatStatus.className = 'test-status';
+                        return;
+                    }
                     chatStatus.textContent = error.message;
                     chatStatus.title = error.message;
                     chatStatus.className = 'test-status error';
-                    throw new Error('文本模型接口验证失败');
+                    throw new Error(i18n.getMessage('settings_services_test_chat_failed'));
                 }
             }
 
             // 再测试 Embedding 接口
             if (config.embedModel && (embedModelChanged || baseInfoChanged)) {
                 const embedStatus = dialog.querySelector('.test-status[data-type="embedding"]');
-                embedStatus.textContent = '验证中...';
+                embedStatus.textContent = i18n.getMessage('settings_services_test_verifying');
                 embedStatus.className = 'test-status testing';
                 
                 try {
-                    await ConfigManager.testEmbeddingAPI(config.baseUrl, config.apiKey, config.embedModel);
-                    embedStatus.textContent = '验证成功';
+                    await ConfigManager.testEmbeddingAPI(config.baseUrl, config.apiKey, config.embedModel, this.testAbortController?.signal);
+                    embedStatus.textContent = i18n.getMessage('settings_services_test_success');
                     embedStatus.className = 'test-status success';
                 } catch (error) {
+                    if (isUserCanceledError(error)) {
+                        logger.debug('[取消功能] 保存时 Embedding 测试已取消');
+                        embedStatus.textContent = i18n.getMessage('settings_services_test_cancelled');
+                        embedStatus.className = 'test-status';
+                        return;
+                    }
                     embedStatus.textContent = error.message;
                     embedStatus.title = error.message;
                     embedStatus.className = 'test-status error';
-                    throw new Error('向量模型接口验证失败');
+                    throw new Error(i18n.getMessage('settings_services_test_embed_failed'));
                 }
             }
 
@@ -1327,6 +1443,12 @@ class ServicesSettingsTab extends BaseSettingsTab {
     }
 
     hideCustomServiceDialog() {
+        // 取消正在进行的 API 测试请求
+        if (this.testAbortController) {
+            logger.debug('[取消功能] 自定义服务弹窗关闭，已触发 testAbortController.abort()');
+            this.testAbortController.abort();
+            this.testAbortController = null;
+        }
         this.customServiceDialog.classList.remove('show');
     }
 
@@ -1341,34 +1463,40 @@ class ServicesSettingsTab extends BaseSettingsTab {
 
         // 检查是否为空
         if (!config.baseUrl || !config.apiKey) {
-            showToast('请填写API接口地址和API Key', true);
+            showToast(i18n.getMessage('settings_services_test_required_fields'), true);
             return;
         }
         if (type === 'chat' && !config.chatModel) {
-            showToast('请填写文本模型', true);
+            showToast(i18n.getMessage('settings_services_test_chat_model_required'), true);
             return;
         }
         if (type === 'embedding' && !config.embedModel) {
-            showToast('请填写向量模型', true);
+            showToast(i18n.getMessage('settings_services_test_embed_model_required'), true);
             return;
         }
 
         const statusEl = dialog.querySelector(`.test-status[data-type="${type}"]`);
-        statusEl.textContent = '测试中...';
+        statusEl.textContent = i18n.getMessage('settings_services_test_testing');
         statusEl.className = 'test-status testing';
 
         try {
             if (type === 'chat') {
-                await ConfigManager.testChatAPI(config.baseUrl, config.apiKey, config.chatModel);
+                await ConfigManager.testChatAPI(config.baseUrl, config.apiKey, config.chatModel, this.testAbortController?.signal);
             } else {
-                await ConfigManager.testEmbeddingAPI(config.baseUrl, config.apiKey, config.embedModel);
+                await ConfigManager.testEmbeddingAPI(config.baseUrl, config.apiKey, config.embedModel, this.testAbortController?.signal);
             }
-            statusEl.textContent = '测试成功';
+            statusEl.textContent = i18n.getMessage('settings_services_test_success');
             statusEl.className = 'test-status success';
         } catch (error) {
-            statusEl.textContent = error.message;
-            statusEl.title = error.message;
-            statusEl.className = 'test-status error';
+            if (isUserCanceledError(error)) {
+                logger.debug('[取消功能] 手动测试 API 已取消', { type });
+                statusEl.textContent = i18n.getMessage('settings_services_test_cancelled');
+                statusEl.className = 'test-status';
+            } else {
+                statusEl.textContent = error.message;
+                statusEl.title = error.message;
+                statusEl.className = 'test-status error';
+            }
         }
     }
 
@@ -1384,9 +1512,27 @@ class ServicesSettingsTab extends BaseSettingsTab {
             // 更新卡片信息
             const serviceName = card.querySelector('.service-name');
             serviceName.textContent = service.name;
-            // 更新option
-            this.updateOptionToServiceSelect(chatServiceSelect, serviceId, service.name);
-            this.updateOptionToServiceSelect(embeddingServiceSelect, serviceId, service.name);
+            // 更新option：根据模型配置决定是否在对应下拉列表中增删
+            if (service.chatModel) {
+                const existing = chatServiceSelect.querySelector(`option[value="${serviceId}"]`);
+                if (existing) {
+                    existing.textContent = service.name;
+                } else {
+                    this.addOptionToServiceSelect(chatServiceSelect, serviceId, service.name);
+                }
+            } else {
+                this.removeOptionFromServiceSelect(chatServiceSelect, serviceId);
+            }
+            if (service.embedModel) {
+                const existing = embeddingServiceSelect.querySelector(`option[value="${serviceId}"]`);
+                if (existing) {
+                    existing.textContent = service.name;
+                } else {
+                    this.addOptionToServiceSelect(embeddingServiceSelect, serviceId, service.name);
+                }
+            } else {
+                this.removeOptionFromServiceSelect(embeddingServiceSelect, serviceId);
+            }
         } else {
             // 添加新的自定义服务卡片和选项
             const service = await ConfigManager.findServiceById(serviceId);
@@ -1395,8 +1541,12 @@ class ServicesSettingsTab extends BaseSettingsTab {
             addCustomCard.parentNode.insertBefore(newCard, addCustomCard);
 
             // 添加到服务选择下拉框
-            this.addOptionToServiceSelect(chatServiceSelect, service.id, service.name);
-            this.addOptionToServiceSelect(embeddingServiceSelect, service.id, service.name);
+            if (service.chatModel) {
+                this.addOptionToServiceSelect(chatServiceSelect, service.id, service.name);
+            }
+            if (service.embedModel) {
+                this.addOptionToServiceSelect(embeddingServiceSelect, service.id, service.name);
+            }
         }
     }
 
@@ -1464,7 +1614,7 @@ class ServicesSettingsTab extends BaseSettingsTab {
                 if (el.classList.contains('error')) {
                     try {
                         await navigator.clipboard.writeText(el.textContent);
-                        showToast('已复制到剪贴板');
+                        showToast(i18n.getMessage('settings_services_copied_to_clipboard'));
                     } catch (error) {
                         logger.error('复制失败:', error);
                     }
@@ -1517,6 +1667,17 @@ class FilterSettingsTab extends BaseSettingsTab {
         this.closeDialogBtn = this.filterDialog.querySelector('.close-dialog-btn');
         this.filtersList = document.getElementById('filters-list');
         
+        // 存档相关 DOM
+        this.archiveBtn = document.getElementById('filter-archive-btn');
+        this.archivePanel = document.getElementById('filter-archive-panel');
+        this.archiveList = document.getElementById('filter-archive-list');
+        this.archiveEmpty = document.getElementById('filter-archive-empty');
+        this.archiveCount = document.getElementById('filter-archive-count');
+        
+        // 图标选择器
+        this.iconBtn = document.getElementById('filter-icon-btn');
+        this.iconPickerInstance = null;
+        
         // 绑定方法到实例
         this.showFilterDialog = this.showFilterDialog.bind(this);
         this.hideFilterDialog = this.hideFilterDialog.bind(this);
@@ -1524,6 +1685,8 @@ class FilterSettingsTab extends BaseSettingsTab {
         this.loadFiltersList = this.loadFiltersList.bind(this);
         this.handleAddCondition = this.handleAddCondition.bind(this);
         this.handleEscKey = this.handleEscKey.bind(this);
+        this.toggleArchivePanel = this.toggleArchivePanel.bind(this);
+        this.loadArchiveList = this.loadArchiveList.bind(this);
     }
 
     async initialize() {
@@ -1534,9 +1697,13 @@ class FilterSettingsTab extends BaseSettingsTab {
         this.saveFilterBtn.addEventListener('click', () => this.saveFilter());
         this.cancelFilterBtn.addEventListener('click', () => this.hideFilterDialog());
         this.closeDialogBtn.addEventListener('click', () => this.hideFilterDialog());
+        this.archiveBtn.addEventListener('click', this.toggleArchivePanel);
+        
+        this.iconPickerInstance = new IconPicker(this.iconBtn);
         
         // 初始加载规则列表
         await this.loadFiltersList();
+        await this.updateArchiveCount();
         logger.debug('初始化过滤设置完成', Date.now()/1000);
     }
 
@@ -1555,6 +1722,7 @@ class FilterSettingsTab extends BaseSettingsTab {
         if (existingRule) {
             filterName.value = existingRule.name;
             this.filterDialog.dataset.editingId = existingRule.id;
+            this.iconPickerInstance.setValue(existingRule.icon, existingRule.color);
             // 处理条件和分组
             existingRule.conditions.forEach(item => {
                 if (Array.isArray(item)) {
@@ -1570,11 +1738,13 @@ class FilterSettingsTab extends BaseSettingsTab {
         } else {
             // 添加一个空条件
             this.addCondition();
+            this.iconPickerInstance.setValue(null, null);
         }
         
         // 如果是只读模式
         if (readonly) {
             filterName.disabled = true;
+            this.iconBtn.disabled = true;
             saveBtn.style.display = 'none';
             addConditionBtn.style.display = 'none';
             // 禁用所有输入框和删除按钮
@@ -1587,6 +1757,7 @@ class FilterSettingsTab extends BaseSettingsTab {
             });
         } else {
             filterName.disabled = false;
+            this.iconBtn.disabled = false;
             saveBtn.style.display = '';
             addConditionBtn.style.display = '';
             // 初始化拖拽功能
@@ -1598,6 +1769,7 @@ class FilterSettingsTab extends BaseSettingsTab {
 
     hideFilterDialog() {
         this.filterDialog.classList.remove('show');
+        this.iconPickerInstance.close();
     }
 
     handleAddCondition() {
@@ -1754,12 +1926,12 @@ class FilterSettingsTab extends BaseSettingsTab {
         
         const input = this.createInputElement();
         input.className = 'tags-input';
-        input.placeholder = '输入关键词按回车键添加';
+        input.placeholder = i18n.getMessage('settings_filters_tags_input_placeholder');
         
         // 更新placeholder的显示
         const updatePlaceholder = () => {
             const tags = tagsContainer.querySelectorAll('.tag-item');
-            input.placeholder = tags.length > 0 ? '' : '输入关键词按回车键添加';
+            input.placeholder = tags.length > 0 ? '' : i18n.getMessage('settings_filters_tags_input_placeholder');
         };
         
         input.addEventListener('keypress', (e) => {
@@ -1831,7 +2003,7 @@ class FilterSettingsTab extends BaseSettingsTab {
             // 更新placeholder
             const input = container.querySelector('.tags-input');
             const tags = container.querySelectorAll('.tag-item');
-            input.placeholder = tags.length > 0 ? '' : '输入关键词按回车键添加';
+            input.placeholder = tags.length > 0 ? '' : i18n.getMessage('settings_filters_tags_input_placeholder');
         });
         
         container.insertBefore(tag, container.querySelector('.tags-input'));
@@ -1844,7 +2016,7 @@ class FilterSettingsTab extends BaseSettingsTab {
         
         // 验证规则名称
         if (!filterName.value.trim()) {
-            showToast('请输入标签名称', true);
+            showToast(i18n.getMessage('settings_filters_name_required'), true);
             filterName.focus();
             return;
         }
@@ -1882,22 +2054,25 @@ class FilterSettingsTab extends BaseSettingsTab {
         
         // 检查是否有空条件
         if (hasEmptyCondition) {
-            showToast('请填写完整的标签条件', true);
+            showToast(i18n.getMessage('settings_filters_conditions_incomplete'), true);
             return;
         }
         
         // 检查是否有条件
         if (conditions.length === 0) {
-            showToast('请至少添加一个标签条件', true);
+            showToast(i18n.getMessage('settings_filters_conditions_required'), true);
             return;
         }
         
         // 创建规则对象
+        const { icon, color } = this.iconPickerInstance.getValue();
         const rule = {
             id: editingFilterId || Date.now().toString(),
             name: filterName.value.trim(),
             conditions
         };
+        if (icon) rule.icon = icon;
+        if (color) rule.color = color;
         
         // 保存规则
         await customFilter.saveRule(rule);
@@ -1911,6 +2086,7 @@ class FilterSettingsTab extends BaseSettingsTab {
         
         // 刷新规则列表
         await this.loadFiltersList();
+        await this.updateArchiveCount();
         
         // 关闭对话框
         this.hideFilterDialog();
@@ -1929,55 +2105,95 @@ class FilterSettingsTab extends BaseSettingsTab {
         this.filtersList.innerHTML = '';
         
         rules.forEach(rule => {
+            const isHidden = customFilter.isHidden(rule.id);
             const item = document.createElement('div');
             item.className = 'filter-item';
             if (rule.isBuiltIn) {
                 item.classList.add('built-in');
             }
+            if (isHidden) {
+                item.classList.add('filter-item-hidden');
+            }
             item.dataset.id = rule.id;
+            
+            const hasCustomIcon = !!(rule.icon || rule.color);
+            if (hasCustomIcon) item.classList.add('has-custom-icon');
+            
+            const iconSvg = rule.icon
+                ? IconPicker.getIconSvg(rule.icon, 16, rule.color || null)
+                : (rule.color ? IconPicker.getIconSvg(IconPicker.DEFAULT_ICON, 16, rule.color) : '');
+            
+            const nameColorStyle = rule.color ? ` style="color:${rule.color}"` : '';
+
+            const hideLabel = isHidden
+                ? i18n.getMessage('settings_filters_show')
+                : i18n.getMessage('settings_filters_hide');
+            // EyeOff / Eye SVG (Lucide)
+            const hideSvg = isHidden
+                ? '<path fill="currentColor" d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
+                : '<path fill="currentColor" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+            const hideBtn = `<button class="hide-btn${isHidden ? ' hidden' : ''}">
+                        <svg viewBox="0 0 24 24">${hideSvg}</svg>
+                        ${hideLabel}
+                    </button>`;
             
             item.innerHTML = `
                 <div class="filter-info">
-                    <div class="filter-name">
+                    <div class="filter-name"${nameColorStyle}>
+                        ${iconSvg ? `<span class="filter-custom-icon">${iconSvg}</span>` : ''}
                         <span>${rule.name}</span>
-                        ${rule.isBuiltIn ? '<span class="built-in-badge">内置</span>' : ''}
+                        ${rule.isBuiltIn ? `<span class="built-in-badge">${i18n.getMessage('settings_filters_built_in')}</span>` : ''}
                     </div>
                 </div>
                 <div class="filter-actions">
+                    ${hideBtn}
                     ${!rule.isBuiltIn ? `
                     <button class="edit-btn">
                         <svg viewBox="0 0 24 24">
                             <path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
                         </svg>
-                        编辑
+                        ${i18n.getMessage('settings_filters_edit')}
                     </button>
                     <button class="delete-btn">
                         <svg viewBox="0 0 24 24">
                             <path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
                         </svg>
-                        删除
+                        ${i18n.getMessage('settings_filters_delete')}
                     </button>
                     ` : `
                     <button class="view-btn">
                         <svg viewBox="0 0 24 24">
                             <path fill="currentColor" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
                         </svg>
-                        查看
+                        ${i18n.getMessage('settings_filters_view')}
                     </button>
                     `}
                 </div>
             `;
             
-            // 绑定事件处理器
+            // 隐藏/显示按钮事件（所有标签通用）
+            item.querySelector('.hide-btn').addEventListener('click', async () => {
+                await customFilter.toggleHidden(rule.id);
+                await this.loadFiltersList();
+
+                sendMessageSafely({
+                    type: MessageType.SCHEDULE_SYNC,
+                    data: {
+                        reason: ScheduleSyncReason.FILTERS
+                    }
+                });
+            });
+
             if (!rule.isBuiltIn) {
                 item.querySelector('.edit-btn').addEventListener('click', () => {
                     this.showFilterDialog(rule);
                 });
                 
                 item.querySelector('.delete-btn').addEventListener('click', async () => {
-                    if (confirm('确定要删除这个标签吗？')) {
+                    if (confirm(i18n.getMessage('settings_filters_delete_confirm'))) {
                         await customFilter.deleteRule(rule.id);
                         await this.loadFiltersList();
+                        await this.updateArchiveCount();
 
                         sendMessageSafely({
                             type: MessageType.SCHEDULE_SYNC,
@@ -1988,7 +2204,6 @@ class FilterSettingsTab extends BaseSettingsTab {
                     }
                 });
             } else {
-                // 为内置规则添加查看事件
                 item.querySelector('.view-btn').addEventListener('click', () => {
                     this.showFilterDialog(rule, true);
                 });
@@ -2055,37 +2270,37 @@ class FilterSettingsTab extends BaseSettingsTab {
         return conditions.map(item => {
             // 如果是条件组
             if (Array.isArray(item)) {
-                return `(${item.map(condition => this.formatCondition(condition)).join(' 或 ')})`;
+                return `(${item.map(condition => this.formatCondition(condition)).join(' ' + i18n.getMessage('settings_filters_operator_or') + ' ')})`;
             }
             // 如果是单个条件
             return this.formatCondition(item);
-        }).join(' 且 ');
+        }).join(' ' + i18n.getMessage('settings_filters_operator_and') + ' ');
     }
     
     // 格式化单个条件
     formatCondition(condition) {
         const field = {
-            title: '标题',
-            domain: '域名',
-            url: '链接',
-            tag: '标签',
-            create: '创建时间',
-            lastUse: '上次使用时间',
-            use: '使用次数'
+            title: i18n.getMessage('settings_filters_field_title'),
+            domain: i18n.getMessage('settings_filters_field_domain'),
+            url: i18n.getMessage('settings_filters_field_url'),
+            tag: i18n.getMessage('settings_filters_field_tag'),
+            create: i18n.getMessage('settings_filters_field_create'),
+            lastUse: i18n.getMessage('settings_filters_field_last_use'),
+            use: i18n.getMessage('settings_filters_field_use')
         }[condition.field];
         
         const operator = {
-            is: '为',
-            isNot: '不为',
-            has: '包含',
-            notHas: '不包含',
-            '>': '大于',
-            '<': '小于',
-            '=': '等于'
+            is: i18n.getMessage('settings_filters_operator_is'),
+            isNot: i18n.getMessage('settings_filters_operator_is_not'),
+            has: i18n.getMessage('settings_filters_operator_has'),
+            notHas: i18n.getMessage('settings_filters_operator_not_has'),
+            '>': i18n.getMessage('settings_filters_operator_greater'),
+            '<': i18n.getMessage('settings_filters_operator_less'),
+            '=': i18n.getMessage('settings_filters_operator_equal')
         }[condition.operator];
         
         const value = Array.isArray(condition.value) 
-            ? condition.value.join('或')
+            ? condition.value.join(i18n.getMessage('settings_filters_operator_or'))
             : condition.value;
             
         return `${field}${operator}${value}`;
@@ -2095,6 +2310,98 @@ class FilterSettingsTab extends BaseSettingsTab {
         if (this.filterDialog && this.filterDialog.classList.contains('show')) {
             this.hideFilterDialog();
         }
+    }
+
+    toggleArchivePanel() {
+        const isVisible = this.archivePanel.style.display !== 'none';
+        if (isVisible) {
+            this.archivePanel.style.display = 'none';
+            this.archiveBtn.classList.remove('active');
+        } else {
+            this.archivePanel.style.display = '';
+            this.archiveBtn.classList.add('active');
+            this.loadArchiveList();
+        }
+    }
+
+    async updateArchiveCount() {
+        const archives = await customFilter.getArchives();
+        const count = archives.length;
+        this.archiveCount.textContent = count > 0 ? `(${count})` : '';
+    }
+
+    getArchiveTriggerLabel(trigger) {
+        const map = {
+            save_rule: i18n.getMessage('settings_filters_archive_trigger_save_rule'),
+            delete_rule: i18n.getMessage('settings_filters_archive_trigger_delete_rule'),
+            import: i18n.getMessage('settings_filters_archive_trigger_import'),
+            reorder: i18n.getMessage('settings_filters_archive_trigger_reorder'),
+            restore: i18n.getMessage('settings_filters_archive_trigger_restore'),
+            toggle_hidden: i18n.getMessage('settings_filters_archive_trigger_toggle_hidden'),
+        };
+        return map[trigger] || trigger;
+    }
+
+    formatArchiveTime(timestamp) {
+        const date = new Date(timestamp);
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${month}/${day} ${hours}:${minutes}`;
+    }
+
+    async loadArchiveList() {
+        const archives = await customFilter.getArchives();
+        this.archiveList.innerHTML = '';
+
+        if (archives.length === 0) {
+            this.archiveEmpty.style.display = '';
+            this.archiveList.style.display = 'none';
+            return;
+        }
+
+        this.archiveEmpty.style.display = 'none';
+        this.archiveList.style.display = '';
+
+        archives.forEach(archive => {
+            const item = document.createElement('div');
+            item.className = 'filter-archive-item';
+
+            const rulesCount = archive.snapshot?.rules?.length || 0;
+
+            item.innerHTML = `
+                <span class="archive-time">${this.formatArchiveTime(archive.timestamp)}</span>
+                <span class="archive-trigger">${this.getArchiveTriggerLabel(archive.trigger)}</span>
+                <span class="archive-rules-count">${rulesCount} ${i18n.getMessage('settings_filters_archive_rules_unit')}</span>
+                <button class="filter-archive-restore-btn" data-id="${archive.id}">
+                    ${i18n.getMessage('settings_filters_archive_restore')}
+                </button>
+            `;
+
+            item.querySelector('.filter-archive-restore-btn').addEventListener('click', async (e) => {
+                const archiveId = e.target.dataset.id;
+                if (!confirm(i18n.getMessage('settings_filters_archive_restore_confirm'))) {
+                    return;
+                }
+                const success = await customFilter.restoreFromArchive(archiveId);
+                if (success) {
+                    showToast(i18n.getMessage('settings_filters_archive_restore_success'));
+                    await this.loadFiltersList();
+                    await this.loadArchiveList();
+                    await this.updateArchiveCount();
+
+                    sendMessageSafely({
+                        type: MessageType.SCHEDULE_SYNC,
+                        data: {
+                            reason: ScheduleSyncReason.FILTERS
+                        }
+                    });
+                }
+            });
+
+            this.archiveList.appendChild(item);
+        });
     }
 
     cleanup() {
@@ -2320,7 +2627,7 @@ class FilterSettingsTab extends BaseSettingsTab {
         
         group.innerHTML = `
             <div class="group-header">
-                <span class="group-title">条件组（组内条件为"或"关系）</span>
+                <span class="group-title">${i18n.getMessage('settings_filters_condition_group_title')}</span>
                 <button class="remove-group-btn">×</button>
             </div>
             <div class="group-conditions"></div>
@@ -2464,7 +2771,7 @@ class ImportExportSettingsTab extends BaseSettingsTab {
         const remaining = total - processed;
         if (remaining == 0) return '0';
         const times = this.importStats.processedTimes;
-        if (times.length === 0) return '计算中...';
+        if (times.length === 0) return i18n.getMessage('settings_import_export_calculating');
         
         // 计算最近10个处理时间的平均值
         const recentTimes = times.slice(-10);
@@ -2473,13 +2780,13 @@ class ImportExportSettingsTab extends BaseSettingsTab {
         
         // 转换为可读时间
         if (estimatedMs < 60000) { // 小于1分钟
-            return `约 ${Math.ceil(estimatedMs / 1000)} 秒`;
+            return i18n.getMessage('settings_import_export_estimated_seconds', [Math.ceil(estimatedMs / 1000)]);
         } else if (estimatedMs < 3600000) { // 小于1小时
-            return `约 ${Math.ceil(estimatedMs / 60000)} 分钟`;
+            return i18n.getMessage('settings_import_export_estimated_minutes', [Math.ceil(estimatedMs / 60000)]);
         } else {
             const hours = Math.floor(estimatedMs / 3600000);
             const minutes = Math.ceil((estimatedMs % 3600000) / 60000);
-            return `约 ${hours} 小时 ${minutes} 分钟`;
+            return i18n.getMessage('settings_import_export_estimated_hours_minutes', [hours, minutes]);
         }
     }
 
@@ -2510,7 +2817,7 @@ class ImportExportSettingsTab extends BaseSettingsTab {
     async handleImportBrowser() {
         // 检查功能开关
         if (!FEATURE_FLAGS.ENABLE_BROWSER_IMPORT) {
-            showToast('浏览器书签批量导入功能已禁用', true);
+            showToast(i18n.getMessage('settings_import_export_browser_disabled'), true);
             return;
         }
         
@@ -2538,7 +2845,7 @@ class ImportExportSettingsTab extends BaseSettingsTab {
             
         } catch (error) {
             logger.error('获取书签失败:', error);
-            showToast('获取书签失败: ' + error.message, true);
+            showToast(i18n.getMessage('settings_import_export_get_bookmarks_failed', [error.message]), true);
         }
     }
 
@@ -2555,8 +2862,12 @@ class ImportExportSettingsTab extends BaseSettingsTab {
             const shouldExpand = parentPath.length == 0;
             folderContent.className = 'folder-content collapsed';
             
-            // 递归渲染子节点
-            node.children.forEach(child => {
+            const isTopLevel = parentPath.length === 0;
+            const children = isTopLevel
+                ? node.children.filter(child =>
+                    !child.children || KNOWN_ROOT_BOOKMARK_FOLDER_IDS.has(child.id))
+                : node.children;
+            children.forEach(child => {
                 const childPath = [...parentPath, node];
                 folderContent.appendChild(this.renderBookmarkTree(child, childPath));
             });
@@ -2615,9 +2926,9 @@ class ImportExportSettingsTab extends BaseSettingsTab {
                 title: node.title,
                 id: node.id
             });
-            title.textContent = '收藏夹🌟';
+            title.textContent = i18n.getMessage('settings_import_export_bookmark_folder');
         } else {
-            title.textContent = node.title || '未命名';
+            title.textContent = node.title || i18n.getMessage('settings_import_export_unnamed');
         }
         // 点击标题展开/收起文件夹
         title.addEventListener('click', () => {
@@ -2628,7 +2939,7 @@ class ImportExportSettingsTab extends BaseSettingsTab {
         const count = document.createElement('span');
         count.className = 'folder-count';
         const bookmarkCount = this.countBookmarks(node);
-        count.textContent = `${bookmarkCount} 个书签`;
+        count.textContent = i18n.getMessage('settings_import_export_bookmark_count', [bookmarkCount]);
         
         header.appendChild(checkboxWrapper);
         header.appendChild(expandIcon);
@@ -2670,7 +2981,7 @@ class ImportExportSettingsTab extends BaseSettingsTab {
         // 标题
         const title = document.createElement('span');
         title.className = 'bookmark-title';
-        title.textContent = node.title || '未命名书签';
+        title.textContent = node.title || i18n.getMessage('settings_import_export_unnamed_bookmark');
         // 点击标题选择书签
         title.addEventListener('click', () => {
             checkbox.checked = !checkbox.checked;
@@ -2830,12 +3141,12 @@ class ImportExportSettingsTab extends BaseSettingsTab {
             
             const chatService = await ConfigManager.getChatService();
             if (!chatService.apiKey) {
-                throw new Error('请先配置API服务');
+                throw new Error(i18n.getMessage('settings_import_export_api_not_configured'));
             }
 
             // 隐藏选择对话框，显示进度对话框
             this.bookmarkSelectDialog.classList.remove('show');
-            await this.showImportProgress('正在导入书签...');
+            await this.showImportProgress(i18n.getMessage('settings_import_export_importing_bookmarks'));
             
             // 获取选中的书签
             const selectedBookmarks = Array.from(this.selectedBookmarks)
@@ -2843,7 +3154,7 @@ class ImportExportSettingsTab extends BaseSettingsTab {
                 .filter(info => info && info.node.url);
 
             if (selectedBookmarks.length === 0) {
-                throw new Error('请至少选择一个有URL的书签');
+                throw new Error(i18n.getMessage('settings_import_export_no_bookmark_selected'));
             }
 
             const existingBookmarks = await LocalStorageMgr.getBookmarks();
@@ -2858,7 +3169,7 @@ class ImportExportSettingsTab extends BaseSettingsTab {
                 // 检查是否已取消
                 if (this.importCancelled) {
                     logger.info('导入已取消');
-                    showToast('已取消导入');
+                    showToast(i18n.getMessage('settings_import_export_import_cancelled'));
                     break;
                 }
 
@@ -2891,7 +3202,7 @@ class ImportExportSettingsTab extends BaseSettingsTab {
             }
         } catch (error) {
             logger.error('导入失败:', error);
-            showToast('导入失败: ' + error.message, true);
+            showToast(i18n.getMessage('settings_import_export_import_failed', [error.message]), true);
         }
     }
 
@@ -3107,6 +3418,7 @@ class AboutSettingsTab extends BaseSettingsTab {
 
     async initialize() {
         await this.updateVersionInfo();
+        this.initializeLinks();
     }
 
     async updateVersionInfo() {
@@ -3117,6 +3429,21 @@ class AboutSettingsTab extends BaseSettingsTab {
         const updateDateElement = document.getElementById('last-update-date');
         if (updateDateElement) {
             updateDateElement.textContent = VERSION_INFO.lastUpdate;
+        }
+    }
+
+    // 初始化关于页面的链接（根据语言和浏览器类型）
+    initializeLinks() {
+        // 设置资助链接（根据语言）
+        const donateLink = document.getElementById('donate-link');
+        if (donateLink) {
+            donateLink.href = getSupportPageUrl('donate');
+        }
+
+        // 设置评分链接（根据浏览器类型）
+        const reviewLink = document.getElementById('review-link');
+        if (reviewLink) {
+            reviewLink.href = getExtensionStoreReviewUrl();
         }
     }
 
@@ -3256,7 +3583,7 @@ class SettingsUI {
         if (changelogLink) {
             changelogLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                window.open(`https://howoii.github.io/smartbookmark-support/changelog.html`, '_blank');
+                window.open(getSupportPageUrl('changelog'), '_blank');
             });
         }
         const feedbackLink = document.getElementById('feedback-link');
@@ -3305,7 +3632,9 @@ class SettingsUI {
 
 // 在页面加载完成后调用此函数
 document.addEventListener('DOMContentLoaded', async () => {
+    i18n.initializeI18n();
     logger.debug('开始初始化页面', Date.now()/1000);
+    
     const settingsUI = new SettingsUI();
     window.settingsUI = settingsUI;
     settingsUI.toggleOptionalFeatures();

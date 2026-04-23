@@ -37,10 +37,198 @@ async function updateSettingsWithSync(updates) {
     });
 }
 
-// 检查页面是否已收藏
+// 检查页面是否已收藏（扩展存储 或 浏览器书签任一存在即视为已收藏）
 async function checkIfPageSaved(url) {
     const result = await LocalStorageMgr.getBookmark(url, true);
-    return !!result;
+    if (result) return true;
+    try {
+        const chromeResults = await chrome.bookmarks.search({ url });
+        return chromeResults.length > 0;
+    } catch (e) {
+        return false;
+    }
+}
+
+function getBookmarkComparableMeta(bookmark) {
+    return {
+        url: bookmark.url,
+        title: bookmark.title,
+        tags: bookmark.tags || [],
+        excerpt: bookmark.excerpt || '',
+        savedAt: getDateTimestamp(bookmark.savedAt) || null,
+        lastUsed: getDateTimestamp(bookmark.lastUsed) || null,
+        useCount: bookmark.useCount || 0,
+        apiService: bookmark.apiService || null,
+        embedModel: bookmark.embedModel || null,
+    };
+}
+
+function isBookmarkContentChanged(currentBookmark, nextBookmark) {
+    return JSON.stringify(getBookmarkComparableMeta(currentBookmark)) !==
+        JSON.stringify(getBookmarkComparableMeta(nextBookmark));
+}
+
+function diffBookmarkCollections(localBookmarks, nextBookmarks) {
+    const localBookmarksMap = new Map(localBookmarks.map(bookmark => [bookmark.url, bookmark]));
+    const nextBookmarksMap = new Map(nextBookmarks.map(bookmark => [bookmark.url, bookmark]));
+
+    const diffResult = {
+        added: [],
+        removed: [],
+        updated: [],
+        same: []
+    };
+
+    for (const bookmark of localBookmarks) {
+        const nextBookmark = nextBookmarksMap.get(bookmark.url);
+        if (!nextBookmark) {
+            diffResult.removed.push(bookmark.url);
+            continue;
+        }
+
+        if (isBookmarkContentChanged(bookmark, nextBookmark)) {
+            diffResult.updated.push(nextBookmark);
+            continue;
+        }
+
+        if (nextBookmark.embedding && !bookmark.embedding) {
+            diffResult.updated.push(nextBookmark);
+            continue;
+        }
+
+        diffResult.same.push(bookmark);
+    }
+
+    for (const bookmark of nextBookmarks) {
+        if (!localBookmarksMap.has(bookmark.url)) {
+            diffResult.added.push(bookmark);
+        }
+    }
+
+    return diffResult;
+}
+
+function detectLikelyRenamedBookmarks(localBookmarks, nextBookmarks, diffResult) {
+    const localBookmarksMap = new Map(localBookmarks.map(bookmark => [bookmark.url, bookmark]));
+    const addedBySavedAt = new Map();
+    const renamedBookmarks = [];
+    const usedAddedUrls = new Set();
+
+    for (const bookmark of diffResult.added || []) {
+        const savedAt = getDateTimestamp(bookmark.savedAt);
+        if (!savedAt) continue;
+        const bucket = addedBySavedAt.get(savedAt) || [];
+        bucket.push(bookmark);
+        addedBySavedAt.set(savedAt, bucket);
+    }
+
+    for (const removedUrl of diffResult.removed || []) {
+        const localBookmark = localBookmarksMap.get(removedUrl);
+        if (!localBookmark) continue;
+
+        const savedAt = getDateTimestamp(localBookmark.savedAt);
+        if (!savedAt) continue;
+
+        const candidates = (addedBySavedAt.get(savedAt) || [])
+            .filter(bookmark => !usedAddedUrls.has(bookmark.url));
+        if (candidates.length !== 1) continue;
+
+        const [nextBookmark] = candidates;
+        usedAddedUrls.add(nextBookmark.url);
+        renamedBookmarks.push({
+            oldUrl: removedUrl,
+            bookmark: nextBookmark,
+        });
+    }
+
+    return renamedBookmarks;
+}
+
+async function proxyChromeBookmarkUpdateForSync(chromeId, changes) {
+    if (EnvIdentifier === 'background' && typeof ChromeBookmarkSync !== 'undefined') {
+        return ChromeBookmarkSync.proxyUpdate(chromeId, changes);
+    }
+    const response = await chrome.runtime.sendMessage({
+        type: MessageType.PROXY_CHROME_BOOKMARK_UPDATE,
+        data: { chromeId, changes },
+    });
+    if (!response?.success) {
+        throw new Error(response?.error || 'proxy chrome.bookmarks.update failed');
+    }
+    return response.result;
+}
+
+async function proxyChromeBookmarkRemoveForSync(chromeId) {
+    if (EnvIdentifier === 'background' && typeof ChromeBookmarkSync !== 'undefined') {
+        return ChromeBookmarkSync.proxyRemove(chromeId);
+    }
+    const response = await chrome.runtime.sendMessage({
+        type: MessageType.PROXY_CHROME_BOOKMARK_REMOVE,
+        data: { chromeId },
+    });
+    if (!response?.success) {
+        throw new Error(response?.error || 'proxy chrome.bookmarks.remove failed');
+    }
+}
+
+async function findChromeBookmarksByExactUrl(url) {
+    if (!url || isNonMarkableUrl(url)) return [];
+    try {
+        const matches = await chrome.bookmarks.search({ url });
+        return (matches || []).filter(node => node?.url === url);
+    } catch (error) {
+        logger.warn('查找浏览器书签失败', { url, error: error.message });
+        return [];
+    }
+}
+
+async function syncExistingBrowserBookmarksForExtensionChanges({ removedUrls = [], updatedBookmarks = [], renamedBookmarks = [] } = {}) {
+    const renamedOldUrls = new Set();
+    const renamedNewUrls = new Set();
+
+    for (const renamed of renamedBookmarks) {
+        const oldUrl = renamed?.oldUrl;
+        const bookmark = renamed?.bookmark;
+        if (!oldUrl || !bookmark?.url || isNonMarkableUrl(oldUrl) || isNonMarkableUrl(bookmark.url)) {
+            continue;
+        }
+
+        const matches = await findChromeBookmarksByExactUrl(oldUrl);
+        for (const node of matches) {
+            const changes = {
+                title: bookmark.title || bookmark.url,
+                url: bookmark.url,
+            };
+            await proxyChromeBookmarkUpdateForSync(node.id, changes);
+        }
+
+        renamedOldUrls.add(oldUrl);
+        renamedNewUrls.add(bookmark.url);
+    }
+
+    for (const url of removedUrls) {
+        if (!url || renamedOldUrls.has(url) || isNonMarkableUrl(url)) continue;
+
+        const matches = await findChromeBookmarksByExactUrl(url);
+        for (const node of matches) {
+            await proxyChromeBookmarkRemoveForSync(node.id);
+        }
+    }
+
+    for (const bookmark of updatedBookmarks) {
+        if (!bookmark?.url || renamedNewUrls.has(bookmark.url) || isNonMarkableUrl(bookmark.url)) continue;
+
+        const matches = await findChromeBookmarksByExactUrl(bookmark.url);
+        for (const node of matches) {
+            const changes = {};
+            if ((bookmark.title || bookmark.url) !== (node.title || node.url)) {
+                changes.title = bookmark.title || bookmark.url;
+            }
+            if (Object.keys(changes).length > 0) {
+                await proxyChromeBookmarkUpdateForSync(node.id, changes);
+            }
+        }
+    }
 }
 
 async function openOptionsPage(section = 'overview') {
@@ -126,7 +314,12 @@ function calculateWeightedScore(useCount, lastUsed) {
     return Math.round(weightedScore);
 }
 
-async function getAllBookmarks(includeChromeBookmarks = false, withEmbedding = false) {
+/**
+ * 获取全部书签（扩展 + Chrome），both 时合并，chrome_only 时单独展示
+ * @param {boolean} withEmbedding - 是否加载 embedding
+ * @returns {Promise<Object>} url -> UnifiedBookmark 映射
+ */
+async function getAllBookmarks(withEmbedding = false) {
     try {
         // 获取扩展书签
         let extensionBookmarks = {};
@@ -160,24 +353,37 @@ async function getAllBookmarks(includeChromeBookmarks = false, withEmbedding = f
             await LocalStorageMgr.removeBookmarks(bookmarksToDelete.map(b => b.url));
         }
 
-        let chromeBookmarksMap = {};
-        // 获取Chrome书签
-        if (includeChromeBookmarks) {
-            const chromeBookmarks = await getChromeBookmarks();
-            chromeBookmarksMap = chromeBookmarks
-                .reduce((map, bookmark) => {
-                    // 如果URL已经存在于扩展书签中,则跳过
-                    if (extensionBookmarksMap[bookmark.url]) {
-                        return map;
-                    }
-                    const unifiedBookmark = new UnifiedBookmark(bookmark, BookmarkSource.CHROME);
-                    // 只添加可标记的Chrome书签
-                    if (!isNonMarkableUrl(bookmark.url)) {
-                        map[bookmark.url] = unifiedBookmark;
-                    }
-                    return map;
-                }, {});
+        // 获取 Chrome 书签，与目录视图逻辑一致：both 时合并，chrome_only 时单独展示
+        const chromeBookmarksMap = {};
+        const chromeBookmarks = await getChromeBookmarks();
+        for (const bookmark of chromeBookmarks) {
+            if (isNonMarkableUrl(bookmark.url)) continue;
+            const ext = extensionBookmarksMap[bookmark.url];
+            if (ext) {
+                // URL 同时存在于 extension 与 Chrome：标记为 both，补充 chromeId（取第一个）
+                if (!ext.chromeId) {
+                    ext.chromeId = bookmark.id;
+                    ext._presence = 'both';
+                }
+                if (bookmark.id === ext.chromeId) {
+                    ext.folderTags = Array.isArray(bookmark.folderTags) ? [...bookmark.folderTags] : [];
+                }
+                if (bookmark.dateAdded && (!ext.savedAt || bookmark.dateAdded < ext.savedAt)) {
+                    ext.savedAt = bookmark.dateAdded;
+                }
+                if (bookmark.dateLastUsed && (!ext.lastUsed || bookmark.dateLastUsed > ext.lastUsed)) {
+                    ext.lastUsed = bookmark.dateLastUsed;
+                }
+            } else {
+                const unifiedBookmark = new UnifiedBookmark(bookmark, BookmarkSource.CHROME);
+                unifiedBookmark._presence = 'chrome_only';
+                chromeBookmarksMap[bookmark.url] = unifiedBookmark;
+            }
         }
+        // 为 extension 书签补充 _presence
+        Object.values(extensionBookmarksMap).forEach(b => {
+            if (!b._presence) b._presence = b.chromeId ? 'both' : 'extension_only';
+        });
 
         // 合并书签
         return { ...extensionBookmarksMap, ...chromeBookmarksMap };
@@ -187,13 +393,18 @@ async function getAllBookmarks(includeChromeBookmarks = false, withEmbedding = f
     }
 }
 
+/**
+ * 获取用于展示的书签列表（合并插件与浏览器书签，不再区分展示）
+ */
 async function getDisplayedBookmarks() {
-    const showChromeBookmarks = await SettingsManager.get('display.showChromeBookmarks');
-    return await getAllBookmarks(showChromeBookmarks, false);
+    return getAllBookmarks(false);
 }
 
-async function getBookmarksForSearch(includeChromeBookmarks = false) {
-    return await getAllBookmarks(includeChromeBookmarks, true);
+/**
+ * 获取用于搜索的书签列表（含 embedding，含浏览器书签）
+ */
+async function getBookmarksForSearch() {
+    return getAllBookmarks(true);
 }
 
 // 获取Chrome书签的辅助函数
@@ -207,13 +418,17 @@ async function getChromeBookmarks() {
     }
 }
 
-// 展平书签树的辅助函数
+// 展平书签树的辅助函数（依赖 consts.js 的 KNOWN_ROOT_BOOKMARK_FOLDER_IDS）
 function flattenBookmarkTree(nodes, parentFolders = []) {
     const bookmarks = [];
 
     function traverse(node, folders, level = 0) {
         // 如果是文件夹，添加到路径中
         if (!node.url) {
+            const isRoot = (node.parentId || '') === '0';
+            if (isRoot && !KNOWN_ROOT_BOOKMARK_FOLDER_IDS.has(node.id)) {
+                return;
+            }
             const currentFolders = [...folders];
             if (node.title && level > 1) { // 排除根文件夹
                 currentFolders.push(node.title);
@@ -233,6 +448,18 @@ function flattenBookmarkTree(nodes, parentFolders = []) {
 
     nodes.forEach(node => traverse(node, parentFolders));
     return bookmarks;
+}
+
+/**
+ * 将 Chrome 书签目录路径（folderTags）格式化为展示用字符串
+ * @param {string[]} folderTags
+ * @returns {string}
+ */
+function formatBookmarkFolderPath(folderTags) {
+    if (!Array.isArray(folderTags) || folderTags.length === 0) {
+        return '';
+    }
+    return folderTags.map(part => String(part).trim()).filter(Boolean).join(' › ');
 }
 
 // 检查URL是否不可标记
@@ -812,9 +1039,9 @@ function shouldAllowException(url, ruleKey, match) {
 
 async function checkUrlAccessibility(url) {
     if (isNonMarkableUrl(url)) {
-        return {accessible: false, reason: '不支持的URL'};
+        return {accessible: false, reason: i18n.getMessage('util_error_url_not_supported')};
     }
-    return {accessible: true, reason: '可访问'};
+    return {accessible: true, reason: i18n.getMessage('util_status_url_accessible')};
 }
 
 
@@ -923,7 +1150,6 @@ function getFallbackTags(title, metadata) {
     const maxTags = 5;
     const tags = new Set();
 
-    // 1. 首先尝试使用 metadata 中的关键词
     if (metadata?.keywords) {
         const metaKeywords = metadata.keywords
             .split(/[,，;；]/) // 分割关键词
@@ -933,82 +1159,23 @@ function getFallbackTags(title, metadata) {
                     tag.length <= 20;
             });
 
-        metaKeywords.forEach(tag => tags.add(tag));
-    }
-
-    const stopWords = new Set([
-        // 中文停用词
-        '的', '了', '和', '与', '或', '在', '是', '到', '等', '把',
-        // 英文停用词
-        'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for',
-        'from', 'has', 'he', 'in', 'is', 'it', 'its', 'of', 'on',
-        'that', 'the', 'to', 'was', 'were', 'will', 'with', 'the',
-        // 常见连接词和介词
-        'about', 'after', 'before', 'but', 'how', 'into', 'over',
-        'under', 'what', 'when', 'where', 'which', 'who', 'why',
-        // 常见动词
-        'can', 'could', 'did', 'do', 'does', 'had', 'have', 'may',
-        'might', 'must', 'should', 'would',
-        // 其他常见词
-        'this', 'these', 'those', 'they', 'you', 'your'
-    ]);
-
-    // 2. 如果 metadata 中没有足够的关键词，使用标题关键词
-    if (tags.size < 2 && title) {
-        // 移除常见的无意义词
-        const titleWords = title
-            .split(/[\s\-\_\,\.\。\，]/) // 分割标题
-            .map(word => word.trim())
-            .filter(word => {
-                return word.length >= 2 &&
-                    word.length <= 20 &&
-                    !stopWords.has(word) &&
-                    !/[^\u4e00-\u9fa5a-zA-Z0-9]/.test(word);
-            });
-
-        titleWords.forEach(word => {
-            if (tags.size < maxTags) { // 最多添加5个标签
-                tags.add(word);
+        metaKeywords.forEach(tag => {
+            if (tags.size < maxTags) {
+                tags.add(tag);
             }
         });
     }
 
-    // 3. 如果还是没有足够的标签，尝试使用 metadata 的其他信息
-    if (tags.size < 2) {
-        // 尝试使用文章分类信息
-        if (metadata?.category && metadata.category.length <= 20) {
-            tags.add(metadata.category);
-        }
-
-        // 尝试使用文章题信息
-        if (metadata?.subject && metadata.subject.length <= 20) {
-            tags.add(metadata.subject);
-        }
-
-        // 尝试从描述中提取关键词
-        if (metadata?.description) {
-            const descWords = metadata.description
-                .split(/[\s\,\.\。\，]/)
-                .map(word => word.trim())
-                .filter(word => {
-                    return word.length >= 2 &&
-                        word.length <= 20 &&
-                        !stopWords.has(word) &&
-                        !/[^\u4e00-\u9fa5a-zA-Z0-9]/.test(word);
-                })
-                .slice(0, 2); // 最多取2个关键词
-
-            descWords.forEach(word => {
-                if (tags.size < maxTags) {
-                    tags.add(word);
-                }
-            });
+    if (tags.size < maxTags && metadata?.category) {
+        const category = metadata.category.trim();
+        if (category.length >= 1 && category.length <= 20) {
+            tags.add(category);
         }
     }
 
     logger.debug('备选标签生成过程:', {
         fromMetaKeywords: metadata?.keywords ? true : false,
-        fromTitle: title ? true : false,
+        fromCategory: metadata?.category ? true : false,
         finalTags: Array.from(tags)
     });
 
@@ -1054,7 +1221,7 @@ async function getDeviceInfo() {
         const userAgent = navigator.userAgent;
         
         // 提取操作系统信息
-        let osName = "未知系统";
+        let osName = i18n.getMessage('util_device_unknown_os');
         
         // 检测操作系统
         if (userAgent.indexOf("Win") !== -1) osName = "Windows";
@@ -1066,7 +1233,7 @@ async function getDeviceInfo() {
         // 获取浏览器信息和版本
         const browserInfo = (() => {
             const ua = navigator.userAgent;
-            let browserName = "未知浏览器";
+            let browserName = i18n.getMessage('util_device_unknown_browser');
             let version = "";
             
             // 检测Chrome浏览器
@@ -1118,7 +1285,7 @@ async function getDeviceInfo() {
         return `${osName} ${browserInfo.name} ${browserInfo.version}-${deviceRandomId}`;
     } catch (error) {
         // 出错时返回默认值
-        return "未知设备";
+        return i18n.getMessage('util_device_unknown_device');
     }
 }
 
@@ -1127,13 +1294,13 @@ async function checkAPIKeyValid(checkType) {
     if (!checkType || checkType === 'chat') {
         const chatService = await ConfigManager.getChatService();
         if (!chatService.apiKey || !chatService.chatModel) {
-            throw new Error('未配置有效的对话模型');
+            throw new Error(i18n.getMessage('api_error_chat_model_not_configured'));
         }
     }
     if (!checkType || checkType === 'embedding') {
         const embeddingService = await ConfigManager.getEmbeddingService();
         if (!embeddingService.apiKey || !embeddingService.embedModel) {
-            throw new Error('未配置有效的向量模型');
+            throw new Error(i18n.getMessage('api_error_embedding_model_not_configured'));
         }
     }
 }

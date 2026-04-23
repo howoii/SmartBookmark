@@ -136,13 +136,13 @@ body {
 
 .search-result-item {
     padding: 12px;
-    border-bottom: 1px solid var(--bg-border-light);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.2s ease;
     position: relative;
-    border-radius: 4px;
-    margin: 4px 0;
-    border: 1px solid transparent;
+    border-radius: 0;
+    margin: 0;
+    border: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--bg-border-light) 50%, transparent);
 }
 
 .search-result-item:last-child {
@@ -151,7 +151,6 @@ body {
 
 .search-result-item:hover {
     background: var(--bg-secondary);
-    border-color: var(--bg-secondary-border);
 }
 
 /* 选中的搜索结果项 */
@@ -173,8 +172,8 @@ body {
 }
 
 .result-title {
-    font-size: 13px;
-    font-weight: 400;
+    font-size: 14px;
+    font-weight: 500;
     color: var(--text-primary);
     margin-bottom: 4px;
     display: flex;
@@ -186,7 +185,7 @@ body {
 }
 
 .search-result-item.high-relevance .title-text {
-    font-weight: 500;
+    font-weight: 600;
 }
 
 /* 相关度显示 */
@@ -236,19 +235,26 @@ body {
 }
 
 .result-url {
-    font-size: 12px;
-    color: var(--text-link);
-    margin-bottom: 4px;
+    font-size: 11px;
+    color: var(--text-fourth);
+    margin: 2px 0 0 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    transition: color 0.2s;
+}
+
+.search-result-item:hover .result-url {
+    color: var(--text-secondary);
 }
 
 .result-tags {
     display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    margin-top: 6px;
+    align-items: center;
+    gap: 2px;
+    min-width: 0;
+    overflow: hidden;
+    flex: 1;
 }
 
 .result-tags:empty {
@@ -257,60 +263,107 @@ body {
 
 .result-tag {
     font-size: 11px;
-    padding: 2px 6px;
-    background: var(--tag-color);
-    color: var(--text-tag);     
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    background: var(--bg-tertiary);
+    padding: 1px 6px;
     border-radius: 4px;
+}
+
+.result-tag::before {
+    content: "#";
+    opacity: 0.5;
+}
+
+.result-tag.folder-tag::before {
+    content: none;
+}
+
+.tag-overflow-count {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--tag-text);
+    white-space: nowrap;
+    background: var(--tag-bg);
+    padding: 1px 6px;
+    border-radius: 8px;
+    cursor: default;
+    transition: background 0.15s ease-out, color 0.15s ease-out, transform 0.15s ease-out;
+    line-height: 1.4;
+}
+
+.tag-overflow-count:hover {
+    background: var(--primary-color);
+    color: var(--text-fifth);
+    transform: scale(1.08);
+}
+
+/* 底部信息行：标签 + 元数据单行排列 */
+.result-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 11px;
+    color: var(--text-tertiary);
 }
 
 /* 书签元数据区域 */
 .result-metadata {
     display: flex;
     align-items: center;
-    margin-top: 6px;
-    padding-top: 2px;
-    border-top: 1px solid var(--bg-border-light);
+    gap: 8px;
     font-size: 11px;
     color: var(--text-tertiary);
-    flex-wrap: wrap;
-    gap: 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-left: auto;
 }
 
 .result-metadata:empty {
     display: none;
 }
 
-/* 保存时间显示 */
-.result-saved-time {
+mark {
+    background-color: inherit;
+    color: inherit;
+    font-weight: inherit;
+}
+
+
+.result-folder-path {
     display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 2px 4px;
-    border-radius: 4px;
-    transition: all 0.2s;
+    gap: 3px;
+    min-width: 0;
+    flex-shrink: 1;
+    flex-shrink: 1;
+    letter-spacing: 0.01em;
 }
 
-.result-saved-time svg {
-    opacity: 0.7;
+.result-folder-path-icon {
     flex-shrink: 0;
+    opacity: 0.72;
 }
 
-.result-saved-time span {
+.result-folder-path-text {
+    min-width: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-align: right;
 }
 
 .result-excerpt {
     font-size: 12px;
     color: var(--text-secondary);
-    line-height: 1.4;
+    line-height: 1.5;
+    margin-top: 4px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    background-color: var(--bg-secondary);
-    padding: 6px 8px;
-    border-radius: 4px;
 }
 
 .result-excerpt:empty {
@@ -1191,6 +1244,31 @@ body {
     font-style: italic;
 }
 
+.tags-preview .clear-all-tags-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 8px;
+    border: 1px dashed var(--border-color);
+    border-radius: 12px;
+    background: none;
+    color: var(--text-tertiary);
+    font-size: 11px;
+    cursor: pointer;
+    line-height: 1.4;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+}
+
+.tags-preview .clear-all-tags-btn:hover {
+    color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+
+.tags-preview .clear-all-tags-btn svg {
+    flex-shrink: 0;
+}
+
 /* 多选功能相关样式 */
 .dialog-content.edit-mode .result-title {
     padding-left: 20px;
@@ -1201,7 +1279,7 @@ body {
     position: absolute;
     width: 16px;
     height: 16px;
-    top: 12px;
+    top: 13px;
     left: -10px;
     opacity: 0;
     transition: all 0.2s ease;
@@ -1415,44 +1493,38 @@ body {
 
 .edit-toolbar-actions {
     display: flex;
-    gap: 8px;
+    align-items: center;
+    gap: 2px;
     margin-left: auto;
-    position: relative;
-}
-
-.edit-toolbar-actions::before {
-    content: '';
-    position: absolute;
-    left: -12px;
-    top: 6px;
-    bottom: 6px;
-    width: 1px;
-    background-color: var(--bg-border-light);
+    background: var(--bg-primary);
+    border-radius: 10px;
+    padding: 3px;
+    box-shadow: var(--shadow-toolbar-actions);
+    transition: box-shadow 0.25s ease;
 }
 
 .edit-toolbar-actions .icon-button {
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-primary);
-    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    background: transparent;
     border: none;
-    border-radius: 50%;
+    border-radius: 7px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
 }
 
 .edit-toolbar-actions .icon-button:hover {
-    color: var(--primary-color);
-    background-color: var(--bg-tertiary);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
 }
 
 .edit-toolbar-actions .icon-button:active {
-    transform: scale(0.95);
+    transform: scale(0.9);
+    background: var(--bg-tertiary-hover);
 }
 
 .edit-toolbar-actions .danger-icon-button {
@@ -1462,6 +1534,14 @@ body {
 .edit-toolbar-actions .danger-icon-button:hover {
     color: var(--danger-color);
     background-color: var(--error-bg);
+}
+
+.edit-toolbar-divider {
+    width: 1px;
+    height: 14px;
+    background: var(--bg-border-light);
+    flex-shrink: 0;
+    margin: 0 2px;
 }
 
 .modal-content .confirm-message {

@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    i18n.initializeI18n();
     const modal = document.getElementById('video-modal');
     const modalVideo = document.getElementById('modal-video');
     const closeButton = document.querySelector('.close-button');

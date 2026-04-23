@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>设置</title>
+    <title data-i18n="settings_page_title">设置</title>
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/settings.css">
 </head>
@@ -22,46 +22,46 @@
         <nav class="nav-menu">
             <a href="#overview" class="nav-item" data-section="overview">
                 <i class="icon-overview"></i>
-                <span>基本设置</span>
+                <span data-i18n="settings_nav_overview">基本设置</span>
             </a>
             <a href="#services" class="nav-item" data-section="services">
                 <i class="icon-api"></i>
-                <span>API 服务</span>
+                <span data-i18n="settings_nav_services">API 服务</span>
             </a>
             <a href="#filters" class="nav-item" data-section="filters">
                 <i class="icon-filters"></i>
-                <span>智能标签</span>
+                <span data-i18n="settings_nav_filters">智能标签</span>
             </a>
             <a href="#privacy" class="nav-item" data-section="privacy">
                 <i class="icon-privacy"></i>
-                <span>隐私</span>
+                <span data-i18n="settings_nav_privacy">隐私</span>
             </a>
             <a href="#import-export" class="nav-item" data-section="import-export">
                 <i class="icon-import-export"></i>
-                <span>导入/导出</span>
+                <span data-i18n="settings_nav_import_export">导入/导出</span>
             </a>
             <a href="#sync" class="nav-item" data-section="sync">
                 <i class="icon-sync"></i>
-                <span>同步</span>
+                <span data-i18n="settings_nav_sync">同步</span>
             </a>
             <a href="#about" class="nav-item" data-section="about">
                 <i class="icon-about"></i>
-                <span>关于</span>
+                <span data-i18n="settings_nav_about">关于</span>
             </a>
         </nav>
         <div class="sidebar-footer">
             <div class="footer-links">
                 <a href="#" class="footer-link" id="privacy-policy-link">
                     <i class="icon-policy"></i>
-                    <span>隐私政策</span>
+                    <span data-i18n="settings_footer_privacy_policy">隐私政策</span>
                 </a>
                 <a href="#" class="footer-link" id="changelog-link">
                     <i class="icon-changelog"></i>
-                    <span>更新日志</span>
+                    <span data-i18n="settings_footer_changelog">更新日志</span>
                 </a>
                 <a href="#" class="footer-link disabled" id="feedback-link">
                     <i class="icon-feedback"></i>
-                    <span>提交反馈</span>
+                    <span data-i18n="settings_footer_feedback">提交反馈</span>
                 </a>
             </div>
         </div>
@@ -72,31 +72,31 @@
         <div class="settings-container">
             <!-- 概述部分 -->
             <div class="settings-section" id="overview-section">
-                <h2>基本设置</h2>
+                <h2 data-i18n="settings_overview_title">基本设置</h2>
 
                 <!-- 添加登录状态卡片 -->
                 <div class="login-status-card disabled" id="login-status-card" data-feature="login">
                     <div class="status-header">
-                        <h3>账号状态</h3>
+                        <h3 data-i18n="settings_overview_account_status_title">账号状态</h3>
                     </div>
                     <!-- 登录状态模板 -->
                     <template id="logged-in-template">
                         <div class="status-box logged-in">
-                            当前登录用户: <span class="username"></span>
+                            <span data-i18n="settings_overview_logged_in_user">当前登录用户:</span> <span class="username"></span>
                         </div>
                         <div class="status-actions">
-                            <button class="logout-btn">退出登录</button>
+                            <button class="logout-btn" data-i18n="settings_overview_logout">退出登录</button>
                         </div>
                     </template>
                     
                     <!-- 未登录状态模板 -->
                     <template id="logged-out-template">
-                        <div class="status-box logged-out">
+                        <div class="status-box logged-out" data-i18n="settings_overview_not_logged_in">
                             您尚未登录，登录后可使用同步功能（您也可以选择使用WebDAV进行同步而无需登录）
                         </div>
                         <div class="status-actions">
-                            <a class="login-btn" target="_blank">去登录</a>
-                            <a class="sync-link" target="_blank">同步设置</a>
+                            <a class="login-btn" target="_blank" data-i18n="settings_overview_go_login">去登录</a>
+                            <a class="sync-link" target="_blank" data-i18n="settings_overview_sync_settings">同步设置</a>
                         </div>
                     </template>
                     <div id="loginStatus" class="status-content">
@@ -107,162 +107,182 @@
                     </div>
                 </div>
                 
-                <!-- 添加快捷键设置卡片 -->
-                <div class="shortcuts-settings-card">
-                    <div class="card-header">
-                        <h3>快捷键设置</h3>
-                        <div class="shortcut-actions">
-                            <button id="edit-shortcuts-btn" class="icon-btn" title="在 Chrome 扩展管理页面修改快捷键">
-                                <svg viewBox="0 0 24 24" width="20" height="20">
+                <div class="overview-settings-panel">
+                    <!-- 快捷键 -->
+                    <div class="settings-group">
+                        <div class="settings-group-header">
+                            <h3 class="settings-group-title" data-i18n="settings_overview_shortcuts_title">快捷键设置</h3>
+                            <button id="edit-shortcuts-btn" class="settings-group-action" data-i18n-title="settings_overview_shortcuts_edit_title" title="">
+                                <svg viewBox="0 0 24 24" width="16" height="16">
                                     <path fill="currentColor" d="M20 5H4c-1.1 0-1.99.9-1.99 2L2 17c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 2H5v-2h2v2zm0-3H5V8h2v2zm9 7H8v-2h8v2zm0-4h-2v-2h2v2zm0-3h-2V8h2v2zm3 3h-2v-2h2v2zm0-3h-2V8h2v2z"/>
                                 </svg>
-                                <span>设置快捷键</span>
+                                <span data-i18n="settings_overview_shortcuts_edit">设置快捷键</span>
                             </button>
                         </div>
-                    </div>
-                    <div class="shortcuts-grid">
-                        <div class="shortcut-item">
-                            <div class="shortcut-info">
-                                <span class="shortcut-name shortcut-save">快速保存书签</span>
-                                <span class="shortcut-key" id="quickSave-shortcut">未设置</span>
+                        <div class="shortcuts-grid">
+                            <div class="shortcut-item">
+                                <div class="shortcut-info">
+                                    <span class="shortcut-name shortcut-save" data-i18n="settings_overview_shortcut_save_name">快速保存书签</span>
+                                    <span class="shortcut-key" id="quickSave-shortcut" data-i18n="settings_overview_shortcut_not_set">未设置</span>
+                                </div>
+                                <div class="shortcut-description" data-i18n="settings_overview_shortcut_save_desc">快速保存当前页面为书签</div>
                             </div>
-                            <div class="shortcut-description">快速保存当前页面为书签</div>
-                        </div>
-                        <div class="shortcut-item">
-                            <div class="shortcut-info">
-                                <span class="shortcut-name shortcut-search">快速搜索书签</span>
-                                <span class="shortcut-key" id="quickSearch-shortcut">未设置</span>
+                            <div class="shortcut-item">
+                                <div class="shortcut-info">
+                                    <span class="shortcut-name shortcut-search" data-i18n="settings_overview_shortcut_search_name">快速搜索书签</span>
+                                    <span class="shortcut-key" id="quickSearch-shortcut" data-i18n="settings_overview_shortcut_not_set">未设置</span>
+                                </div>
+                                <div class="shortcut-description" data-i18n="settings_overview_shortcut_search_desc">打开快速搜索面板</div>
                             </div>
-                            <div class="shortcut-description">打开快速搜索面板</div>
                         </div>
                     </div>
-                </div>
-                
-                <!-- 添加外观设置卡片 -->
-                <div class="appearance-settings-card">
-                    <h3>外观设置</h3>
-                    <div class="settings-grid">
-                        <div class="setting-item-card">
-                            <div class="form-group">
-                                <label>主题</label>
-                                <div class="theme-selector">
-                                    <div class="theme-option" data-theme="light">
-                                        <div class="theme-preview">
-                                            <svg viewBox="0 0 24 24" width="24" height="24">
-                                                <path fill="currentColor" d="M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,2L14.39,5.42C13.65,5.15 12.84,5 12,5C11.16,5 10.35,5.15 9.61,5.42L12,2M3.34,7L7.5,6.65C6.9,7.16 6.36,7.78 5.94,8.5C5.5,9.24 5.25,10 5.11,10.79L3.34,7M3.36,17L5.12,13.23C5.26,14 5.53,14.78 5.95,15.5C6.37,16.24 6.91,16.86 7.5,17.37L3.36,17M20.65,7L18.88,10.79C18.74,10 18.47,9.23 18.05,8.5C17.63,7.78 17.1,7.15 16.5,6.64L20.65,7M20.64,17L16.5,17.36C17.09,16.85 17.62,16.22 18.04,15.5C18.46,14.77 18.73,14 18.87,13.21L20.64,17M12,22L9.59,18.56C10.33,18.83 11.14,19 12,19C12.82,19 13.63,18.83 14.37,18.56L12,22Z"/>
-                                            </svg>
-                                        </div>
-                                        <div class="theme-label">浅色</div>
+
+                    <!-- 外观 -->
+                    <div class="settings-group">
+                        <h3 class="settings-group-title" data-i18n="settings_overview_appearance_title">外观设置</h3>
+                        <div class="settings-row">
+                            <label data-i18n="settings_overview_theme_label">主题</label>
+                            <div class="theme-selector">
+                                <div class="theme-option" data-theme="light">
+                                    <div class="theme-preview">
+                                        <svg viewBox="0 0 24 24" width="24" height="24">
+                                            <path fill="currentColor" d="M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,2L14.39,5.42C13.65,5.15 12.84,5 12,5C11.16,5 10.35,5.15 9.61,5.42L12,2M3.34,7L7.5,6.65C6.9,7.16 6.36,7.78 5.94,8.5C5.5,9.24 5.25,10 5.11,10.79L3.34,7M3.36,17L5.12,13.23C5.26,14 5.53,14.78 5.95,15.5C6.37,16.24 6.91,16.86 7.5,17.37L3.36,17M20.65,7L18.88,10.79C18.74,10 18.47,9.23 18.05,8.5C17.63,7.78 17.1,7.15 16.5,6.64L20.65,7M20.64,17L16.5,17.36C17.09,16.85 17.62,16.22 18.04,15.5C18.46,14.77 18.73,14 18.87,13.21L20.64,17M12,22L9.59,18.56C10.33,18.83 11.14,19 12,19C12.82,19 13.63,18.83 14.37,18.56L12,22Z"/>
+                                        </svg>
                                     </div>
-                                    <div class="theme-option" data-theme="dark">
-                                        <div class="theme-preview">
-                                            <svg viewBox="0 0 24 24" width="24" height="24">
-                                                <path fill="currentColor" d="M12,3C7.03,3 3,7.03 3,12C3,16.97 7.03,21 12,21C16.97,21 21,16.97 21,12C21,7.03 16.97,3 12,3M12,19C8.14,19 5,15.86 5,12C5,8.14 8.14,5 12,5C15.86,5 19,8.14 19,12C19,15.86 15.86,19 12,19M12,17C14.76,17 17,14.76 17,12C17,9.24 14.76,7 12,7V17Z"/>
-                                            </svg>
-                                        </div>
-                                        <div class="theme-label">深色</div>
+                                    <div class="theme-label" data-i18n="settings_overview_theme_light">浅色</div>
+                                </div>
+                                <div class="theme-option" data-theme="dark">
+                                    <div class="theme-preview">
+                                        <svg viewBox="0 0 24 24" width="24" height="24">
+                                            <path fill="currentColor" d="M12,3C7.03,3 3,7.03 3,12C3,16.97 7.03,21 12,21C16.97,21 21,16.97 21,12C21,7.03 16.97,3 12,3M12,19C8.14,19 5,15.86 5,12C5,8.14 8.14,5 12,5C15.86,5 19,8.14 19,12C19,15.86 15.86,19 12,19M12,17C14.76,17 17,14.76 17,12C17,9.24 14.76,7 12,7V17Z"/>
+                                        </svg>
                                     </div>
-                                    <div class="theme-option" data-theme="system">
-                                        <div class="theme-preview">
-                                            <svg viewBox="0 0 24 24" width="24" height="24">
-                                                <path fill="currentColor" d="M12,18V6A6,6 0 0,1 18,12A6,6 0 0,1 12,18M20,15.31L23.31,12L20,8.69V4H15.31L12,0.69L8.69,4H4V8.69L0.69,12L4,15.31V20H8.69L12,23.31L15.31,20H20V15.31Z"/>
-                                            </svg>
-                                        </div>
-                                        <div class="theme-label">设备</div>
+                                    <div class="theme-label" data-i18n="settings_overview_theme_dark">深色</div>
+                                </div>
+                                <div class="theme-option" data-theme="system">
+                                    <div class="theme-preview">
+                                        <svg viewBox="0 0 24 24" width="24" height="24">
+                                            <path fill="currentColor" d="M12,18V6A6,6 0 0,1 18,12A6,6 0 0,1 12,18M20,15.31L23.31,12L20,8.69V4H15.31L12,0.69L8.69,4H4V8.69L0.69,12L4,15.31V20H8.69L12,23.31L15.31,20H20V15.31Z"/>
+                                        </svg>
                                     </div>
+                                    <div class="theme-label" data-i18n="settings_overview_theme_system">设备</div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- 修改搜索设置部分 -->
-                <div class="search-settings-card">
-                    <h3>搜索设置</h3>
-                    <div class="settings-grid">
-                        <div class="setting-item-card">
-                            <div class="form-group">
-                                <label for="max-search-results">
-                                    搜索结果数量
-                                    <div class="tooltip-icon" data-tooltip="最多显示多少个搜索结果（1-100）">
-                                        <svg width="16" height="16" viewBox="0 0 24 24">
-                                            <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-                                        </svg>
-                                    </div>
-                                </label>
-                                <input type="number" id="max-search-results" min="1" max="100" value="50">
-                            </div>
+                    <!-- 搜索 -->
+                    <div class="settings-group">
+                        <h3 class="settings-group-title" data-i18n="settings_overview_search_title">搜索设置</h3>
+                        <div class="settings-row">
+                            <label for="max-search-results">
+                                <span data-i18n="settings_overview_search_max_results">搜索结果数量</span>
+                                <div class="tooltip-icon" data-i18n-tooltip="settings_overview_search_max_results_tooltip" data-tooltip="">
+                                    <svg width="16" height="16" viewBox="0 0 24 24">
+                                        <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                    </svg>
+                                </div>
+                            </label>
+                            <input type="number" id="max-search-results" min="1" max="100" value="50">
                         </div>
-                        <div class="setting-item-card">
-                            <div class="form-group">
-                                <label for="omnibox-search-limit">
-                                    地址栏搜索结果数量
-                                    <div class="tooltip-icon" data-tooltip="在浏览器地址栏（Omnibox）搜索时显示的最大结果数量（1-9）">
-                                        <svg width="16" height="16" viewBox="0 0 24 24">
-                                            <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-                                        </svg>
-                                    </div>
-                                </label>
-                                <input type="number" id="omnibox-search-limit" min="1" max="9" value="5">
-                            </div>
+                        <div class="settings-row">
+                            <label for="omnibox-search-limit">
+                                <span data-i18n="settings_overview_search_omnibox_limit">地址栏搜索结果数量</span>
+                                <div class="tooltip-icon" data-i18n-tooltip="settings_overview_search_omnibox_limit_tooltip" data-tooltip="">
+                                    <svg width="16" height="16" viewBox="0 0 24 24">
+                                        <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                    </svg>
+                                </div>
+                            </label>
+                            <input type="number" id="omnibox-search-limit" min="1" max="9" value="5">
                         </div>
-                        <!-- 添加搜索历史设置 -->
-                        <div class="setting-item-card">
-                            <div class="form-group">
-                                <label class="switch-label">
-                                    <span class="switch-text">
-                                        搜索历史
-                                        <div class="tooltip-icon" data-tooltip="设置是否显示最近的搜索记录">
-                                            <svg width="16" height="16" viewBox="0 0 24 24">
-                                                <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-                                            </svg>
-                                        </div>
-                                    </span>
+                        <div class="settings-row">
+                            <label>
+                                <span data-i18n="settings_overview_search_history">搜索历史</span>
+                                <div class="tooltip-icon" data-i18n-tooltip="settings_overview_search_history_tooltip" data-tooltip="">
+                                    <svg width="16" height="16" viewBox="0 0 24 24">
+                                        <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                    </svg>
+                                </div>
+                            </label>
+                            <div class="search-history-actions">
+                                <button id="clear-search-history" class="inline-text-btn" data-i18n="settings_overview_search_history_clear">清除搜索历史</button>
+                                <label class="switch-label compact-switch">
                                     <div class="switch-container">
                                         <input type="checkbox" id="show-search-history" checked>
                                         <span class="switch-slider"></span>
                                     </div>
                                 </label>
-                                <button id="clear-search-history" class="secondary-btn">清除搜索历史</button>
                             </div>
                         </div>
-                        <!-- 添加网站显示设置 -->
-                        <div class="setting-item-card">
-                            <div class="form-group">
-                                <label>
-                                    快捷访问网站
-                                    <div class="tooltip-icon" data-tooltip="设置搜索面板顶部的快捷访问网站">
-                                        <svg width="16" height="16" viewBox="0 0 24 24">
-                                            <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-                                        </svg>
-                                    </div>
-                                </label>
+                        <div class="settings-row">
+                            <label>
+                                <span data-i18n="settings_overview_search_sites_title">快捷访问网站</span>
+                                <div class="tooltip-icon" data-i18n-tooltip="settings_overview_search_sites_tooltip" data-tooltip="">
+                                    <svg width="16" height="16" viewBox="0 0 24 24">
+                                        <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                    </svg>
+                                </div>
+                            </label>
+                            <div class="quick-search-sites-controls">
                                 <div class="quick-search-sites-row">
-                                    <label for="quick-search-sites-display">显示类型：</label>
+                                    <label for="quick-search-sites-display" data-i18n="settings_overview_search_sites_display_type">显示类型：</label>
                                     <select id="quick-search-sites-display">
-                                        <option value="none">隐藏</option>
-                                        <option value="pinned">固定网站</option>
-                                        <option value="recent">最近访问</option>
-                                        <option value="most">访问最多</option>
-                                        <option value="recent-saved">最近保存</option>
+                                        <option value="none" data-i18n="settings_overview_search_sites_display_none">隐藏</option>
+                                        <option value="pinned" data-i18n="settings_overview_search_sites_display_pinned">固定网站</option>
+                                        <option value="recent" data-i18n="settings_overview_search_sites_display_recent">最近访问</option>
+                                        <option value="most" data-i18n="settings_overview_search_sites_display_most">访问最多</option>
+                                        <option value="recent-saved" data-i18n="settings_overview_search_sites_display_recent_saved">最近保存</option>
                                     </select>
                                 </div>
                                 <div id="sites-display-count-container" class="quick-search-sites-row">
-                                    <label for="sites-display-count">显示数量：</label>
+                                    <label for="sites-display-count" data-i18n="settings_overview_search_sites_display_count">显示数量：</label>
                                     <input type="number" id="sites-display-count" min="1" max="50" value="10">
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- AI / 标签 -->
+                    <div class="settings-group">
+                        <h3 class="settings-group-title">AI</h3>
+                        <div class="settings-row">
+                            <label for="ai-target-language">
+                                <span data-i18n="settings_services_ai_target_language">目标语言</span>
+                                <div class="tooltip-icon" data-i18n-tooltip="settings_services_ai_target_language_tooltip" data-tooltip="">
+                                    <svg width="16" height="16" viewBox="0 0 24 24">
+                                        <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                    </svg>
+                                </div>
+                            </label>
+                            <select id="ai-target-language">
+                                <!-- 选项将通过 JavaScript 动态生成 -->
+                            </select>
+                        </div>
+                        <div class="settings-row">
+                            <label class="switch-label">
+                                <span class="switch-text">
+                                    <span data-i18n="settings_overview_auto_generate_tags">自动生成标签</span>
+                                    <div class="tooltip-icon" data-i18n-tooltip="settings_overview_auto_generate_tags_tooltip" data-tooltip="">
+                                        <svg width="16" height="16" viewBox="0 0 24 24">
+                                            <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                        </svg>
+                                    </div>
+                                </span>
+                                <div class="switch-container">
+                                    <input type="checkbox" id="auto-generate-tags" checked>
+                                    <span class="switch-slider"></span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
                 </div>
-                
-                <!-- 其他基础设置项... -->
             </div>
 
             <!-- 新增 API 设置部分 -->
             <div class="settings-section" id="services-section">
-                <h2>API 服务</h2>
-                <div class="section-description">
+                <h2 data-i18n="settings_services_title">API 服务</h2>
+                <div class="section-description" data-i18n="settings_services_description">
                     配置 AI 服务所需的 API 密钥以启用智能书签功能
                 </div>
                 <div class="api-security-notice">
@@ -273,11 +293,11 @@
                         </svg>
                     </div>
                     <div class="notice-content">
-                        <h4>API 密钥安全说明</h4>
+                        <h4 data-i18n="settings_services_security_title">API 密钥安全说明</h4>
                         <ul>
-                            <li>您的 API 密钥将使用浏览器的安全存储机制进行本地存储</li>
-                            <li>密钥仅用于与相应 AI 服务进行直接通信</li>
-                            <li>我们不会将您的 API 密钥上传到服务器或分享给第三方</li>
+                            <li data-i18n="settings_services_security_item1">您的 API 密钥将使用浏览器的安全存储机制进行本地存储</li>
+                            <li data-i18n="settings_services_security_item2">密钥仅用于与相应 AI 服务进行直接通信</li>
+                            <li data-i18n="settings_services_security_item3">我们不会将您的 API 密钥上传到服务器或分享给第三方</li>
                         </ul>
                     </div>
                 </div>
@@ -286,16 +306,16 @@
                 <div class="service-selector">
                     <div class="service-tabs">
                         <div class="tab-item active" data-tab="chat">
-                            <span class="tab-text">文本模型</span>
+                            <span class="tab-text" data-i18n="settings_services_tab_chat">文本模型</span>
                         </div>
                         <div class="tab-item" data-tab="embedding">
-                            <span class="tab-text">向量模型</span>
+                            <span class="tab-text" data-i18n="settings_services_tab_embedding">向量模型</span>
                         </div>
                     </div>
                     <div class="service-selector-content">
                         <div class="tab-content active" data-tab-content="chat">
                             <div class="service-selector-header">
-                                <span>当前使用的文本模型服务</span>
+                                <span data-i18n="settings_services_chat_current">当前使用的文本模型服务</span>
                                 <span class="service-status-icon" id="chat-service-status">
                                     <svg class="status-success" viewBox="0 0 24 24" width="16" height="16">
                                         <path fill="currentColor" d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M11,16.5L6.5,12L7.91,10.59L11,13.67L16.59,8.09L18,9.5L11,16.5Z"/>
@@ -311,7 +331,7 @@
                         </div>
                         <div class="tab-content" data-tab-content="embedding">
                             <div class="service-selector-header">
-                                <span>当前使用的向量模型服务</span>
+                                <span data-i18n="settings_services_embedding_current">当前使用的向量模型服务</span>
                                 <span class="service-status-icon" id="embedding-service-status">
                                     <svg class="status-success" viewBox="0 0 24 24" width="16" height="16">
                                         <path fill="currentColor" d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M11,16.5L6.5,12L7.91,10.59L11,13.67L16.59,8.09L18,9.5L11,16.5Z"/>
@@ -336,30 +356,30 @@
                 <!-- API 使用统计 -->
                 <div class="api-usage-stats">
                     <div class="stats-header">
-                        <h3>API 使用统计</h3>
-                        <span class="stats-period">本月用量</span>
+                        <h3 data-i18n="settings_services_usage_stats_title">API 使用统计</h3>
+                        <span class="stats-period" data-i18n="settings_services_usage_stats_period">本月用量</span>
                     </div>
                     <div class="stats-grid">
                         <div class="stats-card">
-                            <div class="stats-title">文本模型调用</div>
+                            <div class="stats-title" data-i18n="settings_services_usage_chat_title">文本模型调用</div>
                             <div class="stats-value" id="chat-calls">0</div>
                             <div class="stats-tokens">
                                 <span>
-                                    <span class="token-label">输入 Token:</span>
+                                    <span class="token-label" data-i18n="settings_services_usage_input_tokens">输入 Token:</span>
                                     <span class="token-value" id="chat-input-tokens">0</span>
                                 </span>
                                 <span>
-                                    <span class="token-label">输出 Token:</span>
+                                    <span class="token-label" data-i18n="settings_services_usage_output_tokens">输出 Token:</span>
                                     <span class="token-value" id="chat-output-tokens">0</span>
                                 </span>
                             </div>
                         </div>
                         <div class="stats-card">
-                            <div class="stats-title">向量模型调用</div>
+                            <div class="stats-title" data-i18n="settings_services_usage_embedding_title">向量模型调用</div>
                             <div class="stats-value" id="embedding-calls">0</div>
                             <div class="stats-tokens">
                                 <span>
-                                    <span class="token-label">Token 数:</span>
+                                    <span class="token-label" data-i18n="settings_services_usage_embedding_tokens">Token 数:</span>
                                     <span class="token-value" id="embedding-tokens">0</span>
                                 </span>
                             </div>
@@ -370,39 +390,39 @@
 
             <!-- 隐私部分 -->
             <div class="settings-section" id="privacy-section">
-                <h2>隐私设置</h2>
+                <h2 data-i18n="settings_privacy_title">隐私设置</h2>
                 <div class="section-description">
-                    <p>系统会自动检测并保护以下类型的隐私页面，对于这些页面，将不会读取和分析页面内容:</p>
+                    <p data-i18n="settings_privacy_description">系统会自动检测并保护以下类型的隐私页面，对于这些页面，将不会读取和分析页面内容:</p>
                     <ul class="privacy-rules-list">
                         <li>
-                            <span class="rule-name">认证页面</span>
-                            <span class="rule-desc">登录、注册、密码重置等页面</span>
+                            <span class="rule-name" data-i18n="settings_privacy_rule_auth_name">认证页面</span>
+                            <span class="rule-desc" data-i18n="settings_privacy_rule_auth_desc">登录、注册、密码重置等页面</span>
                         </li>
                         <li>
-                            <span class="rule-name">个人账户页面</span>
-                            <span class="rule-desc">个人资料、账户设置、管理后台等页面</span>
+                            <span class="rule-name" data-i18n="settings_privacy_rule_account_name">个人账户页面</span>
+                            <span class="rule-desc" data-i18n="settings_privacy_rule_account_desc">个人资料、账户设置、管理后台等页面</span>
                         </li>
                         <li>
-                            <span class="rule-name">支付页面</span>
-                            <span class="rule-desc">支付、账单、订阅管理等页面</span>
+                            <span class="rule-name" data-i18n="settings_privacy_rule_payment_name">支付页面</span>
+                            <span class="rule-desc" data-i18n="settings_privacy_rule_payment_desc">支付、账单、订阅管理等页面</span>
                         </li>
                         <li>
-                            <span class="rule-name">邮件消息页面</span>
-                            <span class="rule-desc">邮箱、私信、聊天等页面</span>
+                            <span class="rule-name" data-i18n="settings_privacy_rule_message_name">邮件消息页面</span>
+                            <span class="rule-desc" data-i18n="settings_privacy_rule_message_desc">邮箱、私信、聊天等页面</span>
                         </li>
                         <li>
-                            <span class="rule-name">敏感参数</span>
-                            <span class="rule-desc">包含token、密钥等敏感信息的URL</span>
+                            <span class="rule-name" data-i18n="settings_privacy_rule_sensitive_name">敏感参数</span>
+                            <span class="rule-desc" data-i18n="settings_privacy_rule_sensitive_desc">包含token、密钥等敏感信息的URL</span>
                         </li>
                     </ul>
                 </div>
 
                 <div id="custom-domains-section" class="setting-item">
                     <div class="setting-header">
-                        <h3>自定义隐私域名</h3>
-                        <button id="add-domain-btn" class="primary-btn">添加域名</button>
+                        <h3 data-i18n="settings_privacy_custom_domains_title">自定义隐私域名</h3>
+                        <button id="add-domain-btn" class="primary-btn" data-i18n="settings_privacy_add_domain">添加域名</button>
                     </div>
-                    <p class="setting-description">
+                    <p class="setting-description" data-i18n="settings_privacy_custom_domains_desc">
                         除了系统默认保护的页面外，您还可以添加需要额外保护的域名
                     </p>
                     <div class="domains-list" id="domains-list">
@@ -413,20 +433,36 @@
 
             <!-- 在 settings-container 中添加新的 section -->
             <div class="settings-section" id="filters-section">
-                <h2>智能标签</h2>
-                <div class="section-description">
+                <h2 data-i18n="settings_filters_title">智能标签</h2>
+                <div class="section-description" data-i18n="settings_filters_description">
                     创建基于规则的智能标签，自动对符合条件的书签进行分类和组织
                 </div>
                 
                 <div class="filters-container">
                     <div class="filters-header">
-                        <h3>智能标签列表</h3>
-                        <button id="add-filter-btn" class="primary-btn">
-                            <svg viewBox="0 0 24 24" width="16" height="16">
-                                <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
-                            </svg>
-                            添加标签
-                        </button>
+                        <h3 data-i18n="settings_filters_list_title">智能标签列表</h3>
+                        <div class="filters-header-actions">
+                            <button id="filter-archive-btn" class="text-btn filter-archive-btn">
+                                <svg viewBox="0 0 24 24" width="14" height="14">
+                                    <path fill="currentColor" d="M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z"/>
+                                </svg>
+                                <span data-i18n="settings_filters_archive_btn">历史存档</span>
+                                <span id="filter-archive-count" class="archive-count"></span>
+                            </button>
+                            <button id="add-filter-btn" class="primary-btn">
+                                <svg viewBox="0 0 24 24" width="16" height="16">
+                                    <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+                                </svg>
+                                <span data-i18n="settings_filters_add">添加标签</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="filter-archive-panel" class="filter-archive-panel" style="display:none">
+                        <div id="filter-archive-list" class="filter-archive-list"></div>
+                        <div id="filter-archive-empty" class="filter-archive-empty">
+                            <span data-i18n="settings_filters_archive_empty">暂无存档</span>
+                        </div>
                     </div>
                     
                     <div id="filters-list" class="filters-list">
@@ -437,8 +473,8 @@
 
             <!-- 在settings-container中添加新的section -->
             <div class="settings-section" id="import-export-section">
-                <h2>导入导出</h2>
-                <div class="section-description">
+                <h2 data-i18n="settings_import_export_title">导入导出</h2>
+                <div class="section-description" data-i18n="settings_import_export_description">
                     导入或导出您的书签数据
                 </div>
                 
@@ -451,9 +487,9 @@
                             </svg>
                         </div>
                         <div class="card-content">
-                            <h3>导入浏览器书签</h3>
-                            <p>从浏览器收藏夹导入现有书签</p>
-                            <button id="import-browser-btn" class="primary-btn">
+                            <h3 data-i18n="settings_import_export_browser_title">导入浏览器书签</h3>
+                            <p data-i18n="settings_import_export_browser_desc">从浏览器收藏夹导入现有书签</p>
+                            <button id="import-browser-btn" class="primary-btn" data-i18n="settings_import_export_browser_button">
                                 开始导入
                             </button>
                         </div>
@@ -467,9 +503,9 @@
                             </svg>
                         </div>
                         <div class="card-content">
-                            <h3>导出到本地</h3>
-                            <p>将书签导出为本地文件</p>
-                            <button id="export-local-btn" class="primary-btn">
+                            <h3 data-i18n="settings_import_export_export_title">导出到本地</h3>
+                            <p data-i18n="settings_import_export_export_desc">将书签导出为本地文件</p>
+                            <button id="export-local-btn" class="primary-btn" data-i18n="settings_import_export_export_button">
                                 开始导出
                             </button>
                         </div>
@@ -483,9 +519,9 @@
                             </svg>
                         </div>
                         <div class="card-content">
-                            <h3>从本地导入</h3>
-                            <p>从本地文件导入书签数据</p>
-                            <button id="import-local-btn" class="primary-btn">
+                            <h3 data-i18n="settings_import_export_import_title">从本地导入</h3>
+                            <p data-i18n="settings_import_export_import_desc">从本地文件导入书签数据</p>
+                            <button id="import-local-btn" class="primary-btn" data-i18n="settings_import_export_import_button">
                                 选择文件
                             </button>
                         </div>
@@ -496,7 +532,7 @@
                 <div id="import-progress-dialog" class="dialog">
                     <div class="dialog-content">
                         <div class="dialog-header">
-                            <h3>导入浏览器书签</h3>
+                            <h3 data-i18n="settings_import_export_dialog_title">导入浏览器书签</h3>
                             <button class="close-dialog-btn">
                                 <svg width="16" height="16" viewBox="0 0 24 24">
                                     <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
@@ -504,7 +540,7 @@
                             </button>
                         </div>
                         <div class="import-progress-body">
-                            <div class="progress-status">正在导入...</div>
+                            <div class="progress-status" data-i18n="settings_import_export_progress_importing">正在导入...</div>
                             <div class="progress-bar">
                                 <div class="progress-fill"></div>
                             </div>
@@ -514,7 +550,7 @@
                             </div>
                             <!-- 添加导入日志区域 -->
                             <div class="import-logs">
-                                <div class="logs-header">导入详情</div>
+                                <div class="logs-header" data-i18n="settings_import_export_progress_details">导入详情</div>
                                 <div class="logs-list">
                                     <!-- 日志条目将通过 JavaScript 动态添加 -->
                                 </div>
@@ -527,7 +563,7 @@
                 <div id="bookmark-select-dialog" class="dialog">
                     <div class="dialog-content large">
                         <div class="dialog-header">
-                            <h3>选择要导入的书签</h3>
+                            <h3 data-i18n="settings_import_export_select_dialog_title">选择要导入的书签</h3>
                             <button class="close-dialog-btn">
                                 <svg width="16" height="16" viewBox="0 0 24 24">
                                     <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
@@ -540,17 +576,17 @@
                                 <label class="checkbox-container">
                                     <input type="checkbox" id="select-all-bookmarks">
                                     <span class="checkmark"></span>
-                                    全选
+                                    <span data-i18n="settings_import_export_select_all">全选</span>
                                 </label>
-                                <label class="checkbox-container" title="例如：如果书签在'学习资料/编程'文件夹中，会自动添加'学习资料'、'编程'这两个标签">
+                                <label class="checkbox-container" data-i18n-title="settings_import_export_folder_tags_tooltip" title="">
                                     <input type="checkbox" id="keep-folder-tags" checked>
                                     <span class="checkmark"></span>
-                                添加目录名作为标签
+                                    <span data-i18n="settings_import_export_folder_tags">添加目录名作为标签</span>
                                 </label>
-                                <label class="checkbox-container" title="开启后将不导入已存在的书签">
+                                <label class="checkbox-container" data-i18n-title="settings_import_export_skip_existing_tooltip" title="">
                                     <input type="checkbox" id="skip-existing" checked>
                                     <span class="checkmark"></span>
-                                    跳过已存在的书签
+                                    <span data-i18n="settings_import_export_skip_existing">跳过已存在的书签</span>
                                 </label>
                             </div>
                             
@@ -611,7 +647,7 @@
                 <div id="export-dialog" class="dialog">
                     <div class="dialog-content">
                         <div class="dialog-header">
-                            <h3>导出数据</h3>
+                            <h3 data-i18n="settings_import_export_export_dialog_title">导出数据</h3>
                             <button class="close-dialog-btn">
                                 <svg width="16" height="16" viewBox="0 0 24 24">
                                     <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
@@ -620,38 +656,38 @@
                         </div>
                         <div class="dialog-body">
                             <div class="export-options-container">
-                                <h4>选择要导出的内容</h4>
+                                <h4 data-i18n="settings_import_export_export_select_title">选择要导出的内容</h4>
                                 <div class="checkbox-group">
                                     <label class="checkbox-container">
                                         <input type="checkbox" id="export-bookmarks" checked>
                                         <span class="checkmark"></span>
                                         <div class="option-info">
-                                            <span class="option-title">书签数据</span>
-                                            <span class="option-desc">包括书签内容、标签、向量等</span>
+                                            <span class="option-title" data-i18n="settings_import_export_option_bookmarks_title">书签数据</span>
+                                            <span class="option-desc" data-i18n="settings_import_export_option_bookmarks_desc">包括书签内容、标签、向量等</span>
                                         </div>
                                     </label>
                                     <label class="checkbox-container">
                                         <input type="checkbox" id="export-settings" checked>
                                         <span class="checkmark"></span>
                                         <div class="option-info">
-                                            <span class="option-title">设置项</span>
-                                            <span class="option-desc">搜索设置、显示设置、隐私设置等</span>
+                                            <span class="option-title" data-i18n="settings_import_export_option_settings_title">设置项</span>
+                                            <span class="option-desc" data-i18n="settings_import_export_option_settings_desc">搜索设置、显示设置、隐私设置等</span>
                                         </div>
                                     </label>
                                     <label class="checkbox-container">
                                         <input type="checkbox" id="export-filters" checked>
                                         <span class="checkmark"></span>
                                         <div class="option-info">
-                                            <span class="option-title">智能标签</span>
-                                            <span class="option-desc">包括所有智能标签规则</span>
+                                            <span class="option-title" data-i18n="settings_import_export_option_filters_title">智能标签</span>
+                                            <span class="option-desc" data-i18n="settings_import_export_option_filters_desc">包括所有智能标签规则</span>
                                         </div>
                                     </label>
                                     <label class="checkbox-container">
                                         <input type="checkbox" id="export-api-services" checked>
                                         <span class="checkmark"></span>
                                         <div class="option-info">
-                                            <span class="option-title">API 服务设置</span>
-                                            <span class="option-desc">包括自定义服务配置和 API 密钥，⚠️请妥善保管</span>
+                                            <span class="option-title" data-i18n="settings_import_export_option_api_services_title">API 服务设置</span>
+                                            <span class="option-desc" data-i18n="settings_import_export_option_api_services_desc">包括自定义服务配置和 API 密钥，⚠️请妥善保管</span>
                                         </div>
                                     </label>
                                 </div>
@@ -659,12 +695,12 @@
                         </div>
                         <div class="dialog-footer">
                             <div class="export-summary">
-                                <span class="summary-text">预计导出 <span id="export-count">0</span> 个书签</span>
+                                <span class="summary-text"><span data-i18n="settings_import_export_export_summary_prefix">预计导出</span> <span id="export-count">0</span> <span data-i18n="settings_import_export_bookmarks_unit">个书签</span></span>
                             </div>
                             <div class="footer-actions">
-                                <button class="secondary-btn" id="cancel-export-btn">取消</button>
+                                <button class="secondary-btn" id="cancel-export-btn" data-i18n="ui_button_cancel">取消</button>
                                 <button class="primary-btn" id="confirm-export-btn">
-                                    <span class="btn-text">导出</span>
+                                    <span class="btn-text" data-i18n="settings_import_export_export_button_text">导出</span>
                                     <span class="loading-spinner"></span>
                                 </button>
                             </div>
@@ -676,7 +712,7 @@
                 <div id="import-dialog" class="dialog">
                     <div class="dialog-content">
                         <div class="dialog-header">
-                            <h3>导入数据</h3>
+                            <h3 data-i18n="settings_import_export_import_dialog_title">导入数据</h3>
                             <button class="close-dialog-btn">
                                 <svg width="16" height="16" viewBox="0 0 24 24">
                                     <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
@@ -690,65 +726,65 @@
                                         <svg viewBox="0 0 24 24" width="48" height="48">
                                             <path fill="currentColor" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M12,12L16,16H13.5V19H10.5V16H8L12,12Z"/>
                                         </svg>
-                                        <p class="drop-text">拖放文件到这里或点击选择文件<span class="drop-text-tip">（只支持本插件导出的文件）</span></p>
+                                        <p class="drop-text"><span data-i18n="settings_import_export_import_drop_text">拖放文件到这里或点击选择文件</span><span class="drop-text-tip" data-i18n="settings_import_export_import_drop_tip">（只支持本插件导出的文件）</span></p>
                                         <input type="file" id="import-file-input" accept=".json" style="display: none;">
-                                        <button class="secondary-btn select-file-btn">选择文件</button>
+                                        <button class="secondary-btn select-file-btn" data-i18n="settings_import_export_import_select_file">选择文件</button>
                                     </div>
                                 </div>
                             </div>
                             <div class="import-options-container">
-                                <h4>导入选项</h4>
+                                <h4 data-i18n="settings_import_export_import_options_title">导入选项</h4>
                                 <div class="checkbox-group">
                                     <label class="checkbox-container">
                                         <input type="checkbox" id="import-bookmarks" checked>
                                         <span class="checkmark"></span>
                                         <div class="option-info">
-                                            <span class="option-title">书签数据</span>
-                                            <span class="option-count">发现 <span id="bookmark-count">0</span> 个书签</span>
+                                            <span class="option-title" data-i18n="settings_import_export_option_bookmarks_title">书签数据</span>
+                                            <span class="option-count"><span data-i18n="settings_import_export_import_found">发现</span> <span id="bookmark-count">0</span> <span data-i18n="settings_import_export_bookmarks_unit">个书签</span></span>
                                         </div>
                                     </label>
                                     <label class="checkbox-container">
                                         <input type="checkbox" id="import-settings" checked>
                                         <span class="checkmark"></span>
                                         <div class="option-info">
-                                            <span class="option-title">设置项</span>
-                                            <span class="option-desc">搜索设置、显示设置、隐私设置等</span>
+                                            <span class="option-title" data-i18n="settings_import_export_option_settings_title">设置项</span>
+                                            <span class="option-desc" data-i18n="settings_import_export_option_settings_desc">搜索设置、显示设置、隐私设置等</span>
                                         </div>
                                     </label>
                                     <label class="checkbox-container">
                                         <input type="checkbox" id="import-filters" checked>
                                         <span class="checkmark"></span>
                                         <div class="option-info">
-                                            <span class="option-title">智能标签</span>
-                                            <span class="option-count">发现 <span id="filter-count">0</span> 个标签规则</span>
+                                            <span class="option-title" data-i18n="settings_import_export_option_filters_title">智能标签</span>
+                                            <span class="option-count"><span data-i18n="settings_import_export_import_found">发现</span> <span id="filter-count">0</span> <span data-i18n="settings_import_export_filter_rules_unit">个标签规则</span></span>
                                         </div>
                                     </label>
                                     <label class="checkbox-container">
                                         <input type="checkbox" id="import-api-services" checked>
                                         <span class="checkmark"></span>
                                         <div class="option-info">
-                                            <span class="option-title">API 服务设置</span>
-                                            <span class="option-count">发现 <span id="api-service-count">0</span> 个 API 服务</span>
+                                            <span class="option-title" data-i18n="settings_import_export_option_api_services_title">API 服务设置</span>
+                                            <span class="option-count"><span data-i18n="settings_import_export_import_found">发现</span> <span id="api-service-count">0</span> <span data-i18n="settings_import_export_api_services_unit">个 API 服务</span></span>
                                         </div>
                                     </label>
                                 </div>
                                 <div class="import-mode">
-                                    <h4>导入模式</h4>
+                                    <h4 data-i18n="settings_import_export_import_mode_title">导入模式</h4>
                                     <div class="radio-group">
                                         <label class="radio-container">
                                             <input type="radio" name="import-mode" value="merge" checked style="display: none;">
                                             <span class="radio-mark"></span>
                                             <div class="option-info">
-                                                <span class="option-title">合并</span>
-                                                <span class="option-desc">保留现有数据，仅添加新内容</span>
+                                                <span class="option-title" data-i18n="settings_import_export_import_mode_merge_title">合并</span>
+                                                <span class="option-desc" data-i18n="settings_import_export_import_mode_merge_desc">保留现有数据，仅添加新内容</span>
                                             </div>
                                         </label>
                                         <label class="radio-container">
                                             <input type="radio" name="import-mode" value="overwrite" style="display: none;">
                                             <span class="radio-mark"></span>
                                             <div class="option-info">
-                                                <span class="option-title">覆盖</span>
-                                                <span class="option-desc">完全替换现有数据</span>
+                                                <span class="option-title" data-i18n="settings_import_export_import_mode_overwrite_title">覆盖</span>
+                                                <span class="option-desc" data-i18n="settings_import_export_import_mode_overwrite_desc">完全替换现有数据</span>
                                             </div>
                                         </label>
                                     </div>
@@ -757,12 +793,12 @@
                         </div>
                         <div class="dialog-footer">
                             <div class="import-summary">
-                                <span class="summary-text">准备导入 <span id="import-count">0</span> 个项目</span>
+                                <span class="summary-text"><span data-i18n="settings_import_export_import_summary">准备导入</span> <span id="import-count">0</span> <span data-i18n="settings_import_export_items_unit">个项目</span></span>
                             </div>
                             <div class="footer-actions">
-                                <button class="secondary-btn" id="cancel-import-file-btn">取消</button>
+                                <button class="secondary-btn" id="cancel-import-file-btn" data-i18n="ui_button_cancel">取消</button>
                                 <button class="primary-btn" id="confirm-import-file-btn">
-                                    <span class="btn-text">导入</span>
+                                    <span class="btn-text" data-i18n="settings_import_export_import_button_text">导入</span>
                                     <span class="loading-spinner"></span>
                                 </button>
                             </div>
@@ -773,8 +809,8 @@
 
             <!-- 在about section之前 -->
             <div class="settings-section" id="sync-section">
-                <h2>同步</h2>
-                <div class="section-description">
+                <h2 data-i18n="settings_sync_title">同步</h2>
+                <div class="section-description" data-i18n="settings_sync_description">
                     配置数据同步服务以在不同设备间同步您的书签和个性化设置
                 </div>
                 
@@ -784,18 +820,18 @@
                         <div class="sync-service-header">
                             <div class="sync-service-top">
                                 <div class="sync-service-name">
-                                    云同步
+                                    <span data-i18n="settings_sync_cloud_name">云同步</span>
                                     <div class="login-status">
-                                        <a href="#" class="login-link">去登录</a>
+                                        <a href="#" class="login-link" data-i18n="settings_sync_cloud_go_login">去登录</a>
                                         <svg class="login-status-icon" viewBox="0 0 24 24" width="16" height="16">
                                             <path fill="currentColor" d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" />
                                         </svg>
-                                        <span class="login-status-text">已登录</span>
+                                        <span class="login-status-text" data-i18n="settings_sync_cloud_logged_in">已登录</span>
                                     </div>
                                 </div>
                                 <div class="sync-service-actions">
                                     <label class="switch-label">
-                                        <div class="switch-container" title="开启/关闭同步">
+                                        <div class="switch-container" data-i18n-title="settings_sync_toggle_title" title="">
                                             <input type="checkbox" class="sync-toggle">
                                             <span class="switch-slider"></span>
                                         </div>
@@ -803,7 +839,7 @@
                                 </div>
                             </div>
                             <div class="sync-service-status">
-                                <span class="sync-status-text">上次同步: 从未同步</span>
+                                <span class="sync-status-text" data-i18n="settings_sync_last_sync_never">上次同步: 从未同步</span>
                                 <span class="sync-status-icon success">
                                     <svg viewBox="0 0 24 24" width="16" height="16">
                                         <path fill="currentColor" d="M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z"/>
@@ -817,7 +853,7 @@
                             </div>
                         </div>
                         <div class="sync-service-content">
-                            <div class="sync-service-description">
+                            <div class="sync-service-description" data-i18n="settings_sync_cloud_description">
                                 官方提供的云同步服务，目前只支持同步书签数据
                             </div>
                             <div class="sync-service-buttons">
@@ -825,13 +861,13 @@
                                     <svg viewBox="0 0 24 24" width="16" height="16">
                                         <path fill="currentColor" d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
                                     </svg>
-                                    设置
+                                    <span data-i18n="settings_sync_button_settings">设置</span>
                                 </button>
                                 <button class="primary-btn sync-now-btn">
                                     <svg viewBox="0 0 24 24" width="16" height="16">
                                         <path fill="currentColor" d="M12,18A6,6 0 0,1 6,12C6,11 6.25,10.03 6.7,9.2L5.24,7.74C4.46,8.97 4,10.43 4,12A8,8 0 0,0 12,20V23L16,19L12,15M12,4V1L8,5L12,9V6A6,6 0 0,1 18,12C18,13 17.75,13.97 17.3,14.8L18.76,16.26C19.54,15.03 20,13.57 20,12A8,8 0 0,0 12,4Z"/>
                                     </svg>
-                                    立即同步
+                                    <span data-i18n="settings_sync_button_sync_now">立即同步</span>
                                 </button>
                             </div>
                         </div>
@@ -841,10 +877,10 @@
                     <div class="sync-service-card" id="webdav-sync-card">
                         <div class="sync-service-header">
                             <div class="sync-service-top">
-                                <div class="sync-service-name">WebDAV</div>
+                                <div class="sync-service-name" data-i18n="settings_sync_webdav_name">WebDAV</div>
                                 <div class="sync-service-actions">
                                     <label class="switch-label">
-                                        <div class="switch-container" title="开启/关闭同步">
+                                        <div class="switch-container" data-i18n-title="settings_sync_toggle_title" title="">
                                             <input type="checkbox" class="sync-toggle">
                                             <span class="switch-slider"></span>
                                         </div>
@@ -852,7 +888,7 @@
                                 </div>
                             </div>
                             <div class="sync-service-status">
-                                <span class="sync-status-text">上次同步: 从未同步</span>
+                                <span class="sync-status-text" data-i18n="settings_sync_last_sync_never">上次同步: 从未同步</span>
                                 <span class="sync-status-icon success">
                                     <svg viewBox="0 0 24 24" width="16" height="16">
                                         <path fill="currentColor" d="M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z"/>
@@ -867,8 +903,8 @@
                         </div>
                         <div class="sync-service-content">
                             <div class="sync-service-description">
-                                使用WebDAV协议同步到您的私有存储空间
-                                <p class="webdav-recommendations">推荐云盘：
+                                <span data-i18n="settings_sync_webdav_description">使用WebDAV协议同步到您的私有存储空间</span>
+                                <p class="webdav-recommendations"><span data-i18n="settings_sync_webdav_recommendations">推荐云盘：</span>
                                     <a href="https://help.jianguoyun.com/?p=2064" target="_blank">坚果云</a>、
                                     <a href="https://infini-cloud.net/" target="_blank">InfiniCLOUD</a>
                                 </p>
@@ -878,13 +914,13 @@
                                     <svg viewBox="0 0 24 24" width="16" height="16">
                                         <path fill="currentColor" d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
                                     </svg>
-                                    设置
+                                    <span data-i18n="settings_sync_button_settings">设置</span>
                                 </button>
                                 <button class="primary-btn sync-now-btn">
                                     <svg viewBox="0 0 24 24" width="16" height="16">
                                         <path fill="currentColor" d="M12,18A6,6 0 0,1 6,12C6,11 6.25,10.03 6.7,9.2L5.24,7.74C4.46,8.97 4,10.43 4,12A8,8 0 0,0 12,20V23L16,19L12,15M12,4V1L8,5L12,9V6A6,6 0 0,1 18,12C18,13 17.75,13.97 17.3,14.8L18.76,16.26C19.54,15.03 20,13.57 20,12A8,8 0 0,0 12,4Z"/>
                                     </svg>
-                                    立即同步
+                                    <span data-i18n="settings_sync_button_sync_now">立即同步</span>
                                 </button>
                             </div>
                         </div>
@@ -894,7 +930,7 @@
 
             <!-- 在settings-container中添加About内容区域 -->
             <div class="settings-section" id="about-section">
-                <h2>关于</h2>
+                <h2 data-i18n="settings_about_title">关于</h2>
                 <div class="about-container">
                     <!-- Logo和版本信息 -->
                     <div class="about-header">
@@ -904,23 +940,23 @@
                         <div class="about-info">
                             <h1>Smart Bookmark</h1>
                             <div class="version-info">
-                                <span class="version">版本 <span id="current-version"></span></span>
-                                <span class="update-date">最后更新：<span id="last-update-date"></span></span>
+                                <span class="version"><span data-i18n="settings_about_version">版本</span> <span id="current-version"></span></span>
+                                <span class="update-date"><span data-i18n="settings_about_last_update">最后更新：</span><span id="last-update-date"></span></span>
                             </div>
                         </div>
                     </div>
 
                     <!-- 扩展介绍 -->
                     <div class="about-section">
-                        <h3>
+                        <h3 data-i18n="settings_about_intro_title">
                             产品简介
                         </h3>
-                        <p>Smart Bookmark 是一款智能书签管理工具，它能帮助你更高效地管理和搜索书签。通过AI技术，它可以自动分析网页内容，生成标签，让你的书签管理更轻松。</p>
+                        <p data-i18n="settings_about_intro_description">Smart Bookmark 是一款智能书签管理工具，它能帮助你更高效地管理和搜索书签。通过AI技术，它可以自动分析网页内容，生成标签，让你的书签管理更轻松。</p>
                     </div>
                     
                     <!-- 项目信息 -->
                     <div class="about-section">
-                        <h3>
+                        <h3 data-i18n="settings_about_project_title">
                             项目信息
                         </h3>
                         <div class="project-links">
@@ -928,25 +964,25 @@
                                 <svg viewBox="0 0 24 24" width="20" height="20">
                                     <path fill="currentColor" d="M12,2A10,10 0 0,0 2,12C2,16.42 4.87,20.17 8.84,21.5C9.34,21.58 9.5,21.27 9.5,21C9.5,20.77 9.5,20.14 9.5,19.31C6.73,19.91 6.14,17.97 6.14,17.97C5.68,16.81 5.03,16.5 5.03,16.5C4.12,15.88 5.1,15.9 5.1,15.9C6.1,15.97 6.63,16.93 6.63,16.93C7.5,18.45 8.97,18 9.54,17.76C9.63,17.11 9.89,16.67 10.17,16.42C7.95,16.17 5.62,15.31 5.62,11.5C5.62,10.39 6,9.5 6.65,8.79C6.55,8.54 6.2,7.5 6.75,6.15C6.75,6.15 7.59,5.88 9.5,7.17C10.29,6.95 11.15,6.84 12,6.84C12.85,6.84 13.71,6.95 14.5,7.17C16.41,5.88 17.25,6.15 17.25,6.15C17.8,7.5 17.45,8.54 17.35,8.79C18,9.5 18.38,10.39 18.38,11.5C18.38,15.32 16.04,16.16 13.81,16.41C14.17,16.72 14.5,17.33 14.5,18.26C14.5,19.6 14.5,20.68 14.5,21C14.5,21.27 14.66,21.59 15.17,21.5C19.14,20.16 22,16.42 22,12A10,10 0 0,0 12,2Z"/>
                                 </svg>
-                                <span>GitHub</span>
+                                <span data-i18n="settings_about_link_github">GitHub</span>
                             </a>
                             <a href="mailto:zhw18868119485@gmail.com" class="project-link">
                                 <svg viewBox="0 0 24 24" width="20" height="20">
                                     <path fill="currentColor" d="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z"/>
                                 </svg>
-                                <span>联系我们</span>
+                                <span data-i18n="settings_about_link_contact">联系我们</span>
                             </a>
-                            <a href="https://chromewebstore.google.com/detail/smart-bookmark/nlboajobccgidfcdoedphgfaklelifoa/reviews" target="_blank" class="project-link">
+                            <a id="review-link" href="#" target="_blank" class="project-link">
                                 <svg viewBox="0 0 24 24" width="20" height="20">
                                     <path fill="currentColor" d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/>
                                 </svg>
-                                <span>评分反馈</span>
+                                <span data-i18n="settings_about_link_review">评分反馈</span>
                             </a>
-                            <a href="https://howoii.github.io/smartbookmark-support/donate.html" target="_blank" class="project-link project-link-donate">
+                            <a id="donate-link" href="#" target="_blank" class="project-link project-link-donate">
                                 <svg viewBox="0 0 24 24" width="20" height="20">
                                     <path fill="currentColor" d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z" />
                                 </svg>
-                                <span>资助开发</span>
+                                <span data-i18n="settings_about_link_donate">资助开发</span>
                             </a>
                         </div>
                     </div>
@@ -957,19 +993,19 @@
         <!-- 添加域名对话框 -->
         <div id="add-domain-dialog" class="dialog">
             <div class="dialog-content">
-                <h3>添加隐私域名</h3>
+                <h3 data-i18n="settings_privacy_dialog_add_domain_title">添加隐私域名</h3>
                 <div class="form-group">
-                    <input type="text" id="domain-input" placeholder="输入域名或正则表达式">
-                    <p class="help-text">支持通配符 * 和正则表达式,例如:</p>
+                    <input type="text" id="domain-input" data-i18n-placeholder="settings_privacy_dialog_domain_placeholder" placeholder="">
+                    <p class="help-text" data-i18n="settings_privacy_dialog_domain_help">支持通配符 * 和正则表达式,例如:</p>
                     <ul class="example-list">
-                        <li>通配符域名: *.example.com</li>
-                        <li>正则表达式: /.*\.example\.com$/</li>
-                        <li>具体域名: www.example.com</li>
+                        <li data-i18n="settings_privacy_dialog_domain_example_wildcard">通配符域名: *.example.com</li>
+                        <li data-i18n="settings_privacy_dialog_domain_example_regex">正则表达式: /.*\.example\.com$/</li>
+                        <li data-i18n="settings_privacy_dialog_domain_example_specific">具体域名: www.example.com</li>
                     </ul>
                 </div>
                 <div class="dialog-buttons">
-                    <button id="cancel-domain-btn" class="secondary-btn">取消</button>
-                    <button id="save-domain-btn" class="primary-btn">保存</button>
+                    <button id="cancel-domain-btn" class="secondary-btn" data-i18n="ui_button_cancel">取消</button>
+                    <button id="save-domain-btn" class="primary-btn" data-i18n="ui_button_save">保存</button>
                 </div>
             </div>
         </div>
@@ -978,9 +1014,9 @@
         <div id="service-config-dialog" class="dialog">
             <div class="dialog-content service-config">
                 <div class="dialog-header">
-                    <h3 class="service-name">服务配置</h3>
+                    <h3 class="service-name" data-i18n="settings_services_dialog_config_title">服务配置</h3>
                     <div class="dialog-header-actions">
-                        <button class="icon-btn copy-config-btn" title="复制配置">
+                        <button class="icon-btn copy-config-btn" data-i18n-title="settings_services_dialog_copy_config_title" title="">
                             <svg width="16" height="16" viewBox="0 0 24 24">
                                 <path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"/>
                             </svg>
@@ -996,21 +1032,22 @@
                     <div class="api-key-section">
                         <div class="api-key-header">
                             <div class="api-key-title">
-                                <label>API Key</label>
+                                <label data-i18n="settings_services_dialog_api_key_label">API Key</label>
                                 <svg class="verify-icon" width="16" height="16" viewBox="0 0 16 16">
                                     <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2" fill="none"/>
                                     <path class="check" d="M4.5 8L7 10.5L11.5 6" stroke="currentColor" stroke-width="2" fill="none"/>
+                                    <path class="cross" d="M5 5L11 11M11 5L5 11" stroke="currentColor" stroke-width="2" fill="none"/>
                                 </svg>
                             </div>
-                            <a class="get-key-link" target="_blank" title="获取 API Key">
-                                <span>获取 API Key</span>
+                            <a class="get-key-link" target="_blank" data-i18n-title="settings_services_dialog_get_key_title" title="">
+                                <span data-i18n="settings_services_dialog_get_key">获取 API Key</span>
                                 <svg viewBox="0 0 24 24" width="14" height="14">
                                     <path fill="currentColor" d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,20V12H19V19Z"/>
                                 </svg>
                             </a>
                         </div>
                         <div class="api-key-input">
-                            <input type="password" class="service-api-key" placeholder="输入 API Key">
+                            <input type="password" class="service-api-key" data-i18n-placeholder="settings_services_dialog_api_key_placeholder" placeholder="">
                             <button class="icon-btn toggle-visibility">
                                 <svg width="16" height="16" viewBox="0 0 16 16">
                                     <path d="M8 3C4.5 3 2 6 2 8C2 10 4.5 13 8 13C11.5 13 14 10 14 8C14 6 11.5 3 8 3Z" stroke="currentColor" fill="none"/>
@@ -1019,9 +1056,9 @@
                             </button>
                         </div>
                         <div class="api-key-actions">
-                            <button class="primary-btn save-key">保存</button>
+                            <button class="primary-btn save-key" data-i18n="ui_button_save">保存</button>
                             <div class="verify-container">
-                                <button class="secondary-btn verify-key">验证</button>
+                                <button class="secondary-btn verify-key" data-i18n="settings_services_dialog_verify">验证</button>
                                 <div class="api-service-status"></div>
                             </div>
                         </div>
@@ -1030,26 +1067,26 @@
                     <!-- 添加模型信息显示部分 -->
                     <div class="models-section">
                         <div class="models-section-header">
-                            <h3>模型信息
-                                <div class="tooltip-icon" data-tooltip="为了保证搜索结果的准确性，不支持修改向量模型，如有需要可以通过自定义服务配置来实现">
+                            <h3><span data-i18n="settings_services_dialog_models_title">模型信息</span>
+                                <div class="tooltip-icon tooltip-short" data-i18n-tooltip="settings_services_dialog_models_tooltip" data-tooltip="">
                                     <svg width="14" height="14" viewBox="0 0 24 24">
                                         <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
                                     </svg>
                                 </div>
                             </h3>
-                            <a class="model-pricing-link" target="_blank" title="查看模型定价">
-                                <span>查看模型及定价</span>
+                            <a class="model-pricing-link" target="_blank" data-i18n-title="settings_services_dialog_models_pricing_title" title="">
+                                <span data-i18n="settings_services_dialog_models_pricing">查看模型及定价</span>
                                 <svg viewBox="0 0 24 24" width="14" height="14">
                                     <path fill="currentColor" d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,20V12H19V19Z"/>
                                 </svg>
                             </a>
                         </div>
                         <div class="model-info-group">
-                            <div class="model-label">文本模型</div>
+                            <div class="model-label" data-i18n="settings_services_dialog_model_chat">文本模型</div>
                             <div class="model-value chat-model">
                                 <div class="model-input-container">
-                                    <input type="text" placeholder="例如: gpt-3.5-turbo" readonly>
-                                    <button class="edit-model-btn" title="编辑模型">
+                                    <input type="text" data-i18n-placeholder="settings_services_dialog_model_chat_placeholder" placeholder="" readonly>
+                                    <button class="edit-model-btn" data-i18n-title="settings_services_dialog_model_edit_title" title="">
                                         <svg viewBox="0 0 24 24" width="16" height="16">
                                             <path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
                                         </svg>
@@ -1059,7 +1096,7 @@
                         </div>
 
                         <div class="model-info-group">
-                            <div class="model-label">向量模型</div>
+                            <div class="model-label" data-i18n="settings_services_dialog_model_embedding">向量模型</div>
                             <div class="model-value embedding-model">
                                 <!-- 由 JavaScript 填充，例如: text-embedding-ada-002 -->
                             </div>
@@ -1073,7 +1110,7 @@
         <div id="filter-dialog" class="dialog">
             <div class="dialog-content filter-config">
                 <div class="dialog-header">
-                    <h3>添加智能标签</h3>
+                    <h3 data-i18n="settings_filters_dialog_add_title">添加智能标签</h3>
                     <button class="close-dialog-btn">
                         <svg width="16" height="16" viewBox="0 0 24 24">
                             <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
@@ -1083,13 +1120,20 @@
                 
                 <div class="filter-config-body">
                     <div class="form-group">
-                        <label>标签名称</label>
-                        <input type="text" id="filter-name" placeholder="给这个标签起个名字">
+                        <label data-i18n="settings_filters_dialog_name_label">标签名称</label>
+                        <div class="filter-name-row">
+                            <button type="button" id="filter-icon-btn" class="filter-icon-btn" title="">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 11v1a10 10 0 1 1-9-10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/><path d="M16 5h6"/><path d="M19 2v6"/>
+                                </svg>
+                            </button>
+                            <input type="text" id="filter-name" data-i18n-placeholder="settings_filters_dialog_name_placeholder" placeholder="">
+                        </div>
                     </div>
                     
                     <div class="filter-rules-header">
-                        <label>标签条件（多个条件时需要同时满足）</label>
-                        <button id="add-condition-btn">添加条件</button>
+                        <label data-i18n="settings_filters_dialog_conditions_label">标签条件（多个条件时需要同时满足）</label>
+                        <button id="add-condition-btn" data-i18n="settings_filters_dialog_add_condition">添加条件</button>
                     </div>
                     
                     <div class="filter-rules">
@@ -1100,8 +1144,8 @@
                 </div>
                 
                 <div class="dialog-footer">
-                    <button class="secondary-btn" id="cancel-filter-btn">取消</button>
-                    <button class="primary-btn" id="save-filter-btn">保存</button>
+                    <button class="secondary-btn" id="cancel-filter-btn" data-i18n="ui_button_cancel">取消</button>
+                    <button class="primary-btn" id="save-filter-btn" data-i18n="ui_button_save">保存</button>
                 </div>
             </div>
         </div>
@@ -1110,14 +1154,14 @@
         <div id="custom-service-dialog" class="dialog">
             <div class="dialog-content">
                 <div class="dialog-header">
-                    <h3>自定义服务配置</h3>
+                    <h3 data-i18n="settings_services_dialog_custom_title">自定义服务配置</h3>
                     <div class="dialog-header-actions">
-                        <button class="icon-btn copy-config-btn" title="复制配置">
+                        <button class="icon-btn copy-config-btn" data-i18n-title="settings_services_dialog_copy_config_title" title="">
                             <svg width="16" height="16" viewBox="0 0 24 24">
                                 <path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"/>
                             </svg>
                         </button>
-                        <button class="icon-btn paste-config-btn" title="粘贴配置">
+                        <button class="icon-btn paste-config-btn" data-i18n-title="settings_services_dialog_paste_config_title" title="">
                             <svg width="16" height="16" viewBox="0 0 24 24">
                                 <path fill="currentColor" d="M19,20H5V4H7V7H17V4H19M12,2A1,1 0 0,1 13,3A1,1 0 0,1 12,4A1,1 0 0,1 11,3A1,1 0 0,1 12,2M19,2H14.82C14.4,0.84 13.3,0 12,0C10.7,0 9.6,0.84 9.18,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"/>
                             </svg>
@@ -1133,21 +1177,21 @@
                     <!-- 添加服务名称输入框 -->
                     <div class="form-group">
                         <label for="custom-service-name">
-                            API 服务名称
-                            <div class="tooltip-icon" data-tooltip="给这个自定义服务起个名字">
+                            <span data-i18n="settings_services_dialog_custom_name_label">API 服务名称</span>
+                            <div class="tooltip-icon" data-i18n-tooltip="settings_services_dialog_custom_name_tooltip" data-tooltip="">
                                 <svg width="14" height="14" viewBox="0 0 24 24">
                                     <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
                                 </svg>
                             </div>
                         </label>
-                        <input type="text" id="custom-service-name" placeholder="输入服务名称" maxlength="20" required>
+                        <input type="text" id="custom-service-name" data-i18n-placeholder="settings_services_dialog_custom_name_placeholder" placeholder="" maxlength="20" required>
                     </div>
                     
                     <!-- 其他配置项保持不变 -->
                     <div class="form-group">
                         <label for="custom-base-url">
-                            API 接口地址
-                            <div class="tooltip-icon" data-tooltip="设置API服务的基础URL地址，例如：https://api.openai.com/v1/">
+                            <span data-i18n="settings_services_dialog_custom_url_label">API 接口地址</span>
+                            <div class="tooltip-icon tooltip-short" data-i18n-tooltip="settings_services_dialog_custom_url_tooltip" data-tooltip="">
                                 <svg width="14" height="14" viewBox="0 0 24 24">
                                     <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
                                 </svg>
@@ -1157,15 +1201,15 @@
                     </div>
                     <div class="form-group">
                         <label for="custom-api-key">
-                            API Key
-                            <div class="tooltip-icon" data-tooltip="输入您的API密钥。请确保API密钥具有足够的权限来调用文本模型和向量模型接口">
+                            <span data-i18n="settings_services_dialog_api_key_label">API Key</span>
+                            <div class="tooltip-icon" data-i18n-tooltip="settings_services_dialog_custom_api_key_tooltip" data-tooltip="">
                                 <svg width="14" height="14" viewBox="0 0 24 24">
                                     <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
                                 </svg>
                             </div>
                         </label>
                         <div class="api-key-input">
-                            <input type="password" id="custom-api-key" placeholder="输入 API Key" required>
+                            <input type="password" id="custom-api-key" data-i18n-placeholder="settings_services_dialog_api_key_placeholder" placeholder="" required>
                             <button class="icon-btn toggle-visibility">
                                 <svg width="16" height="16" viewBox="0 0 16 16">
                                     <path d="M8 3C4.5 3 2 6 2 8C2 10 4.5 13 8 13C11.5 13 14 10 14 8C14 6 11.5 3 8 3Z" stroke="currentColor" fill="none"/>
@@ -1177,11 +1221,11 @@
                     
                     <!-- Chat模型配置组 -->
                     <div class="model-config-group">
-                        <button class="test-btn test-chat-btn">验证</button>
+                        <button class="test-btn test-chat-btn" data-i18n="settings_services_dialog_verify">验证</button>
                         <div class="form-group">
                             <label for="custom-chat-model">
-                                文本模型(可选)
-                                <div class="tooltip-icon" data-tooltip="请配置你的API服务支持的对话模型，暂不支持推理模型">
+                                <span data-i18n="settings_services_dialog_custom_chat_label">文本模型(可选)</span>
+                                <div class="tooltip-icon tooltip-short" data-i18n-tooltip="settings_services_dialog_custom_chat_tooltip" data-tooltip="">
                                     <svg width="14" height="14" viewBox="0 0 24 24">
                                         <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
                                     </svg>
@@ -1194,11 +1238,11 @@
                     
                     <!-- 向量模型配置组 -->
                     <div class="model-config-group">
-                        <button class="test-btn test-embed-btn">验证</button>
+                        <button class="test-btn test-embed-btn" data-i18n="settings_services_dialog_verify">验证</button>
                         <div class="form-group">
                             <label for="custom-embed-model">
-                                向量模型(可选)
-                                <div class="tooltip-icon" data-tooltip="请配置你的API服务支持的向量模型。注意：修改模型后需要重新生成书签的向量">
+                                <span data-i18n="settings_services_dialog_custom_embed_label">向量模型(可选)</span>
+                                <div class="tooltip-icon tooltip-top" data-i18n-tooltip="settings_services_dialog_custom_embed_tooltip" data-tooltip="">
                                     <svg width="14" height="14" viewBox="0 0 24 24">
                                         <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
                                     </svg>
@@ -1213,8 +1257,8 @@
                     <div class="advanced-settings-group">
                         <div class="form-group similarity-slider-group">
                             <label for="similarity-threshold">
-                                相关度阈值
-                                <div class="tooltip-icon" data-tooltip="相关度阈值用于判断搜索结果与搜索词的相似程度。值越大要求匹配度越高，范围0-1。建议值0.3-0.6">
+                                <span data-i18n="settings_services_dialog_similarity_threshold_label">相关度阈值</span>
+                                <div class="tooltip-icon tooltip-short" data-i18n-tooltip="settings_services_dialog_similarity_threshold_tooltip" data-tooltip="">
                                     <svg width="14" height="14" viewBox="0 0 24 24">
                                         <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
                                     </svg>
@@ -1230,24 +1274,24 @@
                                        step="0.01" 
                                        value="0.65">
                             </div>
-                            <p class="setting-description">调整搜索结果的精确度，值越大搜索结果越精确但可能遗漏相关内容，值越小结果越宽松可能包含不太相关的内容</p>
+                            <p class="setting-description" data-i18n="settings_services_dialog_similarity_threshold_desc">调整搜索结果的精确度，值越大搜索结果越精确但可能遗漏相关内容，值越小结果越宽松可能包含不太相关的内容</p>
                         </div>
                         
                         <div class="form-group">
                             <label class="switch-label">
-                                <span class="switch-text">隐藏低相关度结果</span>
+                                <span class="switch-text" data-i18n="settings_services_dialog_hide_low_similarity_label">隐藏低相关度结果</span>
                                 <div class="switch-container">
                                     <input type="checkbox" id="hide-low-similarity" checked>
                                     <span class="switch-slider"></span>
                                 </div>
                             </label>
-                            <p class="setting-description">开启后将只显示相关度高于阈值的搜索结果</p>
+                            <p class="setting-description" data-i18n="settings_services_dialog_hide_low_similarity_desc">开启后将只显示相关度高于阈值的搜索结果</p>
                         </div>
                     </div>
                 </div>
                 <div class="dialog-footer">
-                    <button class="cancel-custom-btn">取消</button>
-                    <button class="save-custom-btn">保存</button>
+                    <button class="cancel-custom-btn" data-i18n="ui_button_cancel">取消</button>
+                    <button class="save-custom-btn" data-i18n="ui_button_save">保存</button>
                 </div>
             </div>
         </div>
@@ -1256,7 +1300,7 @@
         <div id="webdav-config-dialog" class="dialog">
             <div class="dialog-content">
                 <div class="dialog-header">
-                    <h3>WebDAV 同步设置</h3>
+                    <h3 data-i18n="settings_sync_webdav_dialog_title">WebDAV 同步设置</h3>
                     <div class="dialog-header-actions">
                         <button class="close-dialog-btn">
                             <svg viewBox="0 0 24 24" width="24" height="24">
@@ -1268,18 +1312,18 @@
                 <div class="dialog-body">
                     <!-- 服务器信息 -->
                     <div class="config-section">
-                        <h4>服务器信息</h4>
+                        <h4 data-i18n="settings_sync_webdav_dialog_server_title">服务器信息</h4>
                         <div class="form-group">
-                            <label for="webdav-url">服务器地址</label>
+                            <label for="webdav-url" data-i18n="settings_sync_webdav_dialog_server_url">服务器地址</label>
                             <input type="url" id="webdav-url" placeholder="https://example.com/dav/" required>
-                            <div class="help-text">WebDAV 服务器的完整 URL 地址</div>
+                            <div class="help-text" data-i18n="settings_sync_webdav_dialog_server_url_help">WebDAV 服务器的完整 URL 地址</div>
                         </div>
                         <div class="form-group">
-                            <label for="webdav-username">用户名</label>
+                            <label for="webdav-username" data-i18n="settings_sync_webdav_dialog_username">用户名</label>
                             <input type="text" id="webdav-username" required>
                         </div>
                         <div class="form-group">
-                            <label for="webdav-password">密码</label>
+                            <label for="webdav-password" data-i18n="settings_sync_webdav_dialog_password">密码</label>
                             <div class="password-input-container">
                                 <input type="password" id="webdav-password" required>
                                 <button class="icon-btn toggle-password-btn" type="button">
@@ -1290,47 +1334,47 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="webdav-folder">同步文件夹</label>
+                            <label for="webdav-folder" data-i18n="settings_sync_webdav_dialog_folder">同步文件夹</label>
                             <input type="text" id="webdav-folder" value="/bookmarks">
-                            <div class="help-text">服务器上存储数据的文件夹路径，请确保路径存在</div>
+                            <div class="help-text" data-i18n="settings_sync_webdav_dialog_folder_help">服务器上存储数据的文件夹路径（可通过点击下方的测试按钮自动创建文件夹）</div>
                         </div>
                         <div class="form-actions">
                             <button class="secondary-btn test-connection-btn">
                                 <svg viewBox="0 0 24 24" width="16" height="16">
                                     <path fill="currentColor" d="M12,18A6,6 0 0,1 6,12C6,11 6.25,10.03 6.7,9.2L5.24,7.74C4.46,8.97 4,10.43 4,12A8,8 0 0,0 12,20V23L16,19L12,15M12,4V1L8,5L12,9V6A6,6 0 0,1 18,12C18,13 17.75,13.97 17.3,14.8L18.76,16.26C19.54,15.03 20,13.57 20,12A8,8 0 0,0 12,4Z"/>
                                 </svg>
-                                <span>测试连接</span>
+                                <span data-i18n="settings_sync_webdav_dialog_test_connection">测试连接</span>
                             </button>
                         </div>
                     </div>
 
                     <!-- 同步数据 -->
                     <div class="config-section">
-                        <h4>同步数据</h4>
+                        <h4 data-i18n="settings_sync_webdav_dialog_data_title">同步数据</h4>
                         <div class="sync-data-options">
                             <label class="switch-label">
-                                <span class="switch-text light">书签数据</span>
+                                <span class="switch-text light" data-i18n="settings_sync_webdav_dialog_data_bookmarks">书签数据</span>
                                 <div class="switch-container">
                                     <input type="checkbox" id="sync-bookmarks" checked>
                                     <span class="switch-slider"></span>
                                 </div>
                             </label>
                             <label class="switch-label">
-                                <span class="switch-text light">设置选项</span>
+                                <span class="switch-text light" data-i18n="settings_sync_webdav_dialog_data_settings">设置选项</span>
                                 <div class="switch-container">
                                     <input type="checkbox" id="sync-settings" checked>
                                     <span class="switch-slider"></span>
                                 </div>
                             </label>
                             <label class="switch-label">
-                                <span class="switch-text light">智能标签</span>
+                                <span class="switch-text light" data-i18n="settings_sync_webdav_dialog_data_filters">智能标签</span>
                                 <div class="switch-container">
                                     <input type="checkbox" id="sync-filters" checked>
                                     <span class="switch-slider"></span>
                                 </div>
                             </label>
                             <label class="switch-label">
-                                <span class="switch-text light">API 服务配置 ⚠️</span>
+                                <span class="switch-text light" data-i18n="settings_sync_webdav_dialog_data_services">API 服务配置 ⚠️</span>
                                 <div class="switch-container">
                                     <input type="checkbox" id="sync-services" checked>
                                     <span class="switch-slider"></span>
@@ -1341,50 +1385,50 @@
 
                     <!-- 同步策略 -->
                     <div class="config-section">
-                        <h4>同步行为</h4>
+                        <h4 data-i18n="settings_sync_webdav_dialog_behavior_title">同步行为</h4>
                         <div class="form-group">
                             <label class="switch-label">
-                                <span class="switch-text sync-strategy-label">自动同步</span>
+                                <span class="switch-text sync-strategy-label" data-i18n="settings_sync_webdav_dialog_auto_sync">自动同步</span>
                                 <div class="switch-container">
                                     <input type="checkbox" id="auto-sync" checked>
                                     <span class="switch-slider"></span>
                                 </div>
                             </label>
-                            <div class="help-text">开启后，书签数据会定期同步到WebDAV服务器，以及在你修改本地数据30秒后同步到服务器</div>
+                            <div class="help-text" data-i18n="settings_sync_webdav_dialog_auto_sync_help">开启后，书签数据会定期同步到WebDAV服务器，以及在你修改本地数据30秒后同步到服务器</div>
                         </div>
                         <div class="form-group sync-interval-group">
-                            <label for="sync-interval" class="sync-strategy-label">同步间隔</label>
+                            <label for="sync-interval" class="sync-strategy-label" data-i18n="settings_sync_webdav_dialog_sync_interval">同步间隔</label>
                             <div class="interval-slider-container">
                                 <input type="range" id="sync-interval" min="0" max="15" value="2" step="1" class="interval-slider">
                                 <div class="interval-value" id="interval-display">15m</div>
                             </div>
-                            <div class="help-text">设置自动同步的时间间隔，最短5分钟，最长24小时</div>
+                            <div class="help-text" data-i18n="settings_sync_webdav_dialog_sync_interval_help">设置自动同步的时间间隔，最短5分钟，最长24小时</div>
                         </div>
                         <div class="sync-mechanism-group">
-                            <label class="form-group-label sync-strategy-label">冲突解决策略</label>
+                            <label class="form-group-label sync-strategy-label" data-i18n="settings_sync_webdav_dialog_conflict_strategy">冲突解决策略</label>
                             <div class="radio-group">
                                 <label class="radio-container">
                                     <input type="radio" name="sync-mechanism" value="merge" checked style="display: none;">
                                     <span class="radio-mark"></span>
                                     <div class="option-info">
-                                        <div class="option-title">合并</div>
-                                        <div class="option-desc">合并本地和服务器的数据（推荐）</div>
+                                        <div class="option-title" data-i18n="settings_sync_webdav_dialog_conflict_merge_title">合并</div>
+                                        <div class="option-desc" data-i18n="settings_sync_webdav_dialog_conflict_merge_desc">合并本地和服务器的数据（推荐）</div>
                                     </div>
                                 </label>
                                 <label class="radio-container">
                                     <input type="radio" name="sync-mechanism" value="local-first" style="display: none;">
                                     <span class="radio-mark"></span>
                                     <div class="option-info">
-                                        <div class="option-title">本地优先</div>
-                                        <div class="option-desc">使用本地数据完全覆盖服务器数据（⚠️ 建议先做好备份）</div>
+                                        <div class="option-title" data-i18n="settings_sync_webdav_dialog_conflict_local_title">本地优先</div>
+                                        <div class="option-desc" data-i18n="settings_sync_webdav_dialog_conflict_local_desc">使用本地数据完全覆盖服务器数据（⚠️ 建议先做好备份）</div>
                                     </div>
                                 </label>
                                 <label class="radio-container">
                                     <input type="radio" name="sync-mechanism" value="remote-first" style="display: none;">
                                     <span class="radio-mark"></span>
                                     <div class="option-info">
-                                        <div class="option-title">远程优先</div>
-                                        <div class="option-desc">使用服务器数据完全覆盖本地数据（⚠️ 建议先做好备份）</div>
+                                        <div class="option-title" data-i18n="settings_sync_webdav_dialog_conflict_remote_title">远程优先</div>
+                                        <div class="option-desc" data-i18n="settings_sync_webdav_dialog_conflict_remote_desc">使用服务器数据完全覆盖本地数据（⚠️ 建议先做好备份）</div>
                                     </div>
                                 </label>
                             </div>
@@ -1392,8 +1436,8 @@
                     </div>
                 </div>
                 <div class="dialog-footer">
-                    <button class="secondary-btn cancel-btn">取消</button>
-                    <button class="primary-btn save-btn">保存</button>
+                    <button class="secondary-btn cancel-btn" data-i18n="ui_button_cancel">取消</button>
+                    <button class="primary-btn save-btn" data-i18n="ui_button_save">保存</button>
                 </div>
             </div>
         </div>
@@ -1402,7 +1446,7 @@
         <div id="cloud-config-dialog" class="dialog disabled" data-feature="cloud-sync">
             <div class="dialog-content">
                 <div class="dialog-header">
-                    <h3>云同步设置</h3>
+                    <h3 data-i18n="settings_sync_cloud_dialog_title">云同步设置</h3>
                     <div class="dialog-header-actions">
                         <button class="close-dialog-btn">
                             <svg viewBox="0 0 24 24" width="24" height="24">
@@ -1414,37 +1458,37 @@
                 <div class="dialog-body">
                     <!-- 同步设置 -->
                     <div class="config-section">
-                        <h4>同步选项</h4>
+                        <h4 data-i18n="settings_sync_cloud_dialog_options_title">同步选项</h4>
                         <div class="form-group">
                             <label class="switch-label">
-                                <span class="switch-text sync-strategy-label">自动同步</span>
+                                <span class="switch-text sync-strategy-label" data-i18n="settings_sync_cloud_dialog_auto_sync">自动同步</span>
                                 <div class="switch-container">
                                     <input type="checkbox" id="cloud-auto-sync" checked>
                                     <span class="switch-slider"></span>
                                 </div>
                             </label>
-                            <div class="help-text">开启后，书签数据会定期同步到云端，以及在书签发生变更时自动同步</div>
+                            <div class="help-text" data-i18n="settings_sync_cloud_dialog_auto_sync_help">开启后，书签数据会定期同步到云端，以及在书签发生变更时自动同步</div>
                         </div>
                     </div>
 
                     <!-- 云同步管理 -->
                     <div class="config-section">
-                        <h4>同步管理</h4>
+                        <h4 data-i18n="settings_sync_cloud_dialog_management_title">同步管理</h4>
                         <div class="form-actions">
-                            <label class="form-group-label sync-strategy-label">从头开始同步</label>
-                            <div class="help-text">重置本地同步缓存，下次同步时不会删除任何数据只是将服务器和本地书签合并在一起</div>
+                            <label class="form-group-label sync-strategy-label" data-i18n="settings_sync_cloud_dialog_reset_title">从头开始同步</label>
+                            <div class="help-text" data-i18n="settings_sync_cloud_dialog_reset_help">重置本地同步缓存，下次同步时不会删除任何数据只是将服务器和本地书签合并在一起</div>
                             <button class="secondary-btn reset-cloud-cache-btn">
                                 <svg viewBox="0 0 24 24" width="16" height="16">
                                     <path fill="currentColor" d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"/>
                                 </svg>
-                                <span>重置缓存</span>
+                                <span data-i18n="settings_sync_cloud_dialog_reset_button">重置缓存</span>
                             </button>
                         </div>
                     </div>
                 </div>
                 <div class="dialog-footer">
-                    <button class="secondary-btn cancel-cloud-btn">取消</button>
-                    <button class="primary-btn save-cloud-btn">保存</button>
+                    <button class="secondary-btn cancel-cloud-btn" data-i18n="ui_button_cancel">取消</button>
+                    <button class="primary-btn save-cloud-btn" data-i18n="ui_button_save">保存</button>
                 </div>
             </div>
         </div>
@@ -1464,6 +1508,8 @@
     <script src="util.js"></script>
     <script src="api.js"></script>
     <script src="themeManager.js"></script>
+    <script src="lib/lucide-icons.js"></script>
+    <script src="iconPicker.js"></script>
     <script src="customFilter.js"></script>
     <script src="importExport.js"></script>
     <script src="syncSettingManager.js"></script>

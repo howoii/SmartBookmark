@@ -3,17 +3,7 @@
  */
 class I18nManager {
     constructor() {
-        this.defaultLocale = 'zh_CN';
-        this.currentLocale = this.getCurrentLocale();
         this.M = this.getMessage;
-    }
-
-    /**
-     * 获取当前语言设置
-     * @returns {string} 当前语言代码
-     */
-    getCurrentLocale() {
-        return chrome.i18n.getUILanguage() || this.defaultLocale;
     }
 
     /**
@@ -34,8 +24,9 @@ class I18nManager {
             const messageName = element.getAttribute('data-i18n');
             const text = this.getMessage(messageName);
             
-            if (element.tagName.toLowerCase() === 'input' && 
-                (element.type === 'text' || element.type === 'search')) {
+            const tagName = element.tagName.toLowerCase();
+            if ((tagName === 'input' && (element.type === 'text' || element.type === 'search')) ||
+                tagName === 'textarea') {
                 element.placeholder = text;
             } else {
                 element.textContent = text;
@@ -46,6 +37,30 @@ class I18nManager {
             const messageName = element.getAttribute('data-i18n-title');
             const text = this.getMessage(messageName);
             element.title = text;
+        });
+
+        document.querySelectorAll('[data-i18n-tooltip]').forEach(element => {
+            const messageName = element.getAttribute('data-i18n-tooltip');
+            const text = this.getMessage(messageName);
+            element.setAttribute('data-tooltip', text);
+        });
+
+        document.querySelectorAll('[data-i18n-alt]').forEach(element => {
+            const messageName = element.getAttribute('data-i18n-alt');
+            const text = this.getMessage(messageName);
+            element.alt = text;
+        });
+
+        document.querySelectorAll('[data-i18n-aria-label]').forEach(element => {
+            const messageName = element.getAttribute('data-i18n-aria-label');
+            const text = this.getMessage(messageName);
+            element.setAttribute('aria-label', text);
+        });
+
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+            const messageName = element.getAttribute('data-i18n-placeholder');
+            const text = this.getMessage(messageName);
+            element.placeholder = text;
         });
     }
 
@@ -58,8 +73,9 @@ class I18nManager {
             const messageName = element.getAttribute('data-i18n');
             const text = this.getMessage(messageName);
             
-            if (element.tagName.toLowerCase() === 'input' && 
-                (element.type === 'text' || element.type === 'search')) {
+            const tagName = element.tagName.toLowerCase();
+            if ((tagName === 'input' && (element.type === 'text' || element.type === 'search')) ||
+                tagName === 'textarea') {
                 element.placeholder = text;
             } else {
                 element.textContent = text;
@@ -70,6 +86,30 @@ class I18nManager {
             const messageName = element.getAttribute('data-i18n-title');
             const text = this.getMessage(messageName);
             element.title = text;
+        });
+
+        node.querySelectorAll('[data-i18n-tooltip]').forEach(element => {
+            const messageName = element.getAttribute('data-i18n-tooltip');
+            const text = this.getMessage(messageName);
+            element.setAttribute('data-tooltip', text);
+        });
+
+        node.querySelectorAll('[data-i18n-alt]').forEach(element => {
+            const messageName = element.getAttribute('data-i18n-alt');
+            const text = this.getMessage(messageName);
+            element.alt = text;
+        });
+
+        node.querySelectorAll('[data-i18n-aria-label]').forEach(element => {
+            const messageName = element.getAttribute('data-i18n-aria-label');
+            const text = this.getMessage(messageName);
+            element.setAttribute('aria-label', text);
+        });
+
+        node.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+            const messageName = element.getAttribute('data-i18n-placeholder');
+            const text = this.getMessage(messageName);
+            element.placeholder = text;
         });
     }
 
@@ -84,8 +124,3 @@ class I18nManager {
 
 // 创建全局实例
 const i18n = new I18nManager();
-
-// 只在网页环境中初始化
-if (typeof window !== 'undefined' && typeof document !== 'undefined') {
-    i18n.initializeI18n();
-}

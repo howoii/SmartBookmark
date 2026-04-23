@@ -51,6 +51,14 @@
         "message": "输入标签按回车键添加...",
         "description": "添加标签输入框占位符"
     },
+    "ui_tags_clear_all": {
+        "message": "清除",
+        "description": "清除全部标签按钮文本"
+    },
+    "ui_tags_clear_all_title": {
+        "message": "清除所有标签",
+        "description": "清除全部标签按钮提示"
+    },
     "action_add_bookmark": {
         "message": "添加",
         "description": "添加书签操作文本"
@@ -117,6 +125,522 @@
         "message": "快速保存书签",
         "description": "快速保存页面标题"
     },
+    "page_quick_search_title": {
+        "message": "快速搜索",
+        "description": "快速搜索页面标题"
+    },
+    "quicksearch_input_placeholder": {
+        "message": "输入关键词搜索...",
+        "description": "搜索输入框占位符"
+    },
+    "quicksearch_settings_btn_title": {
+        "message": "打开设置",
+        "description": "设置按钮标题"
+    },
+    "quicksearch_results_count": {
+        "message": "$1 个结果",
+        "description": "搜索结果数量显示"
+    },
+    "quicksearch_select_all": {
+        "message": "全选",
+        "description": "全选复选框标签"
+    },
+    "quicksearch_batch_open_title": {
+        "message": "批量打开",
+        "description": "批量打开按钮标题"
+    },
+    "quicksearch_batch_delete_title": {
+        "message": "批量删除",
+        "description": "批量删除按钮标题"
+    },
+    "quicksearch_exit_edit_mode_title": {
+        "message": "退出编辑模式",
+        "description": "退出编辑模式按钮标题"
+    },
+    "quicksearch_rename_dialog_title": {
+        "message": "修改书签名称",
+        "description": "重命名对话框标题"
+    },
+    "quicksearch_rename_input_placeholder": {
+        "message": "请输入新的书签名称",
+        "description": "重命名输入框占位符"
+    },
+    "quicksearch_edit_tags_dialog_title": {
+        "message": "编辑标签",
+        "description": "编辑标签对话框标题"
+    },
+    "quicksearch_edit_tags_input_placeholder": {
+        "message": "输入标签后按回车添加",
+        "description": "编辑标签输入框占位符"
+    },
+    "quicksearch_confirm_dialog_title": {
+        "message": "确认操作",
+        "description": "确认对话框标题"
+    },
+    "quicksearch_confirm_dialog_message": {
+        "message": "您确定要执行此操作吗？",
+        "description": "确认对话框消息"
+    },
+    "quicksearch_confirm_button": {
+        "message": "确认",
+        "description": "确认按钮文本"
+    },
+    "quicksearch_error_init_failed": {
+        "message": "初始化失败: $1",
+        "description": "初始化失败错误"
+    },
+    "quicksearch_pin_site_title": {
+        "message": "固定到常用网站",
+        "description": "固定网站按钮标题"
+    },
+    "quicksearch_unpin_site_title": {
+        "message": "取消固定",
+        "description": "取消固定按钮标题"
+    },
+    "quicksearch_error_delete_failed": {
+        "message": "删除失败: $1",
+        "description": "删除失败错误"
+    },
+    "quicksearch_error_save_order_failed": {
+        "message": "保存顺序失败: $1",
+        "description": "保存顺序失败错误"
+    },
+    "quicksearch_error_render_sites_failed": {
+        "message": "渲染网站失败: $1",
+        "description": "渲染网站失败错误"
+    },
+    "quicksearch_add_current_page_title": {
+        "message": "添加当前页面到常用网站",
+        "description": "添加当前页面按钮标题"
+    },
+    "quicksearch_unnamed_site": {
+        "message": "未命名网站",
+        "description": "未命名网站文本"
+    },
+    "quicksearch_error_add_failed": {
+        "message": "添加失败: $1",
+        "description": "添加失败错误"
+    },
+    "quicksearch_delete_history_title": {
+        "message": "删除此搜索记录",
+        "description": "删除搜索历史按钮标题"
+    },
+    "quicksearch_searching": {
+        "message": "正在搜索书签...",
+        "description": "正在搜索提示"
+    },
+    "quicksearch_error_search_failed": {
+        "message": "搜索失败: $1",
+        "description": "搜索失败错误"
+    },
+    "quicksearch_error_search_error": {
+        "message": "搜索出错",
+        "description": "搜索出错消息"
+    },
+    "quicksearch_error_search_error_desc": {
+        "message": "请稍后重试，或联系开发者解决",
+        "description": "搜索出错描述"
+    },
+    "quicksearch_select_bookmark_title": {
+        "message": "选择此书签",
+        "description": "选择书签复选框标题"
+    },
+    "quicksearch_saved_at": {
+        "message": "收藏于 $1",
+        "description": "收藏时间提示"
+    },
+    "quicksearch_more_actions_title": {
+        "message": "更多操作",
+        "description": "更多操作按钮标题"
+    },
+    "quicksearch_copy_link_title": {
+        "message": "复制链接",
+        "description": "复制链接按钮标题"
+    },
+    "quicksearch_rename_title": {
+        "message": "修改名称",
+        "description": "重命名按钮标题"
+    },
+    "quicksearch_edit_tags_title": {
+        "message": "编辑标签",
+        "description": "编辑标签按钮标题"
+    },
+    "quicksearch_confirm_copy_link": {
+        "message": "此页面无法直接打开。是否复制链接到剪贴板？",
+        "description": "确认复制链接提示"
+    },
+    "quicksearch_status_link_copied": {
+        "message": "链接已复制到剪贴板",
+        "description": "链接已复制提示"
+    },
+    "quicksearch_error_copy_failed": {
+        "message": "复制链接失败",
+        "description": "复制链接失败错误"
+    },
+    "quicksearch_error_bookmark_not_found": {
+        "message": "未找到要修改的书签",
+        "description": "未找到书签错误"
+    },
+    "quicksearch_error_chrome_bookmark_no_tags": {
+        "message": "原生书签不支持标签功能",
+        "description": "原生书签不支持标签提示"
+    },
+    "quicksearch_error_open_link_failed": {
+        "message": "打开链接失败: $1",
+        "description": "打开链接失败错误"
+    },
+    "quicksearch_status_bookmark_deleted": {
+        "message": "书签已删除",
+        "description": "书签已删除提示"
+    },
+    "quicksearch_error_delete_bookmark_failed": {
+        "message": "删除书签失败: $1",
+        "description": "删除书签失败错误"
+    },
+    "quicksearch_error_title_empty": {
+        "message": "书签名称不能为空",
+        "description": "书签名称为空错误"
+    },
+    "quicksearch_status_title_unchanged": {
+        "message": "书签名称未发生变化",
+        "description": "书签名称未变化提示"
+    },
+    "quicksearch_status_rename_success": {
+        "message": "书签名称修改成功",
+        "description": "书签名称修改成功提示"
+    },
+    "quicksearch_error_rename_failed": {
+        "message": "修改书签名称失败: $1",
+        "description": "修改书签名称失败错误"
+    },
+    "quicksearch_tags_empty_message": {
+        "message": "暂无标签，在上方输入框输入标签后按回车添加",
+        "description": "标签为空提示"
+    },
+    "quicksearch_remove_tag_title": {
+        "message": "删除此标签",
+        "description": "删除标签按钮标题"
+    },
+    "quicksearch_status_tags_unchanged": {
+        "message": "标签未发生更改",
+        "description": "标签未变化提示"
+    },
+    "quicksearch_status_tags_success": {
+        "message": "标签修改成功",
+        "description": "标签修改成功提示"
+    },
+    "quicksearch_error_edit_tags_failed": {
+        "message": "修改标签失败: $1",
+        "description": "修改标签失败错误"
+    },
+    "quicksearch_confirm_delete_title": {
+        "message": "删除书签",
+        "description": "确认删除对话框标题"
+    },
+    "quicksearch_confirm_delete_message": {
+        "message": "确定要删除此书签吗？",
+        "description": "确认删除对话框消息"
+    },
+    "quicksearch_empty_results_message": {
+        "message": "未找到相关书签",
+        "description": "空搜索结果消息"
+    },
+    "quicksearch_empty_results_description": {
+        "message": "您可以尝试使用不同的关键词，或检查拼写是否正确",
+        "description": "空搜索结果描述"
+    },
+    "quicksave_excerpt_placeholder": {
+        "message": "添加或编辑书签摘要...",
+        "description": "书签摘要输入框占位符"
+    },
+    "quicksave_generate_excerpt_title": {
+        "message": "AI生成摘要",
+        "description": "AI生成摘要按钮标题"
+    },
+    "quicksave_generate_tags_title": {
+        "message": "AI生成标签",
+        "description": "AI生成标签按钮标题"
+    },
+    "quicksave_cancel_generate": {
+        "message": "取消生成",
+        "description": "取消生成摘要按钮标题"
+    },
+    "quicksave_error_tag_exists": {
+        "message": "标签已存在",
+        "description": "标签已存在错误提示"
+    },
+    "quicksave_error_url_invalid": {
+        "message": "URL格式错误",
+        "description": "URL格式错误提示"
+    },
+    "quicksave_error_generate_excerpt_failed": {
+        "message": "摘要生成失败",
+        "description": "摘要生成失败错误"
+    },
+    "quicksave_status_generate_canceled": {
+        "message": "已取消生成摘要",
+        "description": "已取消生成摘要提示"
+    },
+    "quicksave_error_title_empty": {
+        "message": "标题为空",
+        "description": "标题为空错误"
+    },
+    "quicksave_error_translate_failed": {
+        "message": "翻译失败",
+        "description": "翻译失败错误"
+    },
+    "quicksave_status_translate_canceled": {
+        "message": "已取消翻译",
+        "description": "已取消翻译提示"
+    },
+    "intro_title": {
+        "message": "欢迎使用 Smart Bookmark",
+        "description": "介绍页面标题"
+    },
+    "intro_subtitle": {
+        "message": "学习如何使用Smart Bookmark",
+        "description": "介绍页面副标题"
+    },
+    "intro_prev_step": {
+        "message": "上一步",
+        "description": "上一步按钮aria-label"
+    },
+    "intro_next_step": {
+        "message": "下一步",
+        "description": "下一步按钮aria-label"
+    },
+    "intro_step1_title": {
+        "message": "固定到工具栏",
+        "description": "步骤1标题"
+    },
+    "intro_step1_description": {
+        "message": "将扩展程序固定在工具栏，方便快速访问。",
+        "description": "步骤1描述"
+    },
+    "intro_step2_title": {
+        "message": "配置API服务",
+        "description": "步骤2标题"
+    },
+    "intro_step2_description": {
+        "message": "设置API服务以启用智能标签和语义化搜索功能。",
+        "description": "步骤2描述"
+    },
+    "intro_step3_title": {
+        "message": "收藏网页书签",
+        "description": "步骤3标题"
+    },
+    "intro_step3_description": {
+        "message": "一键收藏网页，智能生成标签并支持自定义编辑",
+        "description": "步骤3描述"
+    },
+    "intro_step4_title": {
+        "message": "快捷搜索",
+        "description": "步骤4标题"
+    },
+    "intro_step4_description": {
+        "message": "在地址栏输入\"sb\"关键字，快速搜索您的书签。",
+        "description": "步骤4描述"
+    },
+    "intro_video_not_supported": {
+        "message": "您的浏览器不支持视频播放。",
+        "description": "视频不支持提示"
+    },
+    "intro_click_to_enlarge": {
+        "message": "点击放大",
+        "description": "视频点击放大提示"
+    },
+    "intro_shortcuts_title": {
+        "message": "快捷键指南",
+        "description": "快捷键指南标题"
+    },
+    "intro_shortcut_add_bookmark": {
+        "message": "快速添加书签",
+        "description": "快捷键添加书签描述"
+    },
+    "intro_shortcut_search_bookmark": {
+        "message": "快速搜索书签",
+        "description": "快捷键搜索书签描述"
+    },
+    "intro_customize_shortcuts": {
+        "message": "自定义快捷键",
+        "description": "自定义快捷键按钮文本"
+    },
+    "intro_start_using": {
+        "message": "开始使用",
+        "description": "开始使用按钮文本"
+    },
+    "filter_tag_name": {
+        "message": "标签",
+        "description": "标签筛选器名称"
+    },
+    "filter_custom_tag_name": {
+        "message": "智能标签",
+        "description": "智能标签筛选器名称"
+    },
+    "filter_edit_custom_tag_title": {
+        "message": "编辑智能标签",
+        "description": "编辑智能标签按钮标题"
+    },
+    "filter_tag_sort_count": {
+        "message": "按数量",
+        "description": "标签排序：按书签数量"
+    },
+    "filter_tag_sort_name": {
+        "message": "按名称",
+        "description": "标签排序：按标签名"
+    },
+    "filter_tag_sort_selected": {
+        "message": "选中优先",
+        "description": "标签排序：选中的标签优先"
+    },
+    "import_export_error_invalid_format": {
+        "message": "无效的导入文件格式",
+        "description": "无效的导入文件格式错误"
+    },
+    "import_export_error_parse_failed": {
+        "message": "导入文件解析失败：$1",
+        "description": "导入文件解析失败错误"
+    },
+    "import_export_error_no_export_items": {
+        "message": "请选择导出项",
+        "description": "未选择导出项提示"
+    },
+    "import_export_status_export_success": {
+        "message": "导出成功",
+        "description": "导出成功提示"
+    },
+    "import_export_error_export_failed": {
+        "message": "导出失败：$1",
+        "description": "导出失败错误"
+    },
+    "import_export_status_importing": {
+        "message": "导入中，请稍后...",
+        "description": "导入中提示"
+    },
+    "import_export_status_import_success_with_count": {
+        "message": "成功导入 $1 个项目，请刷新页面",
+        "description": "导入成功（带数量）提示"
+    },
+    "import_export_status_import_success": {
+        "message": "导入成功，请刷新页面",
+        "description": "导入成功提示"
+    },
+    "import_export_error_import_failed": {
+        "message": "导入失败：$1",
+        "description": "导入失败错误"
+    },
+    "api_error_embedding_model_not_configured": {
+        "message": "未配置有效的向量模型",
+        "description": "向量模型未配置错误"
+    },
+    "api_error_status_code": {
+        "message": "API 返回状态码: $1",
+        "description": "API状态码错误"
+    },
+    "api_error_unknown": {
+        "message": "未知错误",
+        "description": "未知错误"
+    },
+    "api_error_invalid_response_format": {
+        "message": "无效的API响应格式",
+        "description": "API响应格式无效错误"
+    },
+    "api_error_get_embedding_failed": {
+        "message": "获取嵌入向量失败: $1",
+        "description": "获取嵌入向量失败错误"
+    },
+    "api_error_batch_embeddings_invalid_param": {
+        "message": "getBatchEmbeddings: 参数必须是非空数组",
+        "description": "批量嵌入向量参数无效错误"
+    },
+    "api_error_no_embedding_data": {
+        "message": "未返回有效的embedding数据",
+        "description": "未返回embedding数据错误"
+    },
+    "api_error_batch_embeddings_failed": {
+        "message": "批量生成嵌入向量失败: $1",
+        "description": "批量生成嵌入向量失败错误"
+    },
+    "api_error_chat_model_not_configured": {
+        "message": "未配置有效的对话模型",
+        "description": "对话模型未配置错误"
+    },
+    "api_error_chat_completion_failed": {
+        "message": "Chat Completion 失败: $1",
+        "description": "Chat Completion失败错误"
+    },
+    "api_error_text_empty": {
+        "message": "文本为空",
+        "description": "文本为空错误"
+    },
+    "api_length_unit_char": {
+        "message": "字",
+        "description": "长度单位：字"
+    },
+    "api_length_unit_word": {
+        "message": "词",
+        "description": "长度单位：词"
+    },
+    "sync_error_syncing": {
+        "message": "同步正在进行中",
+        "description": "同步正在进行中错误"
+    },
+    "sync_error_not_logged_in": {
+        "message": "未登录，请登录后重试",
+        "description": "未登录错误"
+    },
+    "sync_error_token_expired": {
+        "message": "登录已过期，请重新登录",
+        "description": "登录过期错误"
+    },
+    "sync_error_response_format": {
+        "message": "响应格式错误",
+        "description": "响应格式错误"
+    },
+    "autosync_status_init_complete": {
+        "message": "自动同步系统初始化完成",
+        "description": "自动同步系统初始化完成提示"
+    },
+    "autosync_error_syncing": {
+        "message": "同步操作正在进行中，请稍后再试",
+        "description": "同步操作正在进行中错误"
+    },
+    "autosync_error_webdav_config_invalid": {
+        "message": "WebDAV配置无效，请先完成配置",
+        "description": "WebDAV配置无效错误"
+    },
+    "autosync_error_cloud_sync_disabled": {
+        "message": "云同步功能已禁用",
+        "description": "云同步功能已禁用错误"
+    },
+    "autosync_error_cloud_config_invalid": {
+        "message": "云同步配置无效，请先完成配置",
+        "description": "云同步配置无效错误"
+    },
+    "autosync_reason_unspecified": {
+        "message": "未指定原因",
+        "description": "未指定原因"
+    },
+    "util_error_url_not_supported": {
+        "message": "不支持的URL",
+        "description": "不支持的URL错误"
+    },
+    "util_status_url_accessible": {
+        "message": "可访问",
+        "description": "URL可访问状态"
+    },
+    "util_device_unknown_os": {
+        "message": "未知系统",
+        "description": "未知操作系统"
+    },
+    "util_device_unknown_browser": {
+        "message": "未知浏览器",
+        "description": "未知浏览器"
+    },
+    "util_device_unknown_device": {
+        "message": "未知设备",
+        "description": "未知设备"
+    },
     "setting_general_language": {
         "message": "语言",
         "description": "语言设置标签"
@@ -125,12 +649,2844 @@
         "message": "主题",
         "description": "主题设置标签"
     },
-    "prompt_generate_tags_user": {
-        "message": "请根据以下网页内容提取2-5个简短、具有区分度的关键词，用于分类和查找。\n网页信息：\n{{content}}\n\n关键词应符合以下要求：\n1. 简洁：中文关键词2-5字；英文不超过2个单词，去除无实质意义的修饰词。\n2. 输出语言：除专有名词、人名及习惯用法外，关键词应使用中文。\n3. 准确性：需精准反映网页的核心主题和关键信息。\n4. 多样性：要有辨识度，且必须涵盖以下四类信息（如有）：\n   - 网站名称或品牌信息。\n   - 网站标题核心内容。\n   - 网站涉及的领域（如科技、教育、金融等）。\n   - 页面具体内容的关键词（如技术名词、专业术语）。\n5. 避免重复：同义或重复的关键词只保留一个。\n6. 输出格式：仅返回关键词列表，关键词之间用竖线\"|\"分隔，无需其他说明或标点符号。\n\n例如：小红书|AI生成|内容分析|关键词优化|提示词设计",
-        "description": "生成标签提示词"
+    "ui_button_translate_title": {
+        "message": "翻译标题",
+        "description": "翻译标题按钮提示文本"
     },
-    "prompt_generate_tags_sys": {
-        "message": "你是一个专业的网页内容分析专家，擅长提取文章的核心主题并生成准确的标签。",
-        "description": "生成标签系统提示词"
+    "ui_button_cancel_translate": {
+        "message": "取消翻译",
+        "description": "取消翻译按钮提示文本"
+    },
+    "msg_error_empty_title": {
+        "message": "标题为空",
+        "description": "标题为空错误提示"
+    },
+    "msg_error_translate_failed": {
+        "message": "翻译失败",
+        "description": "翻译失败错误提示"
+    },
+    "msg_status_translate_canceled": {
+        "message": "已取消翻译",
+        "description": "翻译已取消提示"
+    },
+    "setting_ai_target_language": {
+        "message": "目标语言",
+        "description": "AI目标语言设置标签"
+    },
+    "popup_toolbar_button_save_title": {
+        "message": "为此页面添加书签",
+        "description": "保存按钮标题"
+    },
+    "popup_toolbar_bookmark_count": {
+        "message": "书签",
+        "description": "书签计数文本"
+    },
+    "popup_toolbar_button_sync_title": {
+        "message": "同步书签",
+        "description": "同步按钮标题"
+    },
+    "popup_toolbar_button_search_title": {
+        "message": "搜索书签",
+        "description": "搜索按钮标题"
+    },
+    "popup_toolbar_button_settings_title": {
+        "message": "打开设置",
+        "description": "设置按钮标题"
+    },
+    "popup_search_input_placeholder": {
+        "message": "搜索书签...",
+        "description": "搜索输入框占位符"
+    },
+    "popup_toolbar_button_close_search_title": {
+        "message": "关闭搜索",
+        "description": "关闭搜索按钮标题"
+    },
+    "popup_view_mode_list_title": {
+        "message": "列表",
+        "description": "列表视图按钮标题"
+    },
+    "popup_view_mode_group_title": {
+        "message": "分组",
+        "description": "分组视图按钮标题"
+    },
+    "popup_view_mode_directory_title": {
+        "message": "目录",
+        "description": "目录视图按钮标题"
+    },
+    "popup_directory_uncategorized": {
+        "message": "插件书签",
+        "description": "收藏夹视图中仅存在于插件的书签所在文件夹名"
+    },
+    "popup_directory_expand_all": {
+        "message": "展开所有",
+        "description": "收藏夹视图中展开所有目录按钮标题"
+    },
+    "popup_directory_collapse_all": {
+        "message": "收起所有",
+        "description": "收藏夹视图中收起所有目录按钮标题"
+    },
+    "popup_directory_locate_current": {
+        "message": "定位到当前页书签",
+        "description": "在收藏夹树中定位当前标签页对应的书签"
+    },
+    "popup_directory_locate_not_in_bookmarks": {
+        "message": "当前页面未加入书签，无法定位",
+        "description": "定位失败时提示"
+    },
+    "popup_directory_folder_create_title": {
+        "message": "新建目录",
+        "description": "目录创建弹窗标题"
+    },
+    "popup_directory_folder_rename_title": {
+        "message": "重命名目录",
+        "description": "目录重命名弹窗标题"
+    },
+    "popup_directory_folder_input_placeholder": {
+        "message": "输入目录名称",
+        "description": "目录输入框占位文案"
+    },
+    "popup_directory_folder_create_confirm": {
+        "message": "创建",
+        "description": "目录创建确认按钮"
+    },
+    "popup_directory_folder_rename_confirm": {
+        "message": "保存",
+        "description": "目录重命名确认按钮"
+    },
+    "popup_directory_folder_name_required": {
+        "message": "请输入目录名称",
+        "description": "目录名称为空时提示"
+    },
+    "popup_directory_folder_move_invalid_target": {
+        "message": "不能移动到当前目录或其子目录中",
+        "description": "目录移动目标非法时提示"
+    },
+    "popup_directory_folder_move_title": {
+        "message": "移动目录",
+        "description": "目录移动按钮标题"
+    },
+    "popup_directory_folder_delete_title": {
+        "message": "删除目录",
+        "description": "目录删除按钮标题"
+    },
+    "popup_directory_folder_delete_confirm": {
+        "message": "删除",
+        "description": "目录删除确认按钮"
+    },
+    "popup_directory_folder_delete_confirm_message": {
+        "message": "删除“$1”及其下所有内容？",
+        "description": "目录删除确认提示"
+    },
+    "popup_directory_folder_created_success": {
+        "message": "目录已创建",
+        "description": "目录创建成功提示"
+    },
+    "popup_directory_folder_renamed_success": {
+        "message": "目录已重命名",
+        "description": "目录重命名成功提示"
+    },
+    "popup_directory_folder_moved_success": {
+        "message": "目录已移动",
+        "description": "目录移动成功提示"
+    },
+    "popup_directory_folder_deleted_success": {
+        "message": "目录已删除",
+        "description": "目录删除成功提示"
+    },
+    "popup_directory_folder_create_failed": {
+        "message": "创建目录失败：$1",
+        "description": "目录创建失败提示"
+    },
+    "popup_directory_folder_rename_failed": {
+        "message": "重命名目录失败：$1",
+        "description": "目录重命名失败提示"
+    },
+    "popup_directory_folder_move_failed": {
+        "message": "移动目录失败：$1",
+        "description": "目录移动失败提示"
+    },
+    "popup_directory_folder_delete_failed": {
+        "message": "删除目录失败：$1",
+        "description": "目录删除失败提示"
+    },
+    "popup_directory_folder_sort_title": {
+        "message": "整理",
+        "description": "目录整理菜单标题"
+    },
+    "popup_directory_folder_sort_by_domain": {
+        "message": "按域名整理",
+        "description": "按域名整理选项"
+    },
+    "popup_directory_folder_sort_by_date": {
+        "message": "按创建日期整理",
+        "description": "按创建日期整理选项"
+    },
+    "popup_directory_folder_sort_by_name": {
+        "message": "按名称整理",
+        "description": "按名称整理选项"
+    },
+    "popup_directory_folder_sorted_success": {
+        "message": "整理完成",
+        "description": "整理成功提示"
+    },
+    "popup_directory_folder_sort_failed": {
+        "message": "整理失败：$1",
+        "description": "整理失败提示",
+        "placeholders": {
+            "error": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_confirm_delete_chrome_bookmark": {
+        "message": "从收藏夹删除",
+        "description": "both 删除时勾选是否同时删除 Chrome 书签"
+    },
+    "popup_delete_partial_success": {
+        "message": "部分删除成功",
+        "description": "批量删除部分成功时的提示"
+    },
+    "popup_url_merge_confirm": {
+        "message": "该 URL 已存在，将合并为同一书签。是否继续？",
+        "description": "编辑改 URL 冲突时的确认提示"
+    },
+    "popup_filter_button_text": {
+        "message": "筛选",
+        "description": "筛选按钮文本"
+    },
+    "popup_sort_option_newest": {
+        "message": "最新收藏",
+        "description": "最新收藏排序选项"
+    },
+    "popup_sort_option_oldest": {
+        "message": "最早收藏",
+        "description": "最早收藏排序选项"
+    },
+    "popup_sort_option_most_used": {
+        "message": "使用最多",
+        "description": "使用最多排序选项"
+    },
+    "popup_sort_option_recent_used": {
+        "message": "最近使用",
+        "description": "最近使用排序选项"
+    },
+    "popup_notice_api_config": {
+        "message": "配置 API 服务",
+        "description": "API配置提示"
+    },
+    "popup_status_index_updating": {
+        "message": "索引更新中",
+        "description": "索引更新状态"
+    },
+    "popup_status_loading": {
+        "message": "正在加载书签...",
+        "description": "加载中状态"
+    },
+    "popup_status_searching": {
+        "message": "正在搜索...",
+        "description": "搜索中状态"
+    },
+    "popup_edit_toolbar_select_all": {
+        "message": "全选",
+        "description": "全选文本"
+    },
+    "popup_edit_toolbar_batch_move_title": {
+        "message": "移动选中项",
+        "description": "批量移动按钮标题"
+    },
+    "popup_edit_toolbar_batch_open_title": {
+        "message": "打开选中项",
+        "description": "批量打开按钮标题"
+    },
+    "popup_edit_toolbar_batch_delete_title": {
+        "message": "删除选中项",
+        "description": "批量删除按钮标题"
+    },
+    "popup_edit_toolbar_exit_title": {
+        "message": "退出编辑模式",
+        "description": "退出编辑模式按钮标题"
+    },
+    "popup_update_notification_title": {
+        "message": "新版本更新",
+        "description": "更新通知标题"
+    },
+    "popup_update_view_all": {
+        "message": "查看所有更新",
+        "description": "查看所有更新链接"
+    },
+    "popup_tags_excerpt_placeholder": {
+        "message": "添加或编辑书签摘要...",
+        "description": "书签摘要输入框占位符"
+    },
+    "popup_tags_generate_excerpt_title": {
+        "message": "AI生成摘要",
+        "description": "AI生成摘要按钮标题"
+    },
+    "popup_tags_generate_tags_title": {
+        "message": "AI生成标签",
+        "description": "AI生成标签按钮标题"
+    },
+    "popup_tags_recommended_title": {
+        "message": "推荐标签：",
+        "description": "推荐标签标题"
+    },
+    "bookmark_save_mode_extension_only": {
+        "message": "仅保存到插件",
+        "description": "书签保存模式：仅保存到插件"
+    },
+    "bookmark_save_mode_extension_only_desc": {
+        "message": "不写入浏览器收藏夹",
+        "description": "书签保存模式：仅保存到插件的说明"
+    },
+    "bookmark_save_mode_browser": {
+        "message": "同时保存到浏览器",
+        "description": "书签保存模式：同时保存到浏览器"
+    },
+    "bookmark_save_mode_browser_desc": {
+        "message": "写入浏览器收藏夹并记住位置",
+        "description": "书签保存模式：同时保存到浏览器的说明"
+    },
+    "bookmark_save_target_title": {
+        "message": "文件夹",
+        "description": "浏览器收藏夹保存位置标题"
+    },
+    "bookmark_save_target_disabled_desc": {
+        "message": "不保存到浏览器",
+        "description": "未开启浏览器收藏夹保存时的摘要"
+    },
+    "bookmark_save_target_state_disabled": {
+        "message": "不写入浏览器收藏夹",
+        "description": "浏览器收藏夹保存位置摘要中的未启用状态"
+    },
+    "bookmark_save_target_state_pending": {
+        "message": "将保存到浏览器收藏夹",
+        "description": "浏览器收藏夹保存位置摘要中的待保存状态"
+    },
+    "bookmark_save_target_state_existing": {
+        "message": "已在浏览器收藏夹中",
+        "description": "浏览器收藏夹保存位置摘要中的已存在状态"
+    },
+    "bookmark_save_target_expand": {
+        "message": "选择位置",
+        "description": "展开浏览器收藏夹位置选择器"
+    },
+    "bookmark_save_target_collapse": {
+        "message": "收起",
+        "description": "收起浏览器收藏夹位置选择器"
+    },
+    "bookmark_save_target_disable": {
+        "message": "不保存到浏览器",
+        "description": "关闭浏览器收藏夹保存"
+    },
+    "bookmark_save_target_not_selected": {
+        "message": "尚未选择位置",
+        "description": "尚未选择浏览器收藏夹位置"
+    },
+    "bookmark_save_target_loading": {
+        "message": "正在加载浏览器收藏夹...",
+        "description": "加载浏览器收藏夹目录中"
+    },
+    "bookmark_save_target_load_failed": {
+        "message": "加载浏览器收藏夹失败：$1",
+        "description": "加载浏览器收藏夹失败"
+    },
+    "bookmark_save_target_empty": {
+        "message": "未找到可用的浏览器收藏夹目录",
+        "description": "浏览器收藏夹目录为空"
+    },
+    "bookmark_save_target_unnamed_folder": {
+        "message": "未命名文件夹",
+        "description": "未命名的浏览器收藏夹文件夹"
+    },
+    "bookmark_save_root_bookmarks_bar": {
+        "message": "书签栏",
+        "description": "浏览器书签栏根目录名称"
+    },
+    "bookmark_save_root_other_bookmarks": {
+        "message": "其他书签",
+        "description": "浏览器其他书签根目录名称"
+    },
+    "bookmark_save_root_mobile_bookmarks": {
+        "message": "移动设备书签",
+        "description": "浏览器移动设备书签根目录名称"
+    },
+    "bookmark_save_target_top": {
+        "message": "顶部",
+        "description": "保存到文件夹顶部"
+    },
+    "bookmark_save_target_bottom": {
+        "message": "底部",
+        "description": "保存到文件夹底部"
+    },
+    "bookmark_save_target_before": {
+        "message": "上方",
+        "description": "保存到书签上方"
+    },
+    "bookmark_save_target_after": {
+        "message": "下方",
+        "description": "保存到书签下方"
+    },
+    "bookmark_save_target_recommended": {
+        "message": "推荐位置",
+        "description": "推荐浏览器收藏夹位置标题"
+    },
+    "bookmark_save_target_anchor_missing": {
+        "message": "目标书签已不存在，请重新选择保存位置",
+        "description": "浏览器收藏夹目标锚点丢失"
+    },
+    "popup_search_no_results_title": {
+        "message": "未找到相关书签",
+        "description": "无搜索结果标题"
+    },
+    "popup_search_no_results_detail": {
+        "message": "没有找到与\"$query$\"相关的书签",
+        "description": "无搜索结果详情",
+        "placeholders": {
+            "query": {
+                "content": "$1",
+                "example": "关键词"
+            }
+        }
+    },
+    "popup_search_no_results_suggestion": {
+        "message": "建议尝试其他关键词",
+        "description": "无搜索结果建议"
+    },
+    "popup_privacy_mode_active": {
+        "message": "隐私模式已开启，将不会读取页面内容",
+        "description": "隐私模式已开启提示"
+    },
+    "popup_privacy_mode_auto": {
+        "message": "此页面可能包含隐私内容，将不会读取页面内容",
+        "description": "自动隐私模式提示"
+    },
+    "popup_privacy_domain_mark": {
+        "message": "点击将此网站标记为隐私域名",
+        "description": "标记隐私域名提示"
+    },
+    "popup_privacy_domain_add_error": {
+        "message": "添加隐私域名时出错",
+        "description": "添加隐私域名错误"
+    },
+    "popup_sync_status_loading": {
+        "message": "正在获取同步状态...",
+        "description": "同步状态加载中"
+    },
+    "popup_sync_no_services": {
+        "message": "您尚未配置任何同步服务，您可以前往设置页面开启同步功能，实现跨浏览器同步您的书签。",
+        "description": "无同步服务提示"
+    },
+    "popup_sync_configure_button": {
+        "message": "配置同步服务",
+        "description": "配置同步服务按钮"
+    },
+    "popup_status_syncing": {
+        "message": "同步中",
+        "description": "同步中状态"
+    },
+    "popup_status_sync_failed": {
+        "message": "同步失败",
+        "description": "同步失败状态"
+    },
+    "popup_status_synced": {
+        "message": "已同步",
+        "description": "已同步状态"
+    },
+    "popup_status_not_synced": {
+        "message": "未同步",
+        "description": "未同步状态"
+    },
+    "popup_sync_never": {
+        "message": "从未同步",
+        "description": "从未同步文本"
+    },
+    "popup_sync_button_text": {
+        "message": "同步",
+        "description": "同步按钮文本"
+    },
+    "popup_sync_syncing": {
+        "message": "同步中...",
+        "description": "同步中按钮文本"
+    },
+    "popup_sync_success": {
+        "message": "同步成功",
+        "description": "同步成功提示"
+    },
+    "popup_sync_failed_with_error": {
+        "message": "同步失败: $error$",
+        "description": "同步失败带错误信息",
+        "placeholders": {
+            "error": {
+                "content": "$1",
+                "example": "未知错误"
+            }
+        }
+    },
+    "popup_sync_error_unknown": {
+        "message": "未知错误",
+        "description": "未知错误文本"
+    },
+    "popup_sync_status_fetch_error": {
+        "message": "获取同步状态失败",
+        "description": "获取同步状态失败"
+    },
+    "popup_sync_service_cloud": {
+        "message": "云同步",
+        "description": "云同步服务名称"
+    },
+    "popup_sync_service_webdav": {
+        "message": "WebDAV同步",
+        "description": "WebDAV同步服务名称"
+    },
+    "popup_sync_dialog_title": {
+        "message": "同步",
+        "description": "同步对话框标题"
+    },
+    "popup_sync_last_sync_label": {
+        "message": "上次同步：",
+        "description": "上次同步标签"
+    },
+    "popup_sync_settings_title": {
+        "message": "设置",
+        "description": "同步设置按钮标题"
+    },
+    "popup_alert_title": {
+        "message": "提示",
+        "description": "提示对话框标题"
+    },
+    "popup_alert_confirm": {
+        "message": "确定",
+        "description": "确认按钮文本"
+    },
+    "popup_filter_clear": {
+        "message": "清除",
+        "description": "清除筛选按钮"
+    },
+    "popup_filter_apply": {
+        "message": "应用",
+        "description": "应用筛选按钮"
+    },
+    "popup_settings_section_general": {
+        "message": "通用",
+        "description": "通用设置区块标题"
+    },
+    "popup_settings_auto_focus_search": {
+        "message": "打开时自动聚焦搜索框",
+        "description": "自动聚焦搜索框设置"
+    },
+    "popup_settings_auto_focus_search_tooltip": {
+        "message": "打开扩展时自动将光标定位到搜索框",
+        "description": "自动聚焦搜索框提示"
+    },
+    "popup_settings_open_new_tab": {
+        "message": "在新标签页打开书签",
+        "description": "新标签页打开书签设置"
+    },
+    "popup_settings_open_new_tab_tooltip": {
+        "message": "开启后将在新标签页打开书签",
+        "description": "新标签页打开书签提示"
+    },
+    "popup_settings_theme_tooltip": {
+        "message": "改变界面颜色",
+        "description": "主题设置提示"
+    },
+    "popup_settings_theme_light": {
+        "message": "浅色",
+        "description": "浅色主题"
+    },
+    "popup_settings_theme_dark": {
+        "message": "深色",
+        "description": "深色主题"
+    },
+    "popup_settings_theme_system": {
+        "message": "设备",
+        "description": "系统主题"
+    },
+    "popup_settings_target_language_tooltip": {
+        "message": "设置 AI 生成内容（如翻译、标签等）的目标语言",
+        "description": "目标语言设置提示"
+    },
+    "popup_settings_section_privacy": {
+        "message": "隐私",
+        "description": "隐私设置区块标题"
+    },
+    "popup_settings_section_ai": {
+        "message": "AI",
+        "description": "AI设置区块标题"
+    },
+    "popup_settings_auto_privacy": {
+        "message": "自动检测隐私页面",
+        "description": "自动检测隐私页面设置"
+    },
+    "popup_settings_auto_privacy_tooltip": {
+        "message": "自动识别隐私相关页面（如银行、邮箱等），并自动启用隐私模式",
+        "description": "自动检测隐私页面提示"
+    },
+    "popup_settings_privacy_more_title": {
+        "message": "更多隐私设置",
+        "description": "更多隐私设置链接标题"
+    },
+    "popup_settings_manual_privacy": {
+        "message": "启用隐私模式",
+        "description": "手动启用隐私模式设置"
+    },
+    "popup_settings_manual_privacy_tooltip": {
+        "message": "手动开启隐私模式，开启后不会访问页面内容",
+        "description": "手动启用隐私模式提示"
+    },
+    "popup_settings_footer_more_title": {
+        "message": "更多设置",
+        "description": "更多设置按钮标题"
+    },
+    "popup_settings_footer_shortcuts_title": {
+        "message": "键盘快捷键",
+        "description": "键盘快捷键按钮标题"
+    },
+    "popup_settings_footer_changelog_title": {
+        "message": "新变化",
+        "description": "更新日志按钮标题"
+    },
+    "popup_settings_footer_donate_title": {
+        "message": "捐赠支持",
+        "description": "捐赠按钮标题"
+    },
+    "popup_settings_footer_feedback_title": {
+        "message": "提交反馈",
+        "description": "反馈按钮标题"
+    },
+    "popup_settings_footer_review_title": {
+        "message": "去商店评价",
+        "description": "评价按钮标题"
+    },
+    "popup_toolbar_button_edit_title": {
+        "message": "编辑书签",
+        "description": "编辑书签按钮标题"
+    },
+    "popup_status_cancel_save": {
+        "message": "已取消保存",
+        "description": "取消保存提示"
+    },
+    "popup_tags_already_exists": {
+        "message": "标签已存在",
+        "description": "标签已存在提示"
+    },
+    "popup_confirm_delete_title": {
+        "message": "确认删除",
+        "description": "确认删除对话框标题"
+    },
+    "popup_tags_cancel_generate": {
+        "message": "取消生成",
+        "description": "取消生成按钮标题"
+    },
+    "popup_tags_cancel_generate_excerpt": {
+        "message": "已取消生成摘要",
+        "description": "已取消生成摘要提示"
+    },
+    "popup_welcome_title": {
+        "message": "欢迎使用",
+        "description": "欢迎对话框标题"
+    },
+    "popup_welcome_message": {
+        "message": "您需要配置 API 服务才能使用书签搜索等核心功能。是否现在配置？",
+        "description": "欢迎对话框消息"
+    },
+    "popup_welcome_configure": {
+        "message": "去配置",
+        "description": "去配置按钮"
+    },
+    "popup_welcome_later": {
+        "message": "暂不配置",
+        "description": "暂不配置按钮"
+    },
+    "popup_status_cancel_bookmark": {
+        "message": "已取消收藏",
+        "description": "已取消收藏提示"
+    },
+    "popup_tags_generate_complete": {
+        "message": "标签生成完成",
+        "description": "标签生成完成提示"
+    },
+    "popup_status_updating_bookmark": {
+        "message": "正在更新书签",
+        "description": "正在更新书签状态"
+    },
+    "popup_status_update_success": {
+        "message": "书签更新成功",
+        "description": "书签更新成功提示"
+    },
+    "popup_status_update_failed": {
+        "message": "书签更新失败：$error$",
+        "description": "书签更新失败提示",
+        "placeholders": {
+            "error": {
+                "content": "$1",
+                "example": "错误信息"
+            }
+        }
+    },
+    "popup_group_empty": {
+        "message": "暂无书签",
+        "description": "分组为空提示"
+    },
+    "popup_privacy_domain_added": {
+        "message": "已将 $domain$ 添加到隐私域名列表",
+        "description": "隐私域名添加成功",
+        "placeholders": {
+            "domain": {
+                "content": "$1",
+                "example": "example.com"
+            }
+        }
+    },
+    "popup_sync_cloud_disabled": {
+        "message": "云同步功能已禁用",
+        "description": "云同步功能已禁用错误"
+    },
+    "popup_tags_generate_excerpt_failed": {
+        "message": "摘要生成失败",
+        "description": "摘要生成失败错误"
+    },
+    "popup_url_format_error": {
+        "message": "URL格式错误",
+        "description": "URL格式错误提示"
+    },
+    "popup_page_info_fetch_failed": {
+        "message": "页面信息获取失败",
+        "description": "页面信息获取失败错误"
+    },
+    "popup_time_unknown": {
+        "message": "未知时间",
+        "description": "未知时间文本"
+    },
+    "popup_select_bookmark": {
+        "message": "选择此书签",
+        "description": "选择书签复选框标题"
+    },
+    "popup_saved_at": {
+        "message": "收藏于 $date$",
+        "description": "收藏时间提示",
+        "placeholders": {
+            "date": {
+                "content": "$1",
+                "example": "2024年1月1日"
+            }
+        }
+    },
+    "popup_more_actions": {
+        "message": "更多操作",
+        "description": "更多操作按钮标题"
+    },
+    "popup_copy_link_confirm": {
+        "message": "此页面无法直接打开。是否复制链接到剪贴板？",
+        "description": "复制链接确认对话框"
+    },
+    "popup_link_copied": {
+        "message": "链接已复制到剪贴板",
+        "description": "链接已复制提示"
+    },
+    "popup_bookmark_deleted_success": {
+        "message": "书签已成功删除",
+        "description": "书签删除成功提示"
+    },
+    "popup_bookmark_delete_failed": {
+        "message": "删除失败: $error$",
+        "description": "书签删除失败提示",
+        "placeholders": {
+            "error": {
+                "content": "$1",
+                "example": "错误信息"
+            }
+        }
+    },
+    "popup_load_bookmarks_failed": {
+        "message": "加载书签失败: $error$",
+        "description": "加载书签失败提示",
+        "placeholders": {
+            "error": {
+                "content": "$1",
+                "example": "错误信息"
+            }
+        }
+    },
+    "popup_settings_target_language_updated": {
+        "message": "目标语言设置已更新",
+        "description": "目标语言设置更新成功"
+    },
+    "popup_settings_target_language_update_failed": {
+        "message": "更新目标语言设置失败",
+        "description": "目标语言设置更新失败"
+    },
+    "popup_settings_no_service_hint": {
+        "message": "尚未配置 API 服务，点击前往设置",
+        "description": "popup设置对话框中无已配置服务时的提示链接"
+    },
+    "popup_settings_load_failed": {
+        "message": "加载设置失败",
+        "description": "加载设置失败提示"
+    },
+    "popup_settings_update_failed": {
+        "message": "设置更新失败",
+        "description": "设置更新失败提示"
+    },
+    "popup_settings_theme_update_failed": {
+        "message": "主题设置更新失败",
+        "description": "主题设置更新失败提示"
+    },
+    "popup_search_failed": {
+        "message": "搜索失败: $error$",
+        "description": "搜索失败提示",
+        "placeholders": {
+            "error": {
+                "content": "$1",
+                "example": "错误信息"
+            }
+        }
+    },
+    "popup_sort_current": {
+        "message": "当前排序：$sort$",
+        "description": "当前排序提示",
+        "placeholders": {
+            "sort": {
+                "content": "$1",
+                "example": "最新收藏"
+            }
+        }
+    },
+    "popup_update_version_title": {
+        "message": "v$version$ 版本更新内容",
+        "description": "版本更新标题",
+        "placeholders": {
+            "version": {
+                "content": "$1",
+                "example": "1.2.4"
+            }
+        }
+    },
+    "popup_init_failed_retry": {
+        "message": "初始化失败，请刷新页面重试",
+        "description": "初始化失败重试提示"
+    },
+    "popup_load_more": {
+        "message": "加载更多...",
+        "description": "加载更多按钮文本"
+    },
+    "popup_add_group": {
+        "message": "添加分组",
+        "description": "添加分组提示文本"
+    },
+    "popup_manage_group": {
+        "message": "管理分组",
+        "description": "管理分组按钮标题"
+    },
+    "popup_group_sort_title": {
+        "message": "排序",
+        "description": "分组排序按钮标题"
+    },
+    "popup_no_bookmarks_yet": {
+        "message": "还没有保存任何书签",
+        "description": "空状态提示"
+    },
+    "popup_empty_start_bookmark": {
+        "message": "点击左上角的星标图标开始收藏，或使用快捷键进行收藏",
+        "description": "空状态提示开始收藏"
+    },
+    "popup_empty_import_bookmarks": {
+        "message": "导入浏览器书签",
+        "description": "空状态导入书签链接"
+    },
+    "popup_batch_delete_title": {
+        "message": "批量删除",
+        "description": "批量删除对话框标题"
+    },
+    "popup_batch_delete_confirm": {
+        "message": "确定要删除选中的 $count$ 个书签吗？此操作不可撤销。",
+        "description": "批量删除确认消息",
+        "placeholders": {
+            "count": {
+                "content": "$1",
+                "example": "5"
+            }
+        }
+    },
+    "popup_batch_delete_deleting": {
+        "message": "正在删除书签...",
+        "description": "批量删除进行中状态"
+    },
+    "popup_batch_delete_success": {
+        "message": "成功删除 $count$ 个书签",
+        "description": "批量删除成功消息",
+        "placeholders": {
+            "count": {
+                "content": "$1",
+                "example": "5"
+            }
+        }
+    },
+    "popup_batch_delete_failed": {
+        "message": "删除书签失败，请重试",
+        "description": "批量删除失败消息"
+    },
+    "popup_batch_open_title": {
+        "message": "批量打开提醒",
+        "description": "批量打开对话框标题"
+    },
+    "popup_batch_open_warning": {
+        "message": "您选择了 $count$ 个书签，一次性打开过多标签页可能会导致浏览器卡顿。确定要继续吗？",
+        "description": "批量打开警告消息",
+        "placeholders": {
+            "count": {
+                "content": "$1",
+                "example": "15"
+            }
+        }
+    },
+    "popup_batch_open_failed": {
+        "message": "打开书签失败，请重试",
+        "description": "批量打开失败消息"
+    },
+    "popup_batch_move_no_target": {
+        "message": "请选择目标目录",
+        "description": "批量移动未选择目标"
+    },
+    "popup_batch_move_moving": {
+        "message": "正在移动书签...",
+        "description": "批量移动进行中"
+    },
+    "popup_batch_move_success": {
+        "message": "已成功移动 $1 个书签",
+        "description": "批量移动成功",
+        "placeholders": {
+            "1": { "content": "$1" }
+        }
+    },
+    "popup_batch_move_partial": {
+        "message": "部分移动成功 ($1/$2)",
+        "description": "批量移动部分成功",
+        "placeholders": {
+            "1": { "content": "$1" },
+            "2": { "content": "$2" }
+        }
+    },
+    "popup_batch_move_all_skipped": {
+        "message": "所有书签已在目标目录中",
+        "description": "批量移动全部跳过"
+    },
+    "popup_batch_move_failed": {
+        "message": "移动书签失败，请重试",
+        "description": "批量移动失败"
+    },
+    "action_open": {
+        "message": "打开",
+        "description": "打开操作按钮文本"
+    },
+    "settings_page_title": {
+        "message": "设置",
+        "description": "设置页面标题"
+    },
+    "settings_nav_overview": {
+        "message": "基本设置",
+        "description": "设置导航-基本设置"
+    },
+    "settings_nav_services": {
+        "message": "API 服务",
+        "description": "设置导航-API服务"
+    },
+    "settings_nav_filters": {
+        "message": "智能标签",
+        "description": "设置导航-智能标签"
+    },
+    "settings_nav_privacy": {
+        "message": "隐私",
+        "description": "设置导航-隐私"
+    },
+    "settings_nav_import_export": {
+        "message": "导入/导出",
+        "description": "设置导航-导入/导出"
+    },
+    "settings_nav_sync": {
+        "message": "同步",
+        "description": "设置导航-同步"
+    },
+    "settings_nav_about": {
+        "message": "关于",
+        "description": "设置导航-关于"
+    },
+    "settings_footer_privacy_policy": {
+        "message": "隐私政策",
+        "description": "设置页脚-隐私政策"
+    },
+    "settings_footer_changelog": {
+        "message": "更新日志",
+        "description": "设置页脚-更新日志"
+    },
+    "settings_footer_feedback": {
+        "message": "提交反馈",
+        "description": "设置页脚-提交反馈"
+    },
+    "settings_overview_title": {
+        "message": "基本设置",
+        "description": "设置页面-基本设置标题"
+    },
+    "settings_overview_account_status_title": {
+        "message": "账号状态",
+        "description": "账号状态卡片标题"
+    },
+    "settings_overview_logged_in_user": {
+        "message": "当前登录用户:",
+        "description": "已登录用户提示"
+    },
+    "settings_overview_logout": {
+        "message": "退出登录",
+        "description": "退出登录按钮"
+    },
+    "settings_overview_not_logged_in": {
+        "message": "您尚未登录，登录后可使用同步功能（您也可以选择使用WebDAV进行同步而无需登录）",
+        "description": "未登录状态提示"
+    },
+    "settings_overview_go_login": {
+        "message": "去登录",
+        "description": "去登录链接"
+    },
+    "settings_overview_sync_settings": {
+        "message": "同步设置",
+        "description": "同步设置链接"
+    },
+    "settings_overview_shortcuts_title": {
+        "message": "快捷键设置",
+        "description": "快捷键设置卡片标题"
+    },
+    "settings_overview_shortcuts_edit_title": {
+        "message": "在浏览器扩展管理页面修改快捷键",
+        "description": "编辑快捷键按钮提示"
+    },
+    "settings_overview_shortcuts_edit": {
+        "message": "设置快捷键",
+        "description": "设置快捷键按钮文本"
+    },
+    "settings_overview_shortcut_save_name": {
+        "message": "快速保存书签",
+        "description": "快速保存快捷键名称"
+    },
+    "settings_overview_shortcut_search_name": {
+        "message": "快速搜索书签",
+        "description": "快速搜索快捷键名称"
+    },
+    "settings_overview_shortcut_not_set": {
+        "message": "未设置",
+        "description": "快捷键未设置提示"
+    },
+    "settings_overview_shortcut_save_desc": {
+        "message": "快速保存当前页面为书签",
+        "description": "快速保存快捷键描述"
+    },
+    "settings_overview_shortcut_search_desc": {
+        "message": "打开快速搜索面板",
+        "description": "快速搜索快捷键描述"
+    },
+    "settings_overview_appearance_title": {
+        "message": "外观设置",
+        "description": "外观设置卡片标题"
+    },
+    "settings_overview_theme_label": {
+        "message": "主题",
+        "description": "主题选择标签"
+    },
+    "settings_overview_theme_light": {
+        "message": "浅色",
+        "description": "浅色主题选项"
+    },
+    "settings_overview_theme_dark": {
+        "message": "深色",
+        "description": "深色主题选项"
+    },
+    "settings_overview_theme_system": {
+        "message": "设备",
+        "description": "跟随设备主题选项"
+    },
+    "settings_overview_search_title": {
+        "message": "搜索设置",
+        "description": "搜索设置卡片标题"
+    },
+    "settings_overview_search_max_results": {
+        "message": "搜索结果数量",
+        "description": "搜索结果数量标签"
+    },
+    "settings_overview_search_max_results_tooltip": {
+        "message": "最多显示多少个搜索结果（1-100）",
+        "description": "搜索结果数量提示"
+    },
+    "settings_overview_search_omnibox_limit": {
+        "message": "地址栏搜索结果数量",
+        "description": "地址栏搜索结果数量标签"
+    },
+    "settings_overview_search_omnibox_limit_tooltip": {
+        "message": "在浏览器地址栏（Omnibox）搜索时显示的最大结果数量（1-9）",
+        "description": "地址栏搜索结果数量提示"
+    },
+    "settings_overview_search_history": {
+        "message": "搜索历史",
+        "description": "搜索历史开关标签"
+    },
+    "settings_overview_search_history_tooltip": {
+        "message": "设置是否显示最近的搜索记录",
+        "description": "搜索历史提示"
+    },
+    "settings_overview_search_history_clear": {
+        "message": "清除搜索历史",
+        "description": "清除搜索历史按钮"
+    },
+    "settings_overview_search_sites_title": {
+        "message": "快捷访问网站",
+        "description": "快捷访问网站标签"
+    },
+    "settings_overview_search_sites_tooltip": {
+        "message": "设置搜索面板顶部的快捷访问网站",
+        "description": "快捷访问网站提示"
+    },
+    "settings_overview_search_sites_display_type": {
+        "message": "显示类型：",
+        "description": "显示类型标签"
+    },
+    "settings_overview_search_sites_display_none": {
+        "message": "隐藏",
+        "description": "隐藏选项"
+    },
+    "settings_overview_search_sites_display_pinned": {
+        "message": "固定网站",
+        "description": "固定网站选项"
+    },
+    "settings_overview_search_sites_display_recent": {
+        "message": "最近访问",
+        "description": "最近访问选项"
+    },
+    "settings_overview_search_sites_display_most": {
+        "message": "访问最多",
+        "description": "访问最多选项"
+    },
+    "settings_overview_search_sites_display_recent_saved": {
+        "message": "最近保存",
+        "description": "最近保存选项"
+    },
+    "settings_overview_search_sites_display_count": {
+        "message": "显示数量：",
+        "description": "显示数量标签"
+    },
+    "settings_saved": {
+        "message": "设置已保存",
+        "description": "设置保存成功提示"
+    },
+    "settings_save_failed": {
+        "message": "保存设置失败: $1",
+        "description": "设置保存失败提示",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "网络错误"
+            }
+        }
+    },
+    "settings_overview_theme_updated": {
+        "message": "主题设置已更新",
+        "description": "主题更新成功提示"
+    },
+    "settings_overview_theme_update_failed": {
+        "message": "主题设置更新失败",
+        "description": "主题更新失败提示"
+    },
+    "settings_overview_search_sites_count_invalid": {
+        "message": "显示数量必须是数字",
+        "description": "显示数量验证错误"
+    },
+    "settings_overview_search_history_cleared": {
+        "message": "搜索历史已清除",
+        "description": "搜索历史清除成功提示"
+    },
+    "settings_overview_search_history_clear_failed": {
+        "message": "清除搜索历史失败: $1",
+        "description": "搜索历史清除失败提示",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "网络错误"
+            }
+        }
+    },
+    "settings_overview_search_history_clear_confirm": {
+        "message": "确定要清除所有搜索历史记录吗？此操作无法撤销。",
+        "description": "清除搜索历史确认对话框"
+    },
+    "settings_overview_auto_generate_tags": {
+        "message": "自动生成标签",
+        "description": "自动生成标签开关标签"
+    },
+    "settings_overview_auto_generate_tags_tooltip": {
+        "message": "保存新书签时自动生成标签。关闭后仍可手动点击生成按钮生成标签。",
+        "description": "自动生成标签提示"
+    },
+    "settings_services_delete_confirm": {
+        "message": "确定要删除这个自定义服务吗？",
+        "description": "删除自定义服务确认对话框"
+    },
+    "settings_filters_delete_confirm": {
+        "message": "确定要删除这个标签吗？",
+        "description": "删除标签确认对话框"
+    },
+    "settings_privacy_domain_invalid": {
+        "message": "无效的域名格式",
+        "description": "域名格式无效错误"
+    },
+    "settings_privacy_domain_exists": {
+        "message": "该域名已存在",
+        "description": "域名已存在错误"
+    },
+    "settings_services_config_invalid": {
+        "message": "配置格式不正确, 请检查剪贴板内容",
+        "description": "配置格式无效错误"
+    },
+    "settings_services_test_chat_failed": {
+        "message": "文本模型接口验证失败",
+        "description": "文本模型验证失败错误"
+    },
+    "settings_services_test_embed_failed": {
+        "message": "向量模型接口验证失败",
+        "description": "向量模型验证失败错误"
+    },
+    "settings_import_export_api_not_configured": {
+        "message": "请先配置API服务",
+        "description": "API服务未配置错误"
+    },
+    "settings_import_export_no_bookmark_selected": {
+        "message": "请至少选择一个有URL的书签",
+        "description": "未选择书签错误"
+    },
+    "settings_services_title": {
+        "message": "API 服务",
+        "description": "API服务部分标题"
+    },
+    "settings_services_description": {
+        "message": "配置 AI 服务所需的 API 密钥以启用智能书签功能",
+        "description": "API服务部分描述"
+    },
+    "settings_services_security_title": {
+        "message": "API 密钥安全说明",
+        "description": "API密钥安全说明标题"
+    },
+    "settings_services_security_item1": {
+        "message": "您的 API 密钥将使用浏览器的安全存储机制进行本地存储",
+        "description": "API密钥安全说明项1"
+    },
+    "settings_services_security_item2": {
+        "message": "密钥仅用于与相应 AI 服务进行直接通信",
+        "description": "API密钥安全说明项2"
+    },
+    "settings_services_security_item3": {
+        "message": "我们不会将您的 API 密钥上传到服务器或分享给第三方",
+        "description": "API密钥安全说明项3"
+    },
+    "settings_services_tab_chat": {
+        "message": "文本模型",
+        "description": "文本模型标签页"
+    },
+    "settings_services_tab_embedding": {
+        "message": "向量模型",
+        "description": "向量模型标签页"
+    },
+    "settings_services_chat_current": {
+        "message": "当前使用的文本模型服务",
+        "description": "当前文本模型服务标签"
+    },
+    "settings_services_embedding_current": {
+        "message": "当前使用的向量模型服务",
+        "description": "当前向量模型服务标签"
+    },
+    "settings_services_ai_settings_title": {
+        "message": "AI 设置",
+        "description": "AI设置卡片标题"
+    },
+    "settings_services_ai_target_language": {
+        "message": "目标语言",
+        "description": "AI目标语言标签"
+    },
+    "settings_services_ai_target_language_tooltip": {
+        "message": "设置 AI 生成内容（如翻译、标签等）的目标语言",
+        "description": "AI目标语言提示"
+    },
+    "settings_services_usage_stats_title": {
+        "message": "API 使用统计",
+        "description": "API使用统计标题"
+    },
+    "settings_services_usage_stats_period": {
+        "message": "本月用量",
+        "description": "API使用统计周期"
+    },
+    "settings_services_usage_chat_title": {
+        "message": "文本模型调用",
+        "description": "文本模型调用统计标题"
+    },
+    "settings_services_usage_input_tokens": {
+        "message": "输入 Token:",
+        "description": "输入Token标签"
+    },
+    "settings_services_usage_output_tokens": {
+        "message": "输出 Token:",
+        "description": "输出Token标签"
+    },
+    "settings_services_usage_embedding_title": {
+        "message": "向量模型调用",
+        "description": "向量模型调用统计标题"
+    },
+    "settings_services_usage_embedding_tokens": {
+        "message": "Token 数:",
+        "description": "向量模型Token数标签"
+    },
+    "settings_services_ai_target_language_updated": {
+        "message": "目标语言设置已更新",
+        "description": "目标语言更新成功提示"
+    },
+    "settings_services_ai_target_language_update_failed": {
+        "message": "更新目标语言设置失败",
+        "description": "目标语言更新失败提示"
+    },
+    "settings_services_config_not_found": {
+        "message": "服务配置不存在",
+        "description": "服务配置不存在提示"
+    },
+    "settings_services_config_copied": {
+        "message": "配置已复制到剪贴板",
+        "description": "配置复制成功提示"
+    },
+    "settings_services_custom_api_service": {
+        "message": "自定义API服务",
+        "description": "自定义API服务描述"
+    },
+    "settings_services_not_configured": {
+        "message": "未配置",
+        "description": "服务未配置状态"
+    },
+    "settings_services_text_model": {
+        "message": "文本",
+        "description": "文本模型标签"
+    },
+    "settings_services_embedding_model": {
+        "message": "向量",
+        "description": "向量模型标签"
+    },
+    "settings_services_delete_service": {
+        "message": "删除服务",
+        "description": "删除服务按钮提示"
+    },
+    "settings_services_max_custom_services": {
+        "message": "最多只能添加 $1$ 个自定义服务",
+        "description": "最多自定义服务数量限制",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "5"
+            }
+        }
+    },
+    "settings_services_saving": {
+        "message": "正在保存...",
+        "description": "保存中状态"
+    },
+    "settings_services_save_success": {
+        "message": "保存成功",
+        "description": "保存成功状态"
+    },
+    "settings_services_verifying": {
+        "message": "正在验证...",
+        "description": "验证中状态"
+    },
+    "settings_services_api_key_valid": {
+        "message": "API Key 有效",
+        "description": "API Key验证成功"
+    },
+    "settings_services_config": {
+        "message": "配置",
+        "description": "配置标题后缀"
+    },
+    "settings_services_add_openai_compatible": {
+        "message": "添加 OpenAI 兼容服务",
+        "description": "添加自定义服务卡片文本"
+    },
+    "config_services_openai_name": {
+        "message": "OpenAI",
+        "description": "OpenAI服务名称"
+    },
+    "config_services_openai_description": {
+        "message": "OpenAI大模型，由OpenAI提供",
+        "description": "OpenAI服务描述"
+    },
+    "config_services_glm_name": {
+        "message": "智谱AI",
+        "description": "智谱AI服务名称"
+    },
+    "config_services_glm_description": {
+        "message": "智谱GLM大模型，由智谱AI提供",
+        "description": "智谱AI服务描述"
+    },
+    "config_services_dashscope_name": {
+        "message": "阿里云百炼",
+        "description": "阿里云百炼服务名称"
+    },
+    "config_services_dashscope_description": {
+        "message": "阿里云百炼大模型平台，它集成了通义系列大模型和第三方大模型",
+        "description": "阿里云百炼服务描述"
+    },
+    "config_services_siliconflow_name": {
+        "message": "硅基流动",
+        "description": "硅基流动服务名称"
+    },
+    "config_services_siliconflow_description": {
+        "message": "SiliconCloud 硅基流动云服务，高效、模型丰富、性价比高的大模型服务平台",
+        "description": "硅基流动服务描述"
+    },
+    "config_services_hunyuan_name": {
+        "message": "腾讯混元",
+        "description": "腾讯混元服务名称"
+    },
+    "config_services_hunyuan_description": {
+        "message": "腾讯混元大模型，由腾讯云提供",
+        "description": "腾讯混元服务描述"
+    },
+    "config_services_openrouter_name": {
+        "message": "OpenRouter",
+        "description": "OpenRouter服务名称"
+    },
+    "config_services_openrouter_description": {
+        "message": "OpenRouter AI服务聚合平台，支持多种大模型，统一API接口",
+        "description": "OpenRouter服务描述"
+    },
+    "config_services_tag_free_model": {
+        "message": "免费模型",
+        "description": "推荐标签：免费模型"
+    },
+    "config_services_tag_rich_models": {
+        "message": "模型丰富",
+        "description": "推荐标签：模型丰富"
+    },
+    "config_services_tag_stable": {
+        "message": "稳定",
+        "description": "推荐标签：稳定"
+    },
+    "config_services_tag_free_tokens": {
+        "message": "赠送Token",
+        "description": "推荐标签：赠送Token"
+    },
+    "config_error_invalid_service_type": {
+        "message": "无效的服务类型",
+        "description": "无效服务类型错误"
+    },
+    "config_error_invalid_service_id": {
+        "message": "无效的服务ID",
+        "description": "无效服务ID错误"
+    },
+    "config_error_max_custom_services": {
+        "message": "自定义服务数量已达到最大限制",
+        "description": "自定义服务数量限制错误"
+    },
+    "config_error_service_not_found": {
+        "message": "服务不存在",
+        "description": "服务不存在错误"
+    },
+    "config_error_invalid_api_url": {
+        "message": "无效的API服务URL",
+        "description": "无效API URL错误"
+    },
+    "config_error_api_key_empty": {
+        "message": "API Key 不能为空",
+        "description": "API Key为空错误"
+    },
+    "config_error_chat_model_empty": {
+        "message": "Chat 模型不能为空",
+        "description": "Chat模型为空错误"
+    },
+    "config_error_embedding_model_empty": {
+        "message": "Embedding 模型不能为空",
+        "description": "Embedding模型为空错误"
+    },
+    "config_error_api_status_code": {
+        "message": "API 返回状态码: $1",
+        "description": "API状态码错误",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "404"
+            }
+        }
+    },
+    "config_error_unknown": {
+        "message": "未知错误",
+        "description": "未知错误"
+    },
+    "config_error_api_data_format": {
+        "message": "API 返回数据格式错误",
+        "description": "API数据格式错误"
+    },
+    "config_error_verify_failed": {
+        "message": "验证失败: $1",
+        "description": "验证失败错误",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "API Key无效"
+            }
+        }
+    },
+    "config_error_max_pinned_sites": {
+        "message": "最多只能固定 $1$ 个网站",
+        "description": "固定网站数量限制错误",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "10"
+            }
+        }
+    },
+    "config_warn_custom_services_limit": {
+        "message": "自定义服务数量超过限制($1$)，仅导入前$2$个",
+        "description": "自定义服务数量限制警告",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "11"
+            },
+            "2": {
+                "content": "$2",
+                "example": "11"
+            }
+        }
+    },
+    "config_warn_pinned_sites_limit": {
+        "message": "固定网站数量超过限制($1$)，仅保留前$2$个",
+        "description": "固定网站数量限制警告",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "10"
+            },
+            "2": {
+                "content": "$2",
+                "example": "10"
+            }
+        }
+    },
+    "settings_services_config_copy_failed": {
+        "message": "复制失败：$1",
+        "description": "配置复制失败提示",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "网络错误"
+            }
+        }
+    },
+    "settings_services_clipboard_permission_denied": {
+        "message": "没有权限，请允许此网站查看剪贴板",
+        "description": "剪贴板权限被拒绝提示"
+    },
+    "settings_services_copied_to_clipboard": {
+        "message": "已复制到剪贴板",
+        "description": "复制到剪贴板成功提示"
+    },
+    "settings_services_delete_failed": {
+        "message": "删除服务失败: $1",
+        "description": "删除服务失败提示",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "网络错误"
+            }
+        }
+    },
+    "settings_services_custom_required_fields": {
+        "message": "请填写服务名称、API接口地址和API Key",
+        "description": "自定义服务必填字段提示"
+    },
+    "settings_services_custom_at_least_one_model": {
+        "message": "文本模型和向量模型至少填写一个",
+        "description": "自定义服务至少一个模型提示"
+    },
+    "settings_services_custom_similarity_range": {
+        "message": "相似度阈值必须在0-1之间",
+        "description": "相似度阈值范围提示"
+    },
+    "settings_services_test_required_fields": {
+        "message": "请填写API接口地址和API Key",
+        "description": "测试必填字段提示"
+    },
+    "settings_services_test_chat_model_required": {
+        "message": "请填写文本模型",
+        "description": "测试文本模型必填提示"
+    },
+    "settings_services_test_embed_model_required": {
+        "message": "请填写向量模型",
+        "description": "测试向量模型必填提示"
+    },
+    "settings_services_test_verifying": {
+        "message": "验证中...",
+        "description": "验证中状态"
+    },
+    "settings_services_test_testing": {
+        "message": "测试中...",
+        "description": "测试中状态"
+    },
+    "settings_services_test_success": {
+        "message": "验证成功",
+        "description": "验证成功状态"
+    },
+    "settings_services_test_cancelled": {
+        "message": "已取消测试",
+        "description": "用户关闭弹窗时取消 API 测试的提示"
+    },
+    "settings_services_dialog_config_title": {
+        "message": "服务配置",
+        "description": "服务配置对话框标题"
+    },
+    "settings_services_dialog_copy_config_title": {
+        "message": "复制配置",
+        "description": "复制配置按钮提示"
+    },
+    "settings_services_dialog_paste_config_title": {
+        "message": "粘贴配置",
+        "description": "粘贴配置按钮提示"
+    },
+    "settings_services_dialog_api_key_label": {
+        "message": "API Key",
+        "description": "API Key标签"
+    },
+    "settings_services_dialog_get_key_title": {
+        "message": "获取 API Key",
+        "description": "获取API Key链接提示"
+    },
+    "settings_services_dialog_get_key": {
+        "message": "获取 API Key",
+        "description": "获取API Key链接文本"
+    },
+    "settings_services_dialog_api_key_placeholder": {
+        "message": "输入 API Key",
+        "description": "API Key输入框占位符"
+    },
+    "settings_services_dialog_verify": {
+        "message": "验证",
+        "description": "验证按钮文本"
+    },
+    "settings_services_dialog_models_title": {
+        "message": "模型信息",
+        "description": "模型信息标题"
+    },
+    "settings_services_dialog_models_tooltip": {
+        "message": "为了保证搜索结果的准确性，不支持修改向量模型，如有需要可以通过自定义服务配置来实现",
+        "description": "模型信息提示"
+    },
+    "settings_services_dialog_models_pricing_title": {
+        "message": "查看模型定价",
+        "description": "查看模型定价链接提示"
+    },
+    "settings_services_dialog_models_pricing": {
+        "message": "查看模型及定价",
+        "description": "查看模型及定价链接文本"
+    },
+    "settings_services_dialog_model_chat": {
+        "message": "文本模型",
+        "description": "文本模型标签"
+    },
+    "settings_services_dialog_model_chat_placeholder": {
+        "message": "例如: gpt-3.5-turbo",
+        "description": "文本模型输入框占位符"
+    },
+    "settings_services_dialog_model_edit_title": {
+        "message": "编辑模型",
+        "description": "编辑模型按钮提示"
+    },
+    "settings_services_dialog_model_embedding": {
+        "message": "向量模型",
+        "description": "向量模型标签"
+    },
+    "settings_services_dialog_custom_title": {
+        "message": "自定义服务配置",
+        "description": "自定义服务配置对话框标题"
+    },
+    "settings_services_dialog_custom_name_label": {
+        "message": "API 服务名称",
+        "description": "API服务名称标签"
+    },
+    "settings_services_dialog_custom_name_tooltip": {
+        "message": "给这个自定义服务起个名字",
+        "description": "API服务名称提示"
+    },
+    "settings_services_dialog_custom_name_placeholder": {
+        "message": "输入服务名称",
+        "description": "API服务名称输入框占位符"
+    },
+    "settings_services_dialog_custom_url_label": {
+        "message": "API 接口地址",
+        "description": "API接口地址标签"
+    },
+    "settings_services_dialog_custom_url_tooltip": {
+        "message": "设置API服务的基础URL地址，例如：https://api.openai.com/v1/",
+        "description": "API接口地址提示"
+    },
+    "settings_services_dialog_custom_api_key_tooltip": {
+        "message": "输入您的API密钥。请确保API密钥具有足够的权限来调用文本模型和向量模型接口",
+        "description": "自定义服务API Key提示"
+    },
+    "settings_services_dialog_custom_chat_label": {
+        "message": "文本模型(可选)",
+        "description": "自定义服务文本模型标签"
+    },
+    "settings_services_dialog_custom_chat_tooltip": {
+        "message": "请配置你的API服务支持的对话模型，暂不支持推理模型",
+        "description": "自定义服务文本模型提示"
+    },
+    "settings_services_dialog_custom_embed_label": {
+        "message": "向量模型(可选)",
+        "description": "自定义服务向量模型标签"
+    },
+    "settings_services_dialog_custom_embed_tooltip": {
+        "message": "请配置你的API服务支持的向量模型",
+        "description": "自定义服务向量模型提示"
+    },
+    "settings_services_dialog_similarity_threshold_label": {
+        "message": "相关度阈值",
+        "description": "相关度阈值标签"
+    },
+    "settings_services_dialog_similarity_threshold_tooltip": {
+        "message": "相关度阈值用于判断搜索结果与搜索词的相似程度。值越大要求匹配度越高，范围0-1。建议值0.3-0.6",
+        "description": "相关度阈值提示"
+    },
+    "settings_services_dialog_similarity_threshold_desc": {
+        "message": "调整搜索结果的精确度，值越大搜索结果越精确但可能遗漏相关内容，值越小结果越宽松可能包含不太相关的内容",
+        "description": "相关度阈值描述"
+    },
+    "settings_services_dialog_hide_low_similarity_label": {
+        "message": "隐藏低相关度结果",
+        "description": "隐藏低相关度结果开关标签"
+    },
+    "settings_services_dialog_hide_low_similarity_desc": {
+        "message": "开启后将只显示相关度高于阈值的搜索结果",
+        "description": "隐藏低相关度结果描述"
+    },
+    "settings_privacy_title": {
+        "message": "隐私设置",
+        "description": "隐私设置部分标题"
+    },
+    "settings_privacy_description": {
+        "message": "系统会自动检测并保护以下类型的隐私页面，对于这些页面，将不会读取和分析页面内容:",
+        "description": "隐私设置部分描述"
+    },
+    "settings_privacy_rule_auth_name": {
+        "message": "认证页面",
+        "description": "认证页面规则名称"
+    },
+    "settings_privacy_rule_auth_desc": {
+        "message": "登录、注册、密码重置等页面",
+        "description": "认证页面规则描述"
+    },
+    "settings_privacy_rule_account_name": {
+        "message": "个人账户页面",
+        "description": "个人账户页面规则名称"
+    },
+    "settings_privacy_rule_account_desc": {
+        "message": "个人资料、账户设置、管理后台等页面",
+        "description": "个人账户页面规则描述"
+    },
+    "settings_privacy_rule_payment_name": {
+        "message": "支付页面",
+        "description": "支付页面规则名称"
+    },
+    "settings_privacy_rule_payment_desc": {
+        "message": "支付、账单、订阅管理等页面",
+        "description": "支付页面规则描述"
+    },
+    "settings_privacy_rule_message_name": {
+        "message": "邮件消息页面",
+        "description": "邮件消息页面规则名称"
+    },
+    "settings_privacy_rule_message_desc": {
+        "message": "邮箱、私信、聊天等页面",
+        "description": "邮件消息页面规则描述"
+    },
+    "settings_privacy_rule_sensitive_name": {
+        "message": "敏感参数",
+        "description": "敏感参数规则名称"
+    },
+    "settings_privacy_rule_sensitive_desc": {
+        "message": "包含token、密钥等敏感信息的URL",
+        "description": "敏感参数规则描述"
+    },
+    "settings_privacy_custom_domains_title": {
+        "message": "自定义隐私域名",
+        "description": "自定义隐私域名标题"
+    },
+    "settings_privacy_add_domain": {
+        "message": "添加域名",
+        "description": "添加域名按钮"
+    },
+    "settings_privacy_custom_domains_desc": {
+        "message": "除了系统默认保护的页面外，您还可以添加需要额外保护的域名",
+        "description": "自定义隐私域名描述"
+    },
+    "settings_privacy_dialog_add_domain_title": {
+        "message": "添加隐私域名",
+        "description": "添加隐私域名对话框标题"
+    },
+    "settings_privacy_dialog_domain_placeholder": {
+        "message": "输入域名或正则表达式",
+        "description": "域名输入框占位符"
+    },
+    "settings_privacy_dialog_domain_help": {
+        "message": "支持通配符 * 和正则表达式,例如:",
+        "description": "域名输入帮助文本"
+    },
+    "settings_privacy_dialog_domain_example_wildcard": {
+        "message": "通配符域名: *.example.com",
+        "description": "通配符域名示例"
+    },
+    "settings_privacy_dialog_domain_example_regex": {
+        "message": "正则表达式: /.*\\.example\\.com$$/",
+        "description": "正则表达式示例"
+    },
+    "settings_privacy_dialog_domain_example_specific": {
+        "message": "具体域名: www.example.com",
+        "description": "具体域名示例"
+    },
+    "settings_filters_title": {
+        "message": "智能标签",
+        "description": "智能标签部分标题"
+    },
+    "settings_filters_description": {
+        "message": "创建基于规则的智能标签，自动对符合条件的书签进行分类和组织",
+        "description": "智能标签部分描述"
+    },
+    "settings_filters_list_title": {
+        "message": "智能标签列表",
+        "description": "智能标签列表标题"
+    },
+    "settings_filters_add": {
+        "message": "添加标签",
+        "description": "添加标签按钮"
+    },
+    "settings_filters_dialog_add_title": {
+        "message": "添加智能标签",
+        "description": "添加智能标签对话框标题"
+    },
+    "settings_filters_dialog_name_label": {
+        "message": "标签名称",
+        "description": "标签名称标签"
+    },
+    "settings_filters_dialog_name_placeholder": {
+        "message": "给这个标签起个名字",
+        "description": "标签名称输入框占位符"
+    },
+    "settings_filters_dialog_conditions_label": {
+        "message": "标签条件（多个条件时需要同时满足）",
+        "description": "标签条件标签"
+    },
+    "settings_filters_dialog_add_condition": {
+        "message": "添加条件",
+        "description": "添加条件按钮"
+    },
+    "settings_filters_name_required": {
+        "message": "请输入标签名称",
+        "description": "标签名称必填提示"
+    },
+    "settings_filters_conditions_incomplete": {
+        "message": "请填写完整的标签条件",
+        "description": "标签条件不完整提示"
+    },
+    "settings_filters_conditions_required": {
+        "message": "请至少添加一个标签条件",
+        "description": "标签条件必填提示"
+    },
+    "settings_filters_tags_input_placeholder": {
+        "message": "输入关键词按回车键添加",
+        "description": "标签输入框占位符"
+    },
+    "settings_filters_edit": {
+        "message": "编辑",
+        "description": "编辑按钮文本"
+    },
+    "settings_filters_delete": {
+        "message": "删除",
+        "description": "删除按钮文本"
+    },
+    "settings_filters_view": {
+        "message": "查看",
+        "description": "查看按钮文本"
+    },
+    "settings_filters_hide": {
+        "message": "隐藏",
+        "description": "隐藏标签按钮文本"
+    },
+    "settings_filters_show": {
+        "message": "显示",
+        "description": "显示标签按钮文本"
+    },
+    "settings_filters_built_in": {
+        "message": "内置",
+        "description": "内置标签标识"
+    },
+    "settings_filters_built_in_rule_today_added": {
+        "message": "今日添加",
+        "description": "内置规则：今日添加"
+    },
+    "settings_filters_built_in_rule_today_used": {
+        "message": "今日使用",
+        "description": "内置规则：今日使用"
+    },
+    "settings_filters_unit_days": {
+        "message": "天",
+        "description": "天数单位"
+    },
+    "settings_filters_unit_times": {
+        "message": "次",
+        "description": "次数单位"
+    },
+    "settings_filters_field_title": {
+        "message": "标题",
+        "description": "条件字段：标题"
+    },
+    "settings_filters_field_domain": {
+        "message": "域名",
+        "description": "条件字段：域名"
+    },
+    "settings_filters_field_url": {
+        "message": "链接",
+        "description": "条件字段：链接"
+    },
+    "settings_filters_field_tag": {
+        "message": "标签",
+        "description": "条件字段：标签"
+    },
+    "settings_filters_field_create": {
+        "message": "创建时间",
+        "description": "条件字段：创建时间"
+    },
+    "settings_filters_field_last_use": {
+        "message": "上次使用时间",
+        "description": "条件字段：上次使用时间"
+    },
+    "settings_filters_field_use": {
+        "message": "使用次数",
+        "description": "条件字段：使用次数"
+    },
+    "settings_filters_operator_is": {
+        "message": "等于",
+        "description": "条件操作符：等于"
+    },
+    "settings_filters_operator_is_not": {
+        "message": "不等于",
+        "description": "条件操作符：不等于"
+    },
+    "settings_filters_operator_has": {
+        "message": "包含",
+        "description": "条件操作符：包含"
+    },
+    "settings_filters_operator_not_has": {
+        "message": "不包含",
+        "description": "条件操作符：不包含"
+    },
+    "settings_filters_operator_greater": {
+        "message": "大于",
+        "description": "条件操作符：大于"
+    },
+    "settings_filters_operator_less": {
+        "message": "小于",
+        "description": "条件操作符：小于"
+    },
+    "settings_filters_operator_equal": {
+        "message": "等于",
+        "description": "条件操作符：等于"
+    },
+    "settings_filters_operator_or": {
+        "message": "或",
+        "description": "条件操作符：或"
+    },
+    "settings_filters_operator_and": {
+        "message": "且",
+        "description": "条件操作符：且"
+    },
+    "settings_filters_condition_group_title": {
+        "message": "条件组（组内条件为\"或\"关系）",
+        "description": "条件组标题"
+    },
+    "settings_filters_archive_btn": {
+        "message": "历史存档",
+        "description": "智能标签存档按钮"
+    },
+    "settings_filters_archive_empty": {
+        "message": "暂无存档",
+        "description": "存档列表为空时的提示"
+    },
+    "settings_filters_archive_restore": {
+        "message": "恢复",
+        "description": "恢复存档按钮"
+    },
+    "settings_filters_archive_restore_confirm": {
+        "message": "确定要恢复到此存档吗？当前配置将被替换。",
+        "description": "恢复存档确认提示"
+    },
+    "settings_filters_archive_restore_success": {
+        "message": "已恢复",
+        "description": "恢复存档成功提示"
+    },
+    "settings_filters_archive_trigger_save_rule": {
+        "message": "保存规则",
+        "description": "存档触发原因：保存规则"
+    },
+    "settings_filters_archive_trigger_delete_rule": {
+        "message": "删除规则",
+        "description": "存档触发原因：删除规则"
+    },
+    "settings_filters_archive_trigger_import": {
+        "message": "导入",
+        "description": "存档触发原因：导入"
+    },
+    "settings_filters_archive_trigger_reorder": {
+        "message": "排序变更",
+        "description": "存档触发原因：排序变更"
+    },
+    "settings_filters_archive_trigger_restore": {
+        "message": "恢复存档",
+        "description": "存档触发原因：恢复存档"
+    },
+    "settings_filters_archive_trigger_toggle_hidden": {
+        "message": "切换显示/隐藏",
+        "description": "存档触发原因：切换标签显示/隐藏状态"
+    },
+    "settings_filters_archive_rules_unit": {
+        "message": "条规则",
+        "description": "存档中规则数量的单位"
+    },
+    "settings_filters_icon_picker_title": {
+        "message": "选择图标",
+        "description": "图标选择器标题"
+    },
+    "settings_filters_icon_picker_no_color": {
+        "message": "无颜色",
+        "description": "图标选择器中无颜色选项的提示"
+    },
+    "settings_import_export_title": {
+        "message": "导入导出",
+        "description": "导入导出部分标题"
+    },
+    "settings_import_export_description": {
+        "message": "导入或导出您的书签数据",
+        "description": "导入导出部分描述"
+    },
+    "settings_import_export_browser_title": {
+        "message": "导入浏览器书签",
+        "description": "导入浏览器书签卡片标题"
+    },
+    "settings_import_export_browser_desc": {
+        "message": "从浏览器收藏夹导入现有书签",
+        "description": "导入浏览器书签卡片描述"
+    },
+    "settings_import_export_browser_button": {
+        "message": "开始导入",
+        "description": "导入浏览器书签按钮"
+    },
+    "settings_import_export_export_title": {
+        "message": "导出到本地",
+        "description": "导出到本地卡片标题"
+    },
+    "settings_import_export_export_desc": {
+        "message": "将书签导出为本地文件",
+        "description": "导出到本地卡片描述"
+    },
+    "settings_import_export_export_button": {
+        "message": "开始导出",
+        "description": "导出到本地按钮"
+    },
+    "settings_import_export_import_title": {
+        "message": "从本地导入",
+        "description": "从本地导入卡片标题"
+    },
+    "settings_import_export_import_desc": {
+        "message": "从本地文件导入书签数据",
+        "description": "从本地导入卡片描述"
+    },
+    "settings_import_export_import_button": {
+        "message": "选择文件",
+        "description": "从本地导入按钮"
+    },
+    "settings_import_export_dialog_title": {
+        "message": "导入浏览器书签",
+        "description": "导入浏览器书签对话框标题"
+    },
+    "settings_import_export_progress_importing": {
+        "message": "正在导入...",
+        "description": "导入进度状态"
+    },
+    "settings_import_export_progress_details": {
+        "message": "导入详情",
+        "description": "导入详情标题"
+    },
+    "settings_import_export_select_dialog_title": {
+        "message": "选择要导入的书签",
+        "description": "选择书签对话框标题"
+    },
+    "settings_import_export_export_dialog_title": {
+        "message": "导出数据",
+        "description": "导出对话框标题"
+    },
+    "settings_import_export_export_select_title": {
+        "message": "选择要导出的内容",
+        "description": "导出选项标题"
+    },
+    "settings_import_export_option_bookmarks_title": {
+        "message": "书签数据",
+        "description": "书签选项标题"
+    },
+    "settings_import_export_option_bookmarks_desc": {
+        "message": "包括书签内容、标签、向量等",
+        "description": "书签选项描述"
+    },
+    "settings_import_export_option_settings_title": {
+        "message": "设置项",
+        "description": "设置选项标题"
+    },
+    "settings_import_export_option_settings_desc": {
+        "message": "搜索设置、显示设置、隐私设置等",
+        "description": "设置选项描述"
+    },
+    "settings_import_export_option_filters_title": {
+        "message": "智能标签",
+        "description": "智能标签选项标题"
+    },
+    "settings_import_export_option_filters_desc": {
+        "message": "包括所有智能标签规则",
+        "description": "智能标签选项描述"
+    },
+    "settings_import_export_option_api_services_title": {
+        "message": "API 服务设置",
+        "description": "API服务选项标题"
+    },
+    "settings_import_export_option_api_services_desc": {
+        "message": "包括自定义服务配置和 API 密钥，⚠️请妥善保管",
+        "description": "API服务选项描述"
+    },
+    "settings_import_export_export_summary_prefix": {
+        "message": "预计导出",
+        "description": "导出摘要前缀"
+    },
+    "settings_import_export_export_button_text": {
+        "message": "导出",
+        "description": "导出按钮文本"
+    },
+    "settings_import_export_import_dialog_title": {
+        "message": "导入数据",
+        "description": "导入对话框标题"
+    },
+    "settings_import_export_import_drop_text": {
+        "message": "拖放文件到这里或点击选择文件",
+        "description": "文件拖放区域文本"
+    },
+    "settings_import_export_import_drop_tip": {
+        "message": "（只支持本插件导出的文件）",
+        "description": "文件拖放提示"
+    },
+    "settings_import_export_import_select_file": {
+        "message": "选择文件",
+        "description": "选择文件按钮"
+    },
+    "settings_import_export_import_options_title": {
+        "message": "导入选项",
+        "description": "导入选项标题"
+    },
+    "settings_import_export_import_found": {
+        "message": "发现",
+        "description": "发现文本"
+    },
+    "settings_import_export_bookmarks_unit": {
+        "message": "个书签",
+        "description": "书签单位"
+    },
+    "settings_import_export_filter_rules_unit": {
+        "message": "个标签规则",
+        "description": "标签规则单位"
+    },
+    "settings_import_export_api_services_unit": {
+        "message": "个 API 服务",
+        "description": "API服务单位"
+    },
+    "settings_import_export_import_mode_title": {
+        "message": "导入模式",
+        "description": "导入模式标题"
+    },
+    "settings_import_export_import_mode_merge_title": {
+        "message": "合并",
+        "description": "合并模式标题"
+    },
+    "settings_import_export_import_mode_merge_desc": {
+        "message": "保留现有数据，仅添加新内容",
+        "description": "合并模式描述"
+    },
+    "settings_import_export_import_mode_overwrite_title": {
+        "message": "覆盖",
+        "description": "覆盖模式标题"
+    },
+    "settings_import_export_import_mode_overwrite_desc": {
+        "message": "完全替换现有数据",
+        "description": "覆盖模式描述"
+    },
+    "settings_import_export_import_summary": {
+        "message": "准备导入",
+        "description": "导入摘要文本"
+    },
+    "settings_import_export_items_unit": {
+        "message": "个项目",
+        "description": "项目单位"
+    },
+    "settings_import_export_import_button_text": {
+        "message": "导入",
+        "description": "导入按钮文本"
+    },
+    "settings_import_export_select_all": {
+        "message": "全选",
+        "description": "全选复选框"
+    },
+    "settings_import_export_folder_tags_tooltip": {
+        "message": "例如：如果书签在'学习资料/编程'文件夹中，会自动添加'学习资料'、'编程'这两个标签",
+        "description": "添加目录名作为标签提示"
+    },
+    "settings_import_export_folder_tags": {
+        "message": "添加目录名作为标签",
+        "description": "添加目录名作为标签复选框"
+    },
+    "settings_import_export_skip_existing_tooltip": {
+        "message": "开启后将不导入已存在的书签",
+        "description": "跳过已存在书签提示"
+    },
+    "settings_import_export_skip_existing": {
+        "message": "跳过已存在的书签",
+        "description": "跳过已存在书签复选框"
+    },
+    "settings_import_export_selected_label": {
+        "message": "已选择:",
+        "description": "已选择标签"
+    },
+    "settings_import_export_selected_unit": {
+        "message": "个书签",
+        "description": "已选择单位"
+    },
+    "settings_import_export_estimated_chat_tokens": {
+        "message": "预计 Chat Token:",
+        "description": "预计Chat Token标签"
+    },
+    "settings_import_export_estimated_embedding_tokens": {
+        "message": "预计 Embedding Token:",
+        "description": "预计Embedding Token标签"
+    },
+    "settings_import_export_start_import": {
+        "message": "开始导入",
+        "description": "开始导入按钮"
+    },
+    "settings_import_export_browser_disabled": {
+        "message": "浏览器书签批量导入功能已禁用",
+        "description": "浏览器导入功能禁用提示"
+    },
+    "settings_import_export_get_bookmarks_failed": {
+        "message": "获取书签失败: $1",
+        "description": "获取书签失败提示",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "网络错误"
+            }
+        }
+    },
+    "settings_import_export_import_cancelled": {
+        "message": "已取消导入",
+        "description": "导入取消提示"
+    },
+    "settings_import_export_import_failed": {
+        "message": "导入失败: $1",
+        "description": "导入失败提示",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "网络错误"
+            }
+        }
+    },
+    "settings_import_export_bookmark_folder": {
+        "message": "收藏夹🌟",
+        "description": "收藏夹文件夹名称"
+    },
+    "settings_import_export_unnamed": {
+        "message": "未命名",
+        "description": "未命名文件夹"
+    },
+    "settings_import_export_unnamed_bookmark": {
+        "message": "未命名书签",
+        "description": "未命名书签"
+    },
+    "settings_import_export_calculating": {
+        "message": "计算中...",
+        "description": "计算中状态"
+    },
+    "settings_import_export_estimated_seconds": {
+        "message": "约 $1$ 秒",
+        "description": "预计剩余秒数",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "30"
+            }
+        }
+    },
+    "settings_import_export_estimated_minutes": {
+        "message": "约 $1$ 分钟",
+        "description": "预计剩余分钟数",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "5"
+            }
+        }
+    },
+    "settings_import_export_estimated_hours_minutes": {
+        "message": "约 $1$ 小时 $2$ 分钟",
+        "description": "预计剩余小时和分钟数",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "1"
+            },
+            "2": {
+                "content": "$2",
+                "example": "30"
+            }
+        }
+    },
+    "settings_import_export_importing_bookmarks": {
+        "message": "正在导入书签...",
+        "description": "导入书签进行中状态"
+    },
+    "settings_import_export_bookmark_count": {
+        "message": "$1 个书签",
+        "description": "书签数量显示",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "10"
+            }
+        }
+    },
+    "settings_sync_title": {
+        "message": "同步",
+        "description": "同步部分标题"
+    },
+    "settings_sync_description": {
+        "message": "配置数据同步服务以在不同设备间同步您的书签和个性化设置",
+        "description": "同步部分描述"
+    },
+    "settings_sync_cloud_name": {
+        "message": "云同步",
+        "description": "云同步服务名称"
+    },
+    "settings_sync_cloud_go_login": {
+        "message": "去登录",
+        "description": "去登录链接"
+    },
+    "settings_sync_cloud_logged_in": {
+        "message": "已登录",
+        "description": "已登录状态"
+    },
+    "settings_sync_toggle_title": {
+        "message": "开启/关闭同步",
+        "description": "同步开关提示"
+    },
+    "settings_sync_last_sync_never": {
+        "message": "上次同步: 从未同步",
+        "description": "从未同步状态"
+    },
+    "sync_last_sync_time": {
+        "message": "上次同步: $1",
+        "description": "上次同步时间",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "2024-01-01 12:00:00"
+            }
+        }
+    },
+    "sync_never_synced": {
+        "message": "上次同步: 从未同步",
+        "description": "从未同步状态"
+    },
+    "sync_auto_sync_enabled": {
+        "message": "已开启自动同步",
+        "description": "自动同步已开启提示"
+    },
+    "sync_auto_sync_disabled": {
+        "message": "已关闭自动同步",
+        "description": "自动同步已关闭提示"
+    },
+    "sync_auto_sync_update_failed": {
+        "message": "更新自动同步设置失败",
+        "description": "更新自动同步设置失败提示"
+    },
+    "sync_completed": {
+        "message": "同步完成",
+        "description": "同步完成提示"
+    },
+    "sync_failed": {
+        "message": "同步失败",
+        "description": "同步失败错误"
+    },
+    "sync_cloud_config_saved": {
+        "message": "云同步配置已保存",
+        "description": "云同步配置已保存提示"
+    },
+    "sync_config_save_failed": {
+        "message": "保存配置失败",
+        "description": "保存配置失败提示"
+    },
+    "sync_cache_reset_success": {
+        "message": "同步缓存已重置",
+        "description": "同步缓存重置成功提示"
+    },
+    "sync_cache_reset_failed": {
+        "message": "重置同步缓存失败: $1",
+        "description": "重置同步缓存失败提示",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "网络错误"
+            }
+        }
+    },
+    "sync_cloud_disabled": {
+        "message": "云同步功能已禁用",
+        "description": "云同步功能已禁用错误"
+    },
+    "sync_please_login": {
+        "message": "请先登录账号",
+        "description": "需要登录提示"
+    },
+    "sync_webdav_error_url_empty": {
+        "message": "服务器地址不能为空",
+        "description": "WebDAV服务器地址为空错误"
+    },
+    "sync_webdav_error_url_invalid": {
+        "message": "无效的服务器地址",
+        "description": "WebDAV服务器地址无效错误"
+    },
+    "sync_webdav_error_credentials_empty": {
+        "message": "用户名和密码不能为空",
+        "description": "WebDAV用户名密码为空错误"
+    },
+    "sync_webdav_error_interval_invalid": {
+        "message": "同步间隔必须在5分钟-24小时之间",
+        "description": "WebDAV同步间隔无效错误"
+    },
+    "sync_webdav_error_no_data_selected": {
+        "message": "请至少选择一项要同步的数据",
+        "description": "WebDAV未选择同步数据错误"
+    },
+    "sync_webdav_config_saved": {
+        "message": "WebDAV 配置已保存",
+        "description": "WebDAV配置已保存提示"
+    },
+    "sync_webdav_testing": {
+        "message": "测试中...",
+        "description": "WebDAV连接测试中状态"
+    },
+    "sync_webdav_test_success": {
+        "message": "连接测试成功！WebDAV服务器配置有效",
+        "description": "WebDAV连接测试成功提示"
+    },
+    "sync_webdav_test_connection": {
+        "message": "测试连接",
+        "description": "WebDAV测试连接按钮文本"
+    },
+    "sync_error_unknown": {
+        "message": "未知错误",
+        "description": "未知错误"
+    },
+    "webdav_error_operation_failed": {
+        "message": "$1失败 (status: $2)",
+        "description": "WebDAV操作失败错误",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "连接测试"
+            },
+            "2": {
+                "content": "$2",
+                "example": "401"
+            }
+        }
+    },
+    "webdav_error_401": {
+        "message": "认证失败，请检查用户名和密码",
+        "description": "WebDAV 401错误"
+    },
+    "webdav_error_403": {
+        "message": "权限不足，服务器拒绝访问",
+        "description": "WebDAV 403错误"
+    },
+    "webdav_error_404": {
+        "message": "资源不存在",
+        "description": "WebDAV 404错误"
+    },
+    "webdav_error_405": {
+        "message": "方法不允许，服务器不支持该操作",
+        "description": "WebDAV 405错误"
+    },
+    "webdav_error_409": {
+        "message": "资源冲突，可能是父文件夹不存在",
+        "description": "WebDAV 409错误"
+    },
+    "webdav_error_500": {
+        "message": "服务器内部错误",
+        "description": "WebDAV 500错误"
+    },
+    "webdav_error_501": {
+        "message": "服务器不支持该功能",
+        "description": "WebDAV 501错误"
+    },
+    "webdav_error_507": {
+        "message": "存储空间不足",
+        "description": "WebDAV 507错误"
+    },
+    "webdav_error_suggestion": {
+        "message": "。请检查服务器配置或网络连接",
+        "description": "WebDAV错误通用建议"
+    },
+    "webdav_operation_test_connection": {
+        "message": "连接测试",
+        "description": "WebDAV操作：连接测试"
+    },
+    "webdav_operation_create_folder": {
+        "message": "创建文件夹",
+        "description": "WebDAV操作：创建文件夹"
+    },
+    "webdav_operation_upload_file": {
+        "message": "上传文件",
+        "description": "WebDAV操作：上传文件"
+    },
+    "webdav_operation_download_file": {
+        "message": "下载文件",
+        "description": "WebDAV操作：下载文件"
+    },
+    "webdav_operation_delete": {
+        "message": "删除",
+        "description": "WebDAV操作：删除"
+    },
+    "webdav_operation_access_file": {
+        "message": "访问服务器文件",
+        "description": "WebDAV操作：访问服务器文件"
+    },
+    "webdav_operation_get_file_info": {
+        "message": "获取文件信息",
+        "description": "WebDAV操作：获取文件信息"
+    },
+    "webdav_operation_list_directory": {
+        "message": "获取目录列表",
+        "description": "WebDAV操作：获取目录列表"
+    },
+    "webdav_error_401_test": {
+        "message": "认证失败，用户名或密码错误",
+        "description": "WebDAV连接测试401错误"
+    },
+    "webdav_error_403_test": {
+        "message": "权限被拒绝，无法访问该目录",
+        "description": "WebDAV连接测试403错误"
+    },
+    "webdav_error_405_test": {
+        "message": "服务器不支持WebDAV方法",
+        "description": "WebDAV连接测试405错误"
+    },
+    "webdav_error_405_create": {
+        "message": "文件夹已存在或服务器不支持创建文件夹",
+        "description": "WebDAV创建文件夹405错误"
+    },
+    "webdav_error_409_upload": {
+        "message": "远程文件夹不存在",
+        "description": "WebDAV上传文件409错误"
+    },
+    "webdav_error_404_file": {
+        "message": "文件不存在",
+        "description": "WebDAV下载文件404错误"
+    },
+    "webdav_error_404_delete": {
+        "message": "文件或文件夹不存在",
+        "description": "WebDAV删除404错误"
+    },
+    "webdav_error_404_directory": {
+        "message": "目录不存在",
+        "description": "WebDAV获取目录列表404错误"
+    },
+    "webdav_error_423": {
+        "message": "资源被锁定",
+        "description": "WebDAV 423错误"
+    },
+    "webdav_error_invalid_response": {
+        "message": "连接测试失败: 服务器响应不是有效的WebDAV格式，请确认URL是否正确",
+        "description": "WebDAV无效响应错误"
+    },
+    "webdav_error_connection_failed": {
+        "message": "连接测试失败: 无法连接到服务器，请检查URL是否正确或网络连接是否正常",
+        "description": "WebDAV连接失败错误"
+    },
+    "settings_sync_cloud_description": {
+        "message": "官方提供的云同步服务，目前只支持同步书签数据",
+        "description": "云同步服务描述"
+    },
+    "settings_sync_button_settings": {
+        "message": "设置",
+        "description": "同步设置按钮"
+    },
+    "settings_sync_button_sync_now": {
+        "message": "立即同步",
+        "description": "立即同步按钮"
+    },
+    "settings_sync_webdav_name": {
+        "message": "WebDAV",
+        "description": "WebDAV服务名称"
+    },
+    "settings_sync_webdav_description": {
+        "message": "使用WebDAV协议同步到您的私有存储空间",
+        "description": "WebDAV服务描述"
+    },
+    "settings_sync_webdav_recommendations": {
+        "message": "推荐云盘：",
+        "description": "推荐云盘标签"
+    },
+    "settings_sync_webdav_dialog_title": {
+        "message": "WebDAV 同步设置",
+        "description": "WebDAV同步设置对话框标题"
+    },
+    "settings_sync_webdav_dialog_server_title": {
+        "message": "服务器信息",
+        "description": "WebDAV服务器信息标题"
+    },
+    "settings_sync_webdav_dialog_server_url": {
+        "message": "服务器地址",
+        "description": "WebDAV服务器地址标签"
+    },
+    "settings_sync_webdav_dialog_server_url_help": {
+        "message": "WebDAV 服务器的完整 URL 地址",
+        "description": "WebDAV服务器地址帮助文本"
+    },
+    "settings_sync_webdav_dialog_username": {
+        "message": "用户名",
+        "description": "WebDAV用户名标签"
+    },
+    "settings_sync_webdav_dialog_password": {
+        "message": "密码",
+        "description": "WebDAV密码标签"
+    },
+    "settings_sync_webdav_dialog_folder": {
+        "message": "同步文件夹",
+        "description": "WebDAV同步文件夹标签"
+    },
+    "settings_sync_webdav_dialog_folder_help": {
+        "message": "服务器上存储数据的文件夹路径（可通过点击下方的测试按钮自动创建文件夹）",
+        "description": "WebDAV同步文件夹帮助文本"
+    },
+    "settings_sync_webdav_dialog_test_connection": {
+        "message": "测试连接",
+        "description": "测试连接按钮"
+    },
+    "settings_sync_webdav_dialog_data_title": {
+        "message": "同步数据",
+        "description": "WebDAV同步数据标题"
+    },
+    "settings_sync_webdav_dialog_data_bookmarks": {
+        "message": "书签数据",
+        "description": "书签数据开关"
+    },
+    "settings_sync_webdav_dialog_data_settings": {
+        "message": "设置选项",
+        "description": "设置选项开关"
+    },
+    "settings_sync_webdav_dialog_data_filters": {
+        "message": "智能标签",
+        "description": "智能标签开关"
+    },
+    "settings_sync_webdav_dialog_data_services": {
+        "message": "API 服务配置 ⚠️",
+        "description": "API服务配置开关"
+    },
+    "settings_sync_webdav_dialog_behavior_title": {
+        "message": "同步行为",
+        "description": "WebDAV同步行为标题"
+    },
+    "settings_sync_webdav_dialog_auto_sync": {
+        "message": "自动同步",
+        "description": "自动同步开关"
+    },
+    "settings_sync_webdav_dialog_auto_sync_help": {
+        "message": "开启后，书签数据会定期同步到WebDAV服务器，以及在你修改本地数据30秒后同步到服务器",
+        "description": "自动同步帮助文本"
+    },
+    "settings_sync_webdav_dialog_sync_interval": {
+        "message": "同步间隔",
+        "description": "同步间隔标签"
+    },
+    "settings_sync_webdav_dialog_sync_interval_help": {
+        "message": "设置自动同步的时间间隔，最短5分钟，最长24小时",
+        "description": "同步间隔帮助文本"
+    },
+    "settings_sync_webdav_dialog_conflict_strategy": {
+        "message": "冲突解决策略",
+        "description": "冲突解决策略标签"
+    },
+    "settings_sync_webdav_dialog_conflict_merge_title": {
+        "message": "合并",
+        "description": "合并策略标题"
+    },
+    "settings_sync_webdav_dialog_conflict_merge_desc": {
+        "message": "合并本地和服务器的数据（推荐）",
+        "description": "合并策略描述"
+    },
+    "settings_sync_webdav_dialog_conflict_local_title": {
+        "message": "本地优先",
+        "description": "本地优先策略标题"
+    },
+    "settings_sync_webdav_dialog_conflict_local_desc": {
+        "message": "使用本地数据完全覆盖服务器数据（⚠️ 建议先做好备份）",
+        "description": "本地优先策略描述"
+    },
+    "settings_sync_webdav_dialog_conflict_remote_title": {
+        "message": "远程优先",
+        "description": "远程优先策略标题"
+    },
+    "settings_sync_webdav_dialog_conflict_remote_desc": {
+        "message": "使用服务器数据完全覆盖本地数据（⚠️ 建议先做好备份）",
+        "description": "远程优先策略描述"
+    },
+    "settings_sync_cloud_dialog_title": {
+        "message": "云同步设置",
+        "description": "云同步设置对话框标题"
+    },
+    "settings_sync_cloud_dialog_options_title": {
+        "message": "同步选项",
+        "description": "云同步选项标题"
+    },
+    "settings_sync_cloud_dialog_auto_sync": {
+        "message": "自动同步",
+        "description": "云同步自动同步开关"
+    },
+    "settings_sync_cloud_dialog_auto_sync_help": {
+        "message": "开启后，书签数据会定期同步到云端，以及在书签发生变更时自动同步",
+        "description": "云同步自动同步帮助文本"
+    },
+    "settings_sync_cloud_dialog_management_title": {
+        "message": "同步管理",
+        "description": "云同步管理标题"
+    },
+    "settings_sync_cloud_dialog_reset_title": {
+        "message": "从头开始同步",
+        "description": "重置同步缓存标题"
+    },
+    "settings_sync_cloud_dialog_reset_help": {
+        "message": "重置本地同步缓存，下次同步时不会删除任何数据只是将服务器和本地书签合并在一起",
+        "description": "重置同步缓存帮助文本"
+    },
+    "settings_sync_cloud_dialog_reset_button": {
+        "message": "重置缓存",
+        "description": "重置缓存按钮"
+    },
+    "settings_about_title": {
+        "message": "关于",
+        "description": "关于部分标题"
+    },
+    "settings_about_version": {
+        "message": "版本",
+        "description": "版本标签"
+    },
+    "settings_about_last_update": {
+        "message": "最后更新：",
+        "description": "最后更新标签"
+    },
+    "settings_about_intro_title": {
+        "message": "产品简介",
+        "description": "产品简介标题"
+    },
+    "settings_about_intro_description": {
+        "message": "Smart Bookmark 是一款智能书签管理工具，它能帮助你更高效地管理和搜索书签。通过AI技术，它可以自动分析网页内容，生成标签，让你的书签管理更轻松。",
+        "description": "产品简介描述"
+    },
+    "settings_about_project_title": {
+        "message": "项目信息",
+        "description": "项目信息标题"
+    },
+    "settings_about_link_github": {
+        "message": "GitHub",
+        "description": "GitHub链接文本"
+    },
+    "settings_about_link_contact": {
+        "message": "联系我们",
+        "description": "联系我们链接文本"
+    },
+    "settings_about_link_review": {
+        "message": "评分反馈",
+        "description": "评分反馈链接文本"
+    },
+    "settings_about_link_donate": {
+        "message": "资助开发",
+        "description": "资助开发链接文本"
+    },
+    "folder_recommend_reason_recent": {
+        "message": "最近有 $1 个书签保存到此目录",
+        "description": "目录推荐理由：最近保存",
+        "placeholders": { "1": { "content": "$1" } }
+    },
+    "folder_recommend_reason_recent_generic": {
+        "message": "最近活跃的目录",
+        "description": "目录推荐理由：最近活跃（通用）"
+    },
+    "folder_recommend_reason_domain": {
+        "message": "此目录中已有 $1 个来自同站点的书签",
+        "description": "目录推荐理由：同域名",
+        "placeholders": { "1": { "content": "$1" } }
+    },
+    "folder_recommend_reason_name_match": {
+        "message": "目录名称与当前书签匹配",
+        "description": "目录推荐理由：名称匹配"
+    },
+    "folder_recommend_reason_tag_match": {
+        "message": "标签「$1」与目录名称匹配",
+        "description": "目录推荐理由：标签匹配",
+        "placeholders": { "1": { "content": "$1" } }
+    },
+    "folder_recommend_reason_similar": {
+        "message": "此目录中有多个主题相近的书签",
+        "description": "目录推荐理由：向量相似"
+    },
+    "folder_recommend_reason_default": {
+        "message": "当前默认保存目录",
+        "description": "目录推荐理由：用户默认"
+    },
+    "folder_recommend_reason_new_folder": {
+        "message": "最近创建的新目录",
+        "description": "目录推荐理由：新建目录"
+    },
+    "folder_recommend_reason_domain_short": {
+        "message": "同站点"
+    },
+    "folder_recommend_reason_recent_short": {
+        "message": "常用"
+    },
+    "folder_recommend_reason_recent_generic_short": {
+        "message": "活跃"
+    },
+    "folder_recommend_reason_name_match_short": {
+        "message": "名称匹配"
+    },
+    "folder_recommend_reason_similar_short": {
+        "message": "主题相近"
+    },
+    "folder_recommend_reason_default_short": {
+        "message": "默认"
+    },
+    "folder_recommend_reason_new_folder_short": {
+        "message": "新目录"
     }
 } 

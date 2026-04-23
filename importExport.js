@@ -181,7 +181,7 @@ class ImportExportManager {
             
             // 验证文件格式
             if (!this.validateImportData(data)) {
-                throw new Error('无效的导入文件格式');
+                throw new Error(i18n.getMessage('import_export_error_invalid_format'));
             }
             
             this.currentImportData = data;
@@ -228,7 +228,7 @@ class ImportExportManager {
             this.updateImportCount();
             
         } catch (error) {
-            showToast('导入文件解析失败：' + error.message, true);
+            showToast(i18n.getMessage('import_export_error_parse_failed', [error.message]), true);
             this.resetImportDialog();
         }
     }
@@ -252,7 +252,7 @@ class ImportExportManager {
         const checkboxes = checkgroup.querySelectorAll('input[type="checkbox"]');
         const isChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
         if (!isChecked) {
-            showToast('请选择导出项');
+            showToast(i18n.getMessage('import_export_error_no_export_items'));
             return;
         }
         try {
@@ -268,10 +268,10 @@ class ImportExportManager {
                 meta: {}
             };
             
-            // 导出书签数据
+            // 导出书签数据，排除内部字段（_presence、_nodeKey、_facet、_embeddingPendingRefresh 等）
             if (this.exportBookmarksCheckbox.checked) {
                 const bookmarks = await LocalStorageMgr.getBookmarksList();
-                exportData.data.bookmarks = bookmarks;
+                exportData.data.bookmarks = bookmarks.map(b => LocalStorageMgr.sanitizeBookmarkForExport(b));
                 exportData.meta.bookmarkCount = bookmarks.length;
             }
             
@@ -312,11 +312,11 @@ class ImportExportManager {
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
             
-            showToast('导出成功');
+            showToast(i18n.getMessage('import_export_status_export_success'));
             this.hideExportDialog();
             
         } catch (error) {
-            showToast('导出失败：' + error.message, true);
+            showToast(i18n.getMessage('import_export_error_export_failed', [error.message]), true);
         } finally {
             this.confirmExportBtn.disabled = false;
             this.confirmExportBtn.querySelector('.loading-spinner').classList.remove('show');
@@ -326,7 +326,7 @@ class ImportExportManager {
     async handleImport() {
         if (!this.currentImportData) return;
         if (this.isImporting) {
-            showToast('导入中，请稍后...');
+            showToast(i18n.getMessage('import_export_status_importing'));
             return;
         }
         
@@ -341,15 +341,27 @@ class ImportExportManager {
             const data = this.currentImportData.data;
             let importedCount = 0;
             
-            // 导入书签
+            // 导入书签，排除临时标记_embeddingPendingRefresh
             if (this.importBookmarksCheckbox.checked && data.bookmarks) {
+                const cleanedBookmarks = data.bookmarks.map(b => LocalStorageMgr.sanitizeBookmarkForStorage(b));
+                const localBookmarks = await LocalStorageMgr.getBookmarksList();
+                const diffResult = diffBookmarkCollections(localBookmarks, cleanedBookmarks);
+                const renamedBookmarks = detectLikelyRenamedBookmarks(localBookmarks, cleanedBookmarks, diffResult);
+
+                await syncExistingBrowserBookmarksForExtensionChanges({
+                    removedUrls: isOverwrite ? diffResult.removed : [],
+                    updatedBookmarks: diffResult.added.concat(diffResult.updated),
+                    renamedBookmarks,
+                });
+
                 if (isOverwrite) {
-                    const bookmarks = await LocalStorageMgr.getBookmarksList();
-                    if (bookmarks.length > 0) {
-                        await LocalStorageMgr.clearBookmarks();
+                    if (diffResult.removed.length > 0) {
+                        await LocalStorageMgr.removeBookmarks(diffResult.removed);
                     }
                 }
-                await LocalStorageMgr.setBookmarks(data.bookmarks);
+                if (diffResult.added.length > 0 || diffResult.updated.length > 0) {
+                    await LocalStorageMgr.setBookmarks(diffResult.added.concat(diffResult.updated).map(b => LocalStorageMgr.sanitizeBookmarkForStorage(b)));
+                }
                 importedCount += data.bookmarks.length;
             }
             
@@ -377,9 +389,9 @@ class ImportExportManager {
             
             // 显示导入结果
             if (importedCount > 0) {
-                showToast(`成功导入 ${importedCount} 个项目，请刷新页面`);
+                showToast(i18n.getMessage('import_export_status_import_success_with_count', [importedCount.toString()]));
             } else {
-                showToast('导入成功，请刷新页面');
+                showToast(i18n.getMessage('import_export_status_import_success'));
             }
             
             // 如果导入了书签，发送更新消息
@@ -393,7 +405,7 @@ class ImportExportManager {
 
             this.hideImportDialog();
         } catch (error) {
-            showToast('导入失败：' + error.message, true);
+            showToast(i18n.getMessage('import_export_error_import_failed', [error.message]), true);
         } finally {
             this.isImporting = false;
             this.confirmImportBtn.disabled = false;

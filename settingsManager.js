@@ -5,15 +5,19 @@ class SettingsManager {
     // 默认设置
     static DEFAULT_SETTINGS = {
         sort: {
-            bookmarks: 'savedAt_desc'  // 书签排序方式
+            bookmarks: 'savedAt_desc',
+            groupSort: {}   // { [ruleId]: sortValue } 分组级排序
         },
         display: {
-            showChromeBookmarks: false,  // 控制是否显示Chrome书签的设置
             autoFocusSearch: false,  // 打开时自动聚焦搜索框
             confirmTags: true,       // 保存时确认标签，默认开启 （已废弃）
             skipApiKeyNotice: false,   // 跳过API Key检查提示，默认关闭
-            viewMode: 'list', // 添加默认视图模式
+            viewMode: 'directory', // 默认使用收藏夹视图
             openInNewTab: true, // 默认在新标签页打开书签
+            browserBookmarkSave: {
+                mode: 'none',
+                target: null
+            },
             theme: {
                 mode: 'light',  // 'system' | 'light' | 'dark'
             }
@@ -29,6 +33,10 @@ class SettingsManager {
             sitesDisplay: 'pinned',
             sitesDisplayCount: 10,
             showSearchHistory: true  // 是否显示搜索历史，默认开启
+        },
+        ai: {
+            targetLanguage: AI_DEFAULT_TARGET_LANGUAGE,  // AI生成内容的目标语言，根据浏览器语言自动检测
+            autoGenerateTags: true  // 保存新书签时是否自动生成标签，默认开启
         }
     };
 

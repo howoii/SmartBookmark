@@ -38,6 +38,12 @@
     "ui_input_tags": {
         "message": "Type tags and press Enter to add..."
     },
+    "ui_tags_clear_all": {
+        "message": "Clear"
+    },
+    "ui_tags_clear_all_title": {
+        "message": "Clear all tags"
+    },
     "action_add_bookmark": {
         "message": "Add"
     },
@@ -93,16 +99,2533 @@
     "page_quick_save_title": {
         "message": "Quick Save Bookmark"
     },
+    "page_quick_search_title": {
+        "message": "Quick Search"
+    },
+    "quicksearch_input_placeholder": {
+        "message": "Enter keywords to search..."
+    },
+    "quicksearch_settings_btn_title": {
+        "message": "Open Settings"
+    },
+    "quicksearch_results_count": {
+        "message": "$1 results"
+    },
+    "quicksearch_select_all": {
+        "message": "Select All"
+    },
+    "quicksearch_batch_open_title": {
+        "message": "Batch Open"
+    },
+    "quicksearch_batch_delete_title": {
+        "message": "Batch Delete"
+    },
+    "quicksearch_exit_edit_mode_title": {
+        "message": "Exit Edit Mode"
+    },
+    "quicksearch_rename_dialog_title": {
+        "message": "Rename Bookmark"
+    },
+    "quicksearch_rename_input_placeholder": {
+        "message": "Enter new bookmark name"
+    },
+    "quicksearch_edit_tags_dialog_title": {
+        "message": "Edit Tags"
+    },
+    "quicksearch_edit_tags_input_placeholder": {
+        "message": "Enter tag and press Enter to add"
+    },
+    "quicksearch_confirm_dialog_title": {
+        "message": "Confirm Action"
+    },
+    "quicksearch_confirm_dialog_message": {
+        "message": "Are you sure you want to perform this action?"
+    },
+    "quicksearch_confirm_button": {
+        "message": "Confirm"
+    },
+    "quicksearch_error_init_failed": {
+        "message": "Initialization failed: $1"
+    },
+    "quicksearch_pin_site_title": {
+        "message": "Pin to Common Sites"
+    },
+    "quicksearch_unpin_site_title": {
+        "message": "Unpin"
+    },
+    "quicksearch_error_delete_failed": {
+        "message": "Delete failed: $1"
+    },
+    "quicksearch_error_save_order_failed": {
+        "message": "Failed to save order: $1"
+    },
+    "quicksearch_error_render_sites_failed": {
+        "message": "Failed to render sites: $1"
+    },
+    "quicksearch_add_current_page_title": {
+        "message": "Add current page to common sites"
+    },
+    "quicksearch_unnamed_site": {
+        "message": "Unnamed Site"
+    },
+    "quicksearch_error_add_failed": {
+        "message": "Add failed: $1"
+    },
+    "quicksearch_delete_history_title": {
+        "message": "Delete this search record"
+    },
+    "quicksearch_searching": {
+        "message": "Searching bookmarks..."
+    },
+    "quicksearch_error_search_failed": {
+        "message": "Search failed: $1"
+    },
+    "quicksearch_error_search_error": {
+        "message": "Search error"
+    },
+    "quicksearch_error_search_error_desc": {
+        "message": "Please try again later or contact the developer"
+    },
+    "quicksearch_select_bookmark_title": {
+        "message": "Select this bookmark"
+    },
+    "quicksearch_saved_at": {
+        "message": "Saved at $1"
+    },
+    "quicksearch_more_actions_title": {
+        "message": "More Actions"
+    },
+    "quicksearch_copy_link_title": {
+        "message": "Copy Link"
+    },
+    "quicksearch_rename_title": {
+        "message": "Rename"
+    },
+    "quicksearch_edit_tags_title": {
+        "message": "Edit Tags"
+    },
+    "quicksearch_confirm_copy_link": {
+        "message": "This page cannot be opened directly. Copy link to clipboard?"
+    },
+    "quicksearch_status_link_copied": {
+        "message": "Link copied to clipboard"
+    },
+    "quicksearch_error_copy_failed": {
+        "message": "Failed to copy link"
+    },
+    "quicksearch_error_bookmark_not_found": {
+        "message": "Bookmark not found"
+    },
+    "quicksearch_error_chrome_bookmark_no_tags": {
+        "message": "Browser bookmarks do not support tags"
+    },
+    "quicksearch_error_open_link_failed": {
+        "message": "Failed to open link: $1"
+    },
+    "quicksearch_status_bookmark_deleted": {
+        "message": "Bookmark deleted"
+    },
+    "quicksearch_error_delete_bookmark_failed": {
+        "message": "Failed to delete bookmark: $1"
+    },
+    "quicksearch_error_title_empty": {
+        "message": "Bookmark name cannot be empty"
+    },
+    "quicksearch_status_title_unchanged": {
+        "message": "Bookmark name unchanged"
+    },
+    "quicksearch_status_rename_success": {
+        "message": "Bookmark renamed successfully"
+    },
+    "quicksearch_error_rename_failed": {
+        "message": "Failed to rename bookmark: $1"
+    },
+    "quicksearch_tags_empty_message": {
+        "message": "No tags yet. Enter tags in the input box above and press Enter to add"
+    },
+    "quicksearch_remove_tag_title": {
+        "message": "Remove this tag"
+    },
+    "quicksearch_status_tags_unchanged": {
+        "message": "Tags unchanged"
+    },
+    "quicksearch_status_tags_success": {
+        "message": "Tags updated successfully"
+    },
+    "quicksearch_error_edit_tags_failed": {
+        "message": "Failed to edit tags: $1"
+    },
+    "quicksearch_confirm_delete_title": {
+        "message": "Delete Bookmark"
+    },
+    "quicksearch_confirm_delete_message": {
+        "message": "Are you sure you want to delete this bookmark?"
+    },
+    "quicksearch_empty_results_message": {
+        "message": "No related bookmarks found"
+    },
+    "quicksearch_empty_results_description": {
+        "message": "You can try different keywords or check your spelling"
+    },
+    "quicksave_excerpt_placeholder": {
+        "message": "Add or edit bookmark excerpt..."
+    },
+    "quicksave_generate_excerpt_title": {
+        "message": "AI Generate Excerpt"
+    },
+    "quicksave_generate_tags_title": {
+        "message": "AI Generate Tags"
+    },
+    "quicksave_cancel_generate": {
+        "message": "Cancel Generation"
+    },
+    "quicksave_error_tag_exists": {
+        "message": "Tag already exists"
+    },
+    "quicksave_error_url_invalid": {
+        "message": "Invalid URL format"
+    },
+    "quicksave_error_generate_excerpt_failed": {
+        "message": "Failed to generate excerpt"
+    },
+    "quicksave_status_generate_canceled": {
+        "message": "Excerpt generation canceled"
+    },
+    "quicksave_error_title_empty": {
+        "message": "Title is empty"
+    },
+    "quicksave_error_translate_failed": {
+        "message": "Translation failed"
+    },
+    "quicksave_status_translate_canceled": {
+        "message": "Translation canceled"
+    },
+    "intro_title": {
+        "message": "Welcome to Smart Bookmark"
+    },
+    "intro_subtitle": {
+        "message": "Learn how to use Smart Bookmark"
+    },
+    "intro_prev_step": {
+        "message": "Previous step"
+    },
+    "intro_next_step": {
+        "message": "Next step"
+    },
+    "intro_step1_title": {
+        "message": "Pin to Toolbar"
+    },
+    "intro_step1_description": {
+        "message": "Pin the extension to the toolbar for quick access."
+    },
+    "intro_step2_title": {
+        "message": "Configure API Service"
+    },
+    "intro_step2_description": {
+        "message": "Set up API service to enable smart tags and semantic search."
+    },
+    "intro_step3_title": {
+        "message": "Save Web Bookmarks"
+    },
+    "intro_step3_description": {
+        "message": "Save web pages with one click, automatically generate tags and support custom editing"
+    },
+    "intro_step4_title": {
+        "message": "Quick Search"
+    },
+    "intro_step4_description": {
+        "message": "Type \"sb\" in the address bar to quickly search your bookmarks."
+    },
+    "intro_video_not_supported": {
+        "message": "Your browser does not support video playback."
+    },
+    "intro_click_to_enlarge": {
+        "message": "Click to enlarge"
+    },
+    "intro_shortcuts_title": {
+        "message": "Keyboard Shortcuts Guide"
+    },
+    "intro_shortcut_add_bookmark": {
+        "message": "Quick Add Bookmark"
+    },
+    "intro_shortcut_search_bookmark": {
+        "message": "Quick Search Bookmark"
+    },
+    "intro_customize_shortcuts": {
+        "message": "Customize Shortcuts"
+    },
+    "intro_start_using": {
+        "message": "Get Started"
+    },
+    "filter_tag_name": {
+        "message": "Tags"
+    },
+    "filter_custom_tag_name": {
+        "message": "Smart Tags"
+    },
+    "filter_edit_custom_tag_title": {
+        "message": "Edit Smart Tags"
+    },
+    "filter_tag_sort_count": {
+        "message": "By count"
+    },
+    "filter_tag_sort_name": {
+        "message": "By name"
+    },
+    "filter_tag_sort_selected": {
+        "message": "Selected first"
+    },
+    "import_export_error_invalid_format": {
+        "message": "Invalid import file format"
+    },
+    "import_export_error_parse_failed": {
+        "message": "Failed to parse import file: $1"
+    },
+    "import_export_error_no_export_items": {
+        "message": "Please select export items"
+    },
+    "import_export_status_export_success": {
+        "message": "Export successful"
+    },
+    "import_export_error_export_failed": {
+        "message": "Export failed: $1"
+    },
+    "import_export_status_importing": {
+        "message": "Importing, please wait..."
+    },
+    "import_export_status_import_success_with_count": {
+        "message": "Successfully imported $1 items, please refresh the page"
+    },
+    "import_export_status_import_success": {
+        "message": "Import successful, please refresh the page"
+    },
+    "import_export_error_import_failed": {
+        "message": "Import failed: $1"
+    },
+    "api_error_embedding_model_not_configured": {
+        "message": "Embedding model not configured"
+    },
+    "api_error_status_code": {
+        "message": "API returned status code: $1"
+    },
+    "api_error_unknown": {
+        "message": "Unknown error"
+    },
+    "api_error_invalid_response_format": {
+        "message": "Invalid API response format"
+    },
+    "api_error_get_embedding_failed": {
+        "message": "Failed to get embedding: $1"
+    },
+    "api_error_batch_embeddings_invalid_param": {
+        "message": "getBatchEmbeddings: parameter must be a non-empty array"
+    },
+    "api_error_no_embedding_data": {
+        "message": "No valid embedding data returned"
+    },
+    "api_error_batch_embeddings_failed": {
+        "message": "Failed to generate batch embeddings: $1"
+    },
+    "api_error_chat_model_not_configured": {
+        "message": "Chat model not configured"
+    },
+    "api_error_chat_completion_failed": {
+        "message": "Chat Completion failed: $1"
+    },
+    "api_error_text_empty": {
+        "message": "Text is empty"
+    },
+    "api_length_unit_char": {
+        "message": "characters"
+    },
+    "api_length_unit_word": {
+        "message": "words"
+    },
+    "sync_error_syncing": {
+        "message": "Sync in progress"
+    },
+    "sync_error_not_logged_in": {
+        "message": "Not logged in, please login and try again"
+    },
+    "sync_error_token_expired": {
+        "message": "Login expired, please login again"
+    },
+    "sync_error_response_format": {
+        "message": "Response format error"
+    },
+    "autosync_status_init_complete": {
+        "message": "Auto sync system initialization complete"
+    },
+    "autosync_error_syncing": {
+        "message": "Sync operation in progress, please try again later"
+    },
+    "autosync_error_webdav_config_invalid": {
+        "message": "WebDAV configuration invalid, please complete configuration first"
+    },
+    "autosync_error_cloud_sync_disabled": {
+        "message": "Cloud sync feature disabled"
+    },
+    "autosync_error_cloud_config_invalid": {
+        "message": "Cloud sync configuration invalid, please complete configuration first"
+    },
+    "autosync_reason_unspecified": {
+        "message": "Unspecified reason"
+    },
+    "util_error_url_not_supported": {
+        "message": "Unsupported URL"
+    },
+    "util_status_url_accessible": {
+        "message": "Accessible"
+    },
+    "util_device_unknown_os": {
+        "message": "Unknown OS"
+    },
+    "util_device_unknown_browser": {
+        "message": "Unknown Browser"
+    },
+    "util_device_unknown_device": {
+        "message": "Unknown Device"
+    },
     "setting_general_language": {
         "message": "Language"
     },
     "setting_general_theme": {
         "message": "Theme"
     },
-    "prompt_generate_tags_user": {
-        "message": "Extract 2-5 concise and distinctive keywords from the following webpage content for classification and search.\n\nWebpage content:\n{{content}}\n\nRequirements:\n1. Language: All keywords must be in English, except for proper nouns and brand names.\n2. Concise: Keywords should be no more than two words, avoiding unnecessary modifiers.\n3. Accuracy: Keywords must accurately reflect the core topic and key information of the webpage.\n4. Diversity: Include distinctive keywords covering the following aspects (if applicable):\n   - Website or brand name.\n   - Core topic from the webpage title.\n   - Specific content keywords (e.g., technical terms, professional jargon).\n5. No redundancy: Retain only one version of synonymous or repetitive keywords.\n6. Output format: Return only a list of keywords separated by a vertical bar \"|\", without additional text or punctuation.\n\nExample: NYTimes|Politics|Economic Policy|Live News|Global Affairs"
+    "ui_button_translate_title": {
+        "message": "Translate Title"
     },
-    "prompt_generate_tags_sys": {
-        "message": "You are a professional web content analysis expert specializing in extracting core themes from articles and generating accurate tags."
+    "ui_button_cancel_translate": {
+        "message": "Cancel Translation"
+    },
+    "msg_error_empty_title": {
+        "message": "Title is empty"
+    },
+    "msg_error_translate_failed": {
+        "message": "Translation failed"
+    },
+    "msg_status_translate_canceled": {
+        "message": "Translation canceled"
+    },
+    "setting_ai_target_language": {
+        "message": "Target Language"
+    },
+    "popup_toolbar_button_save_title": {
+        "message": "Add bookmark for this page"
+    },
+    "popup_toolbar_bookmark_count": {
+        "message": "Bookmarks"
+    },
+    "popup_toolbar_button_sync_title": {
+        "message": "Sync Bookmarks"
+    },
+    "popup_toolbar_button_search_title": {
+        "message": "Search Bookmarks"
+    },
+    "popup_toolbar_button_settings_title": {
+        "message": "Open Settings"
+    },
+    "popup_search_input_placeholder": {
+        "message": "Search bookmarks..."
+    },
+    "popup_toolbar_button_close_search_title": {
+        "message": "Close Search"
+    },
+    "popup_view_mode_list_title": {
+        "message": "List"
+    },
+    "popup_view_mode_group_title": {
+        "message": "Group"
+    },
+    "popup_view_mode_directory_title": {
+        "message": "Directory"
+    },
+    "popup_directory_uncategorized": {
+        "message": "Extension bookmarks"
+    },
+    "popup_directory_expand_all": {
+        "message": "Expand all"
+    },
+    "popup_directory_collapse_all": {
+        "message": "Collapse all"
+    },
+    "popup_directory_locate_current": {
+        "message": "Locate current tab bookmark"
+    },
+    "popup_directory_locate_not_in_bookmarks": {
+        "message": "This page is not in your bookmarks, so it cannot be located"
+    },
+    "popup_directory_folder_create_title": {
+        "message": "Create folder"
+    },
+    "popup_directory_folder_rename_title": {
+        "message": "Rename folder"
+    },
+    "popup_directory_folder_input_placeholder": {
+        "message": "Enter folder name"
+    },
+    "popup_directory_folder_create_confirm": {
+        "message": "Create"
+    },
+    "popup_directory_folder_rename_confirm": {
+        "message": "Save"
+    },
+    "popup_directory_folder_name_required": {
+        "message": "Please enter a folder name"
+    },
+    "popup_directory_folder_move_invalid_target": {
+        "message": "You cannot move a folder into itself or one of its descendants"
+    },
+    "popup_directory_folder_move_title": {
+        "message": "Move folder"
+    },
+    "popup_directory_folder_delete_title": {
+        "message": "Delete folder"
+    },
+    "popup_directory_folder_delete_confirm": {
+        "message": "Delete"
+    },
+    "popup_directory_folder_delete_confirm_message": {
+        "message": "Delete \"$1\" and all of its contents?"
+    },
+    "popup_directory_folder_created_success": {
+        "message": "Folder created"
+    },
+    "popup_directory_folder_renamed_success": {
+        "message": "Folder renamed"
+    },
+    "popup_directory_folder_moved_success": {
+        "message": "Folder moved"
+    },
+    "popup_directory_folder_deleted_success": {
+        "message": "Folder deleted"
+    },
+    "popup_directory_folder_create_failed": {
+        "message": "Failed to create folder: $1"
+    },
+    "popup_directory_folder_rename_failed": {
+        "message": "Failed to rename folder: $1"
+    },
+    "popup_directory_folder_move_failed": {
+        "message": "Failed to move folder: $1"
+    },
+    "popup_directory_folder_delete_failed": {
+        "message": "Failed to delete folder: $1"
+    },
+    "popup_directory_folder_sort_title": {
+        "message": "Organize"
+    },
+    "popup_directory_folder_sort_by_domain": {
+        "message": "Organize by domain"
+    },
+    "popup_directory_folder_sort_by_date": {
+        "message": "Organize by date created"
+    },
+    "popup_directory_folder_sort_by_name": {
+        "message": "Organize by name"
+    },
+    "popup_directory_folder_sorted_success": {
+        "message": "Organized successfully"
+    },
+    "popup_directory_folder_sort_failed": {
+        "message": "Failed to organize: $1",
+        "placeholders": {
+            "error": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_confirm_delete_chrome_bookmark": {
+        "message": "Delete from bookmarks"
+    },
+    "popup_delete_partial_success": {
+        "message": "Partial delete success"
+    },
+    "popup_url_merge_confirm": {
+        "message": "This URL already exists. Merge into same bookmark?"
+    },
+    "popup_filter_button_text": {
+        "message": "Filter"
+    },
+    "popup_sort_option_newest": {
+        "message": "Newest"
+    },
+    "popup_sort_option_oldest": {
+        "message": "Oldest"
+    },
+    "popup_sort_option_most_used": {
+        "message": "Most Used"
+    },
+    "popup_sort_option_recent_used": {
+        "message": "Recently Used"
+    },
+    "popup_notice_api_config": {
+        "message": "Configure API Service"
+    },
+    "popup_status_index_updating": {
+        "message": "Indexing..."
+    },
+    "popup_status_loading": {
+        "message": "Loading bookmarks..."
+    },
+    "popup_status_searching": {
+        "message": "Searching..."
+    },
+    "popup_edit_toolbar_select_all": {
+        "message": "Select All"
+    },
+    "popup_edit_toolbar_batch_move_title": {
+        "message": "Move Selected"
+    },
+    "popup_edit_toolbar_batch_open_title": {
+        "message": "Open Selected"
+    },
+    "popup_edit_toolbar_batch_delete_title": {
+        "message": "Delete Selected"
+    },
+    "popup_edit_toolbar_exit_title": {
+        "message": "Exit Edit Mode"
+    },
+    "popup_update_notification_title": {
+        "message": "New Version Update"
+    },
+    "popup_update_view_all": {
+        "message": "View All Updates"
+    },
+    "popup_tags_excerpt_placeholder": {
+        "message": "Add or edit bookmark excerpt..."
+    },
+    "popup_tags_generate_excerpt_title": {
+        "message": "AI Generate Excerpt"
+    },
+    "popup_tags_generate_tags_title": {
+        "message": "AI Generate Tags"
+    },
+    "popup_tags_recommended_title": {
+        "message": "Recommended tags:"
+    },
+    "bookmark_save_mode_extension_only": {
+        "message": "Save to extension only"
+    },
+    "bookmark_save_mode_extension_only_desc": {
+        "message": "Do not write to browser bookmarks"
+    },
+    "bookmark_save_mode_browser": {
+        "message": "Also save to browser"
+    },
+    "bookmark_save_mode_browser_desc": {
+        "message": "Write to browser bookmarks and remember the target"
+    },
+    "bookmark_save_target_title": {
+        "message": "Folder"
+    },
+    "bookmark_save_target_disabled_desc": {
+        "message": "Do not save to browser"
+    },
+    "bookmark_save_target_state_disabled": {
+        "message": "Not writing to browser bookmarks"
+    },
+    "bookmark_save_target_state_pending": {
+        "message": "Will save to browser bookmarks"
+    },
+    "bookmark_save_target_state_existing": {
+        "message": "Already in browser bookmarks"
+    },
+    "bookmark_save_target_expand": {
+        "message": "Choose target"
+    },
+    "bookmark_save_target_collapse": {
+        "message": "Collapse"
+    },
+    "bookmark_save_target_disable": {
+        "message": "Do not save to browser"
+    },
+    "bookmark_save_target_not_selected": {
+        "message": "No target selected"
+    },
+    "bookmark_save_target_loading": {
+        "message": "Loading browser bookmarks..."
+    },
+    "bookmark_save_target_load_failed": {
+        "message": "Failed to load browser bookmarks: $1"
+    },
+    "bookmark_save_target_empty": {
+        "message": "No browser bookmark folders available"
+    },
+    "bookmark_save_target_unnamed_folder": {
+        "message": "Untitled folder"
+    },
+    "bookmark_save_root_bookmarks_bar": {
+        "message": "Bookmarks bar"
+    },
+    "bookmark_save_root_other_bookmarks": {
+        "message": "Other bookmarks"
+    },
+    "bookmark_save_root_mobile_bookmarks": {
+        "message": "Mobile bookmarks"
+    },
+    "bookmark_save_target_top": {
+        "message": "Top"
+    },
+    "bookmark_save_target_bottom": {
+        "message": "Bottom"
+    },
+    "bookmark_save_target_before": {
+        "message": "Above"
+    },
+    "bookmark_save_target_after": {
+        "message": "Below"
+    },
+    "bookmark_save_target_recommended": {
+        "message": "Recommended targets"
+    },
+    "bookmark_save_target_anchor_missing": {
+        "message": "The target bookmark no longer exists. Please choose another target."
+    },
+    "popup_search_no_results_title": {
+        "message": "No Bookmarks Found"
+    },
+    "popup_search_no_results_detail": {
+        "message": "No bookmarks found related to \"$query$\"",
+        "placeholders": {
+            "query": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_search_no_results_suggestion": {
+        "message": "Try other keywords"
+    },
+    "popup_privacy_mode_active": {
+        "message": "Privacy mode is enabled, page content will not be read"
+    },
+    "popup_privacy_mode_auto": {
+        "message": "This page may contain private content, page content will not be read"
+    },
+    "popup_privacy_domain_mark": {
+        "message": "Click to mark this site as a private domain"
+    },
+    "popup_privacy_domain_add_error": {
+        "message": "Error adding privacy domain"
+    },
+    "popup_sync_status_loading": {
+        "message": "Loading sync status..."
+    },
+    "popup_sync_no_services": {
+        "message": "You have not configured any sync services. You can go to the settings page to enable sync functionality and sync your bookmarks across browsers."
+    },
+    "popup_sync_configure_button": {
+        "message": "Configure Sync Service"
+    },
+    "popup_status_syncing": {
+        "message": "Syncing"
+    },
+    "popup_status_sync_failed": {
+        "message": "Sync Failed"
+    },
+    "popup_status_synced": {
+        "message": "Synced"
+    },
+    "popup_status_not_synced": {
+        "message": "Not Synced"
+    },
+    "popup_sync_never": {
+        "message": "Never Synced"
+    },
+    "popup_sync_button_text": {
+        "message": "Sync"
+    },
+    "popup_sync_syncing": {
+        "message": "Syncing..."
+    },
+    "popup_sync_success": {
+        "message": "Sync Successful"
+    },
+    "popup_sync_failed_with_error": {
+        "message": "Sync failed: $error$",
+        "placeholders": {
+            "error": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_sync_error_unknown": {
+        "message": "Unknown Error"
+    },
+    "popup_sync_status_fetch_error": {
+        "message": "Failed to fetch sync status"
+    },
+    "popup_sync_service_cloud": {
+        "message": "Cloud Sync"
+    },
+    "popup_sync_service_webdav": {
+        "message": "WebDAV Sync"
+    },
+    "popup_sync_dialog_title": {
+        "message": "Sync"
+    },
+    "popup_sync_last_sync_label": {
+        "message": "Last Sync:"
+    },
+    "popup_sync_settings_title": {
+        "message": "Settings"
+    },
+    "popup_alert_title": {
+        "message": "Alert"
+    },
+    "popup_alert_confirm": {
+        "message": "Confirm"
+    },
+    "popup_filter_clear": {
+        "message": "Clear"
+    },
+    "popup_filter_apply": {
+        "message": "Apply"
+    },
+    "popup_settings_section_general": {
+        "message": "General"
+    },
+    "popup_settings_auto_focus_search": {
+        "message": "Auto Focus Search on Open"
+    },
+    "popup_settings_auto_focus_search_tooltip": {
+        "message": "Automatically position cursor in search box when opening extension"
+    },
+    "popup_settings_open_new_tab": {
+        "message": "Open Bookmarks in New Tab"
+    },
+    "popup_settings_open_new_tab_tooltip": {
+        "message": "Open bookmarks in a new tab when enabled"
+    },
+    "popup_settings_theme_tooltip": {
+        "message": "Change interface color"
+    },
+    "popup_settings_theme_light": {
+        "message": "Light"
+    },
+    "popup_settings_theme_dark": {
+        "message": "Dark"
+    },
+    "popup_settings_theme_system": {
+        "message": "System"
+    },
+    "popup_settings_target_language_tooltip": {
+        "message": "Set the target language for AI-generated content (such as translation, tags, etc.)"
+    },
+    "popup_settings_section_privacy": {
+        "message": "Privacy"
+    },
+    "popup_settings_section_ai": {
+        "message": "AI"
+    },
+    "popup_settings_auto_privacy": {
+        "message": "Auto Detect Private Pages"
+    },
+    "popup_settings_auto_privacy_tooltip": {
+        "message": "Automatically identify privacy-related pages (such as banks, email, etc.) and enable privacy mode"
+    },
+    "popup_settings_privacy_more_title": {
+        "message": "More Privacy Settings"
+    },
+    "popup_settings_manual_privacy": {
+        "message": "Enable Privacy Mode"
+    },
+    "popup_settings_manual_privacy_tooltip": {
+        "message": "Manually enable privacy mode. When enabled, page content will not be accessed"
+    },
+    "popup_settings_footer_more_title": {
+        "message": "More Settings"
+    },
+    "popup_settings_footer_shortcuts_title": {
+        "message": "Keyboard Shortcuts"
+    },
+    "popup_settings_footer_changelog_title": {
+        "message": "What's New"
+    },
+    "popup_settings_footer_donate_title": {
+        "message": "Donate"
+    },
+    "popup_settings_footer_feedback_title": {
+        "message": "Submit Feedback"
+    },
+    "popup_settings_footer_review_title": {
+        "message": "Rate on Store"
+    },
+    "popup_toolbar_button_edit_title": {
+        "message": "Edit Bookmark"
+    },
+    "popup_status_cancel_save": {
+        "message": "Save Canceled"
+    },
+    "popup_tags_already_exists": {
+        "message": "Tag Already Exists"
+    },
+    "popup_confirm_delete_title": {
+        "message": "Confirm Delete"
+    },
+    "popup_tags_cancel_generate": {
+        "message": "Cancel Generation"
+    },
+    "popup_tags_cancel_generate_excerpt": {
+        "message": "Excerpt Generation Canceled"
+    },
+    "popup_welcome_title": {
+        "message": "Welcome"
+    },
+    "popup_welcome_message": {
+        "message": "You need to configure API service to use core features like bookmark search. Configure now?"
+    },
+    "popup_welcome_configure": {
+        "message": "Configure"
+    },
+    "popup_welcome_later": {
+        "message": "Not Now"
+    },
+    "popup_status_cancel_bookmark": {
+        "message": "Bookmark Canceled"
+    },
+    "popup_tags_generate_complete": {
+        "message": "Tags Generated"
+    },
+    "popup_status_updating_bookmark": {
+        "message": "Updating Bookmark"
+    },
+    "popup_status_update_success": {
+        "message": "Bookmark Updated Successfully"
+    },
+    "popup_status_update_failed": {
+        "message": "Bookmark Update Failed: $error$",
+        "placeholders": {
+            "error": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_group_empty": {
+        "message": "No Bookmarks"
+    },
+    "popup_privacy_domain_added": {
+        "message": "$domain$ has been added to privacy domain list",
+        "placeholders": {
+            "domain": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_sync_cloud_disabled": {
+        "message": "Cloud sync feature is disabled"
+    },
+    "popup_tags_generate_excerpt_failed": {
+        "message": "Excerpt generation failed"
+    },
+    "popup_url_format_error": {
+        "message": "URL format error"
+    },
+    "popup_page_info_fetch_failed": {
+        "message": "Failed to fetch page information"
+    },
+    "popup_time_unknown": {
+        "message": "Unknown Time"
+    },
+    "popup_select_bookmark": {
+        "message": "Select this bookmark"
+    },
+    "popup_saved_at": {
+        "message": "Saved on $date$",
+        "placeholders": {
+            "date": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_more_actions": {
+        "message": "More Actions"
+    },
+    "popup_copy_link_confirm": {
+        "message": "This page cannot be opened directly. Copy link to clipboard?"
+    },
+    "popup_link_copied": {
+        "message": "Link copied to clipboard"
+    },
+    "popup_bookmark_deleted_success": {
+        "message": "Bookmark deleted successfully"
+    },
+    "popup_bookmark_delete_failed": {
+        "message": "Delete failed: $error$",
+        "placeholders": {
+            "error": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_load_bookmarks_failed": {
+        "message": "Failed to load bookmarks: $error$",
+        "placeholders": {
+            "error": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_settings_target_language_updated": {
+        "message": "Target language setting updated"
+    },
+    "popup_settings_target_language_update_failed": {
+        "message": "Failed to update target language setting"
+    },
+    "popup_settings_no_service_hint": {
+        "message": "No API service configured. Click to set up."
+    },
+    "popup_settings_load_failed": {
+        "message": "Failed to load settings"
+    },
+    "popup_settings_update_failed": {
+        "message": "Settings update failed"
+    },
+    "popup_settings_theme_update_failed": {
+        "message": "Theme setting update failed"
+    },
+    "popup_search_failed": {
+        "message": "Search failed: $error$",
+        "placeholders": {
+            "error": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_sort_current": {
+        "message": "Current sort: $sort$",
+        "placeholders": {
+            "sort": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_update_version_title": {
+        "message": "v$version$ Update Notes",
+        "placeholders": {
+            "version": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_init_failed_retry": {
+        "message": "Initialization failed, please refresh the page and try again"
+    },
+    "popup_load_more": {
+        "message": "Load More..."
+    },
+    "popup_add_group": {
+        "message": "Add Group"
+    },
+    "popup_manage_group": {
+        "message": "Manage Groups"
+    },
+    "popup_group_sort_title": {
+        "message": "Sort"
+    },
+    "popup_no_bookmarks_yet": {
+        "message": "No bookmarks saved yet"
+    },
+    "popup_empty_start_bookmark": {
+        "message": "Click the star icon to start bookmarking, or use keyboard shortcuts"
+    },
+    "popup_empty_import_bookmarks": {
+        "message": "Import Browser Bookmarks"
+    },
+    "popup_batch_delete_title": {
+        "message": "Batch Delete"
+    },
+    "popup_batch_delete_confirm": {
+        "message": "Are you sure you want to delete $count$ selected bookmarks? This action cannot be undone.",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_batch_delete_deleting": {
+        "message": "Deleting bookmarks..."
+    },
+    "popup_batch_delete_success": {
+        "message": "Successfully deleted $count$ bookmarks",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_batch_delete_failed": {
+        "message": "Failed to delete bookmarks, please try again"
+    },
+    "popup_batch_open_title": {
+        "message": "Batch Open Warning"
+    },
+    "popup_batch_open_warning": {
+        "message": "You have selected $count$ bookmarks. Opening too many tabs at once may cause browser lag. Are you sure you want to continue?",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "popup_batch_open_failed": {
+        "message": "Failed to open bookmarks, please try again"
+    },
+    "popup_batch_move_no_target": {
+        "message": "Please select a target folder"
+    },
+    "popup_batch_move_moving": {
+        "message": "Moving bookmarks..."
+    },
+    "popup_batch_move_success": {
+        "message": "Successfully moved $1 bookmarks",
+        "placeholders": {
+            "1": { "content": "$1" }
+        }
+    },
+    "popup_batch_move_partial": {
+        "message": "Partially moved ($1/$2)",
+        "placeholders": {
+            "1": { "content": "$1" },
+            "2": { "content": "$2" }
+        }
+    },
+    "popup_batch_move_all_skipped": {
+        "message": "All bookmarks are already in the target folder"
+    },
+    "popup_batch_move_failed": {
+        "message": "Failed to move bookmarks, please try again"
+    },
+    "action_open": {
+        "message": "Open"
+    },
+    "settings_page_title": {
+        "message": "Settings"
+    },
+    "settings_nav_overview": {
+        "message": "Overview"
+    },
+    "settings_nav_services": {
+        "message": "API Services"
+    },
+    "settings_nav_filters": {
+        "message": "Smart Tags"
+    },
+    "settings_nav_privacy": {
+        "message": "Privacy"
+    },
+    "settings_nav_import_export": {
+        "message": "Import/Export"
+    },
+    "settings_nav_sync": {
+        "message": "Sync"
+    },
+    "settings_nav_about": {
+        "message": "About"
+    },
+    "settings_footer_privacy_policy": {
+        "message": "Privacy Policy"
+    },
+    "settings_footer_changelog": {
+        "message": "Changelog"
+    },
+    "settings_footer_feedback": {
+        "message": "Submit Feedback"
+    },
+    "settings_overview_title": {
+        "message": "Overview"
+    },
+    "settings_overview_account_status_title": {
+        "message": "Account Status"
+    },
+    "settings_overview_logged_in_user": {
+        "message": "Currently logged in user:"
+    },
+    "settings_overview_logout": {
+        "message": "Logout"
+    },
+    "settings_overview_not_logged_in": {
+        "message": "You are not logged in. After logging in, you can use sync features (you can also choose to use WebDAV for syncing without logging in)"
+    },
+    "settings_overview_go_login": {
+        "message": "Go to Login"
+    },
+    "settings_overview_sync_settings": {
+        "message": "Sync Settings"
+    },
+    "settings_overview_shortcuts_title": {
+        "message": "Keyboard Shortcuts"
+    },
+    "settings_overview_shortcuts_edit_title": {
+        "message": "Edit shortcuts in browser extension management page"
+    },
+    "settings_overview_shortcuts_edit": {
+        "message": "Edit Shortcuts"
+    },
+    "settings_overview_shortcut_save_name": {
+        "message": "Quick Save Bookmark"
+    },
+    "settings_overview_shortcut_search_name": {
+        "message": "Quick Search Bookmark"
+    },
+    "settings_overview_shortcut_not_set": {
+        "message": "Not Set"
+    },
+    "settings_overview_shortcut_save_desc": {
+        "message": "Quickly save current page as bookmark"
+    },
+    "settings_overview_shortcut_search_desc": {
+        "message": "Open quick search panel"
+    },
+    "settings_overview_appearance_title": {
+        "message": "Appearance Settings"
+    },
+    "settings_overview_theme_label": {
+        "message": "Theme"
+    },
+    "settings_overview_theme_light": {
+        "message": "Light"
+    },
+    "settings_overview_theme_dark": {
+        "message": "Dark"
+    },
+    "settings_overview_theme_system": {
+        "message": "System"
+    },
+    "settings_overview_search_title": {
+        "message": "Search Settings"
+    },
+    "settings_overview_search_max_results": {
+        "message": "Max Search Results"
+    },
+    "settings_overview_search_max_results_tooltip": {
+        "message": "Maximum number of search results to display (1-100)"
+    },
+    "settings_overview_search_omnibox_limit": {
+        "message": "Omnibox Search Results Limit"
+    },
+    "settings_overview_search_omnibox_limit_tooltip": {
+        "message": "Maximum number of results to display when searching in browser address bar (Omnibox) (1-9)"
+    },
+    "settings_overview_search_history": {
+        "message": "Search History"
+    },
+    "settings_overview_search_history_tooltip": {
+        "message": "Set whether to show recent search records"
+    },
+    "settings_overview_search_history_clear": {
+        "message": "Clear Search History"
+    },
+    "settings_overview_search_sites_title": {
+        "message": "Quick Access Sites"
+    },
+    "settings_overview_search_sites_tooltip": {
+        "message": "Set quick access sites at the top of search panel"
+    },
+    "settings_overview_search_sites_display_type": {
+        "message": "Display Type:"
+    },
+    "settings_overview_search_sites_display_none": {
+        "message": "Hide"
+    },
+    "settings_overview_search_sites_display_pinned": {
+        "message": "Pinned Sites"
+    },
+    "settings_overview_search_sites_display_recent": {
+        "message": "Recently Visited"
+    },
+    "settings_overview_search_sites_display_most": {
+        "message": "Most Visited"
+    },
+    "settings_overview_search_sites_display_recent_saved": {
+        "message": "Recently Saved"
+    },
+    "settings_overview_search_sites_display_count": {
+        "message": "Display Count:"
+    },
+    "settings_saved": {
+        "message": "Settings saved"
+    },
+    "settings_save_failed": {
+        "message": "Failed to save settings: $1"
+    },
+    "settings_overview_theme_updated": {
+        "message": "Theme settings updated"
+    },
+    "settings_overview_theme_update_failed": {
+        "message": "Failed to update theme settings"
+    },
+    "settings_overview_search_sites_count_invalid": {
+        "message": "Display count must be a number"
+    },
+    "settings_overview_search_history_cleared": {
+        "message": "Search history cleared"
+    },
+    "settings_overview_search_history_clear_failed": {
+        "message": "Failed to clear search history: $1"
+    },
+    "settings_overview_search_history_clear_confirm": {
+        "message": "Are you sure you want to clear all search history? This action cannot be undone."
+    },
+    "settings_overview_auto_generate_tags": {
+        "message": "Auto Generate Tags"
+    },
+    "settings_overview_auto_generate_tags_tooltip": {
+        "message": "Automatically generate tags when saving a new bookmark. Manual generation is always available."
+    },
+    "settings_services_delete_confirm": {
+        "message": "Are you sure you want to delete this custom service?"
+    },
+    "settings_filters_delete_confirm": {
+        "message": "Are you sure you want to delete this tag?"
+    },
+    "settings_privacy_domain_invalid": {
+        "message": "Invalid domain format"
+    },
+    "settings_privacy_domain_exists": {
+        "message": "This domain already exists"
+    },
+    "settings_services_config_invalid": {
+        "message": "Configuration format is incorrect, please check clipboard content"
+    },
+    "settings_services_test_chat_failed": {
+        "message": "Text model API verification failed"
+    },
+    "settings_services_test_embed_failed": {
+        "message": "Embedding model API verification failed"
+    },
+    "settings_import_export_api_not_configured": {
+        "message": "Please configure API service first"
+    },
+    "settings_import_export_no_bookmark_selected": {
+        "message": "Please select at least one bookmark with URL"
+    },
+    "settings_services_title": {
+        "message": "API Services"
+    },
+    "settings_services_description": {
+        "message": "Configure API keys for AI services to enable smart bookmark features"
+    },
+    "settings_services_security_title": {
+        "message": "API Key Security Notice"
+    },
+    "settings_services_security_item1": {
+        "message": "Your API keys will be stored locally using the browser's secure storage mechanism"
+    },
+    "settings_services_security_item2": {
+        "message": "Keys are only used for direct communication with the corresponding AI services"
+    },
+    "settings_services_security_item3": {
+        "message": "We will not upload your API keys to servers or share them with third parties"
+    },
+    "settings_services_tab_chat": {
+        "message": "Text Model"
+    },
+    "settings_services_tab_embedding": {
+        "message": "Embedding Model"
+    },
+    "settings_services_chat_current": {
+        "message": "Currently used text model service"
+    },
+    "settings_services_embedding_current": {
+        "message": "Currently used embedding model service"
+    },
+    "settings_services_ai_settings_title": {
+        "message": "AI Settings"
+    },
+    "settings_services_ai_target_language": {
+        "message": "Target Language"
+    },
+    "settings_services_ai_target_language_tooltip": {
+        "message": "Set the target language for AI-generated content (such as translations, tags, etc.)"
+    },
+    "settings_services_usage_stats_title": {
+        "message": "API Usage Statistics"
+    },
+    "settings_services_usage_stats_period": {
+        "message": "This Month"
+    },
+    "settings_services_usage_chat_title": {
+        "message": "Text Model Calls"
+    },
+    "settings_services_usage_input_tokens": {
+        "message": "Input Tokens:"
+    },
+    "settings_services_usage_output_tokens": {
+        "message": "Output Tokens:"
+    },
+    "settings_services_usage_embedding_title": {
+        "message": "Embedding Model Calls"
+    },
+    "settings_services_usage_embedding_tokens": {
+        "message": "Tokens:"
+    },
+    "settings_services_ai_target_language_updated": {
+        "message": "Target language settings updated"
+    },
+    "settings_services_ai_target_language_update_failed": {
+        "message": "Failed to update target language settings"
+    },
+    "settings_services_config_not_found": {
+        "message": "Service configuration not found"
+    },
+    "settings_services_config_copied": {
+        "message": "Configuration copied to clipboard"
+    },
+    "settings_services_custom_api_service": {
+        "message": "Custom API Service"
+    },
+    "settings_services_not_configured": {
+        "message": "Not Configured"
+    },
+    "settings_services_text_model": {
+        "message": "Text"
+    },
+    "settings_services_embedding_model": {
+        "message": "Embedding"
+    },
+    "settings_services_delete_service": {
+        "message": "Delete Service"
+    },
+    "settings_services_max_custom_services": {
+        "message": "Maximum $1$ custom services allowed",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "5"
+            }
+        }
+    },
+    "settings_services_saving": {
+        "message": "Saving..."
+    },
+    "settings_services_save_success": {
+        "message": "Saved Successfully"
+    },
+    "settings_services_verifying": {
+        "message": "Verifying..."
+    },
+    "settings_services_api_key_valid": {
+        "message": "API Key Valid"
+    },
+    "settings_services_config": {
+        "message": "Configuration"
+    },
+    "settings_services_add_openai_compatible": {
+        "message": "Add OpenAI Compatible Service"
+    },
+    "config_services_openai_name": {
+        "message": "OpenAI"
+    },
+    "config_services_openai_description": {
+        "message": "OpenAI large language models, provided by OpenAI"
+    },
+    "config_services_glm_name": {
+        "message": "Zhipu AI"
+    },
+    "config_services_glm_description": {
+        "message": "GLM large language models, provided by Zhipu AI"
+    },
+    "config_services_dashscope_name": {
+        "message": "Alibaba Bailian"
+    },
+    "config_services_dashscope_description": {
+        "message": "Alibaba Cloud Bailian platform, integrating Tongyi series models and third-party models"
+    },
+    "config_services_siliconflow_name": {
+        "message": "SiliconFlow"
+    },
+    "config_services_siliconflow_description": {
+        "message": "SiliconCloud service, an efficient, model-rich, cost-effective large language model platform"
+    },
+    "config_services_hunyuan_name": {
+        "message": "Tencent Hunyuan"
+    },
+    "config_services_hunyuan_description": {
+        "message": "Tencent Hunyuan large language models, provided by Tencent Cloud"
+    },
+    "config_services_openrouter_name": {
+        "message": "OpenRouter"
+    },
+    "config_services_openrouter_description": {
+        "message": "OpenRouter AI service aggregation platform, supporting multiple large models with unified API"
+    },
+    "config_services_tag_free_model": {
+        "message": "Free Model"
+    },
+    "config_services_tag_rich_models": {
+        "message": "Rich Models"
+    },
+    "config_services_tag_stable": {
+        "message": "Stable"
+    },
+    "config_services_tag_free_tokens": {
+        "message": "Free Tokens"
+    },
+    "config_error_invalid_service_type": {
+        "message": "Invalid service type"
+    },
+    "config_error_invalid_service_id": {
+        "message": "Invalid service ID"
+    },
+    "config_error_max_custom_services": {
+        "message": "Maximum number of custom services reached"
+    },
+    "config_error_service_not_found": {
+        "message": "Service not found"
+    },
+    "config_error_invalid_api_url": {
+        "message": "Invalid API service URL"
+    },
+    "config_error_api_key_empty": {
+        "message": "API Key cannot be empty"
+    },
+    "config_error_chat_model_empty": {
+        "message": "Chat model cannot be empty"
+    },
+    "config_error_embedding_model_empty": {
+        "message": "Embedding model cannot be empty"
+    },
+    "config_error_api_status_code": {
+        "message": "API returned status code: $1",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "404"
+            }
+        }
+    },
+    "config_error_unknown": {
+        "message": "Unknown error"
+    },
+    "config_error_api_data_format": {
+        "message": "API returned data format error"
+    },
+    "config_error_verify_failed": {
+        "message": "Verification failed: $1",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "Invalid API Key"
+            }
+        }
+    },
+    "config_error_max_pinned_sites": {
+        "message": "Maximum $1$ pinned sites allowed",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "10"
+            }
+        }
+    },
+    "config_warn_custom_services_limit": {
+        "message": "Custom services exceed limit ($1$), only importing first $2$",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "11"
+            },
+            "2": {
+                "content": "$2",
+                "example": "11"
+            }
+        }
+    },
+    "config_warn_pinned_sites_limit": {
+        "message": "Pinned sites exceed limit ($1$), only keeping first $2$",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "10"
+            },
+            "2": {
+                "content": "$2",
+                "example": "10"
+            }
+        }
+    },
+    "settings_services_config_copy_failed": {
+        "message": "Copy failed: $1"
+    },
+    "settings_services_clipboard_permission_denied": {
+        "message": "No permission, please allow this site to access clipboard"
+    },
+    "settings_services_copied_to_clipboard": {
+        "message": "Copied to clipboard"
+    },
+    "settings_services_delete_failed": {
+        "message": "Failed to delete service: $1"
+    },
+    "settings_services_custom_required_fields": {
+        "message": "Please fill in service name, API endpoint address and API Key"
+    },
+    "settings_services_custom_at_least_one_model": {
+        "message": "At least one of text model or embedding model must be filled"
+    },
+    "settings_services_custom_similarity_range": {
+        "message": "Similarity threshold must be between 0 and 1"
+    },
+    "settings_services_test_required_fields": {
+        "message": "Please fill in API endpoint address and API Key"
+    },
+    "settings_services_test_chat_model_required": {
+        "message": "Please fill in text model"
+    },
+    "settings_services_test_embed_model_required": {
+        "message": "Please fill in embedding model"
+    },
+    "settings_services_test_verifying": {
+        "message": "Verifying..."
+    },
+    "settings_services_test_testing": {
+        "message": "Testing..."
+    },
+    "settings_services_test_success": {
+        "message": "Verification successful"
+    },
+    "settings_services_test_cancelled": {
+        "message": "Test cancelled"
+    },
+    "settings_services_dialog_config_title": {
+        "message": "Service Configuration"
+    },
+    "settings_services_dialog_copy_config_title": {
+        "message": "Copy Configuration"
+    },
+    "settings_services_dialog_paste_config_title": {
+        "message": "Paste Configuration"
+    },
+    "settings_services_dialog_api_key_label": {
+        "message": "API Key"
+    },
+    "settings_services_dialog_get_key_title": {
+        "message": "Get API Key"
+    },
+    "settings_services_dialog_get_key": {
+        "message": "Get API Key"
+    },
+    "settings_services_dialog_api_key_placeholder": {
+        "message": "Enter API Key"
+    },
+    "settings_services_dialog_verify": {
+        "message": "Verify"
+    },
+    "settings_services_dialog_models_title": {
+        "message": "Model Information"
+    },
+    "settings_services_dialog_models_tooltip": {
+        "message": "To ensure search result accuracy, embedding model modification is not supported. If needed, you can achieve this through custom service configuration"
+    },
+    "settings_services_dialog_models_pricing_title": {
+        "message": "View Model Pricing"
+    },
+    "settings_services_dialog_models_pricing": {
+        "message": "View Models & Pricing"
+    },
+    "settings_services_dialog_model_chat": {
+        "message": "Text Model"
+    },
+    "settings_services_dialog_model_chat_placeholder": {
+        "message": "e.g.: gpt-3.5-turbo"
+    },
+    "settings_services_dialog_model_edit_title": {
+        "message": "Edit Model"
+    },
+    "settings_services_dialog_model_embedding": {
+        "message": "Embedding Model"
+    },
+    "settings_services_dialog_custom_title": {
+        "message": "Custom Service Configuration"
+    },
+    "settings_services_dialog_custom_name_label": {
+        "message": "API Service Name"
+    },
+    "settings_services_dialog_custom_name_tooltip": {
+        "message": "Give this custom service a name"
+    },
+    "settings_services_dialog_custom_name_placeholder": {
+        "message": "Enter service name"
+    },
+    "settings_services_dialog_custom_url_label": {
+        "message": "API Endpoint Address"
+    },
+    "settings_services_dialog_custom_url_tooltip": {
+        "message": "Set the base URL address for the API service, e.g.: https://api.openai.com/v1/"
+    },
+    "settings_services_dialog_custom_api_key_tooltip": {
+        "message": "Enter your API key. Please ensure the API key has sufficient permissions to call text model and embedding model interfaces"
+    },
+    "settings_services_dialog_custom_chat_label": {
+        "message": "Text Model (Optional)"
+    },
+    "settings_services_dialog_custom_chat_tooltip": {
+        "message": "Configure the conversation model supported by your API service. Reasoning models are not currently supported"
+    },
+    "settings_services_dialog_custom_embed_label": {
+        "message": "Embedding Model (Optional)"
+    },
+    "settings_services_dialog_custom_embed_tooltip": {
+        "message": "Configure the embedding model supported by your API service"
+    },
+    "settings_services_dialog_similarity_threshold_label": {
+        "message": "Similarity Threshold"
+    },
+    "settings_services_dialog_similarity_threshold_tooltip": {
+        "message": "Similarity threshold is used to determine the similarity between search results and search terms. The larger the value, the higher the matching requirement, range 0-1. Recommended value: 0.3-0.6"
+    },
+    "settings_services_dialog_similarity_threshold_desc": {
+        "message": "Adjust the accuracy of search results. The larger the value, the more accurate the search results but may miss relevant content. The smaller the value, the more relaxed the results may include less relevant content"
+    },
+    "settings_services_dialog_hide_low_similarity_label": {
+        "message": "Hide Low Similarity Results"
+    },
+    "settings_services_dialog_hide_low_similarity_desc": {
+        "message": "When enabled, only search results with similarity above the threshold will be displayed"
+    },
+    "settings_privacy_title": {
+        "message": "Privacy Settings"
+    },
+    "settings_privacy_description": {
+        "message": "The system will automatically detect and protect the following types of privacy pages. For these pages, content will not be read or analyzed:"
+    },
+    "settings_privacy_rule_auth_name": {
+        "message": "Authentication Pages"
+    },
+    "settings_privacy_rule_auth_desc": {
+        "message": "Login, registration, password reset pages, etc."
+    },
+    "settings_privacy_rule_account_name": {
+        "message": "Personal Account Pages"
+    },
+    "settings_privacy_rule_account_desc": {
+        "message": "Personal profile, account settings, admin dashboard pages, etc."
+    },
+    "settings_privacy_rule_payment_name": {
+        "message": "Payment Pages"
+    },
+    "settings_privacy_rule_payment_desc": {
+        "message": "Payment, billing, subscription management pages, etc."
+    },
+    "settings_privacy_rule_message_name": {
+        "message": "Email & Message Pages"
+    },
+    "settings_privacy_rule_message_desc": {
+        "message": "Email, private messages, chat pages, etc."
+    },
+    "settings_privacy_rule_sensitive_name": {
+        "message": "Sensitive Parameters"
+    },
+    "settings_privacy_rule_sensitive_desc": {
+        "message": "URLs containing sensitive information such as tokens, keys, etc."
+    },
+    "settings_privacy_custom_domains_title": {
+        "message": "Custom Privacy Domains"
+    },
+    "settings_privacy_add_domain": {
+        "message": "Add Domain"
+    },
+    "settings_privacy_custom_domains_desc": {
+        "message": "In addition to the pages protected by default, you can also add domains that need additional protection"
+    },
+    "settings_privacy_dialog_add_domain_title": {
+        "message": "Add Privacy Domain"
+    },
+    "settings_privacy_dialog_domain_placeholder": {
+        "message": "Enter domain or regular expression"
+    },
+    "settings_privacy_dialog_domain_help": {
+        "message": "Supports wildcard * and regular expressions, for example:"
+    },
+    "settings_privacy_dialog_domain_example_wildcard": {
+        "message": "Wildcard domain: *.example.com"
+    },
+    "settings_privacy_dialog_domain_example_regex": {
+        "message": "Regular expression: /.*\\.example\\.com$$/"
+    },
+    "settings_import_export_export_dialog_title": {
+        "message": "Export Data"
+    },
+    "settings_import_export_export_select_title": {
+        "message": "Select Content to Export"
+    },
+    "settings_import_export_option_bookmarks_title": {
+        "message": "Bookmarks"
+    },
+    "settings_import_export_option_bookmarks_desc": {
+        "message": "Including bookmark content, tags, vectors, etc."
+    },
+    "settings_import_export_option_settings_title": {
+        "message": "Settings"
+    },
+    "settings_import_export_option_settings_desc": {
+        "message": "Search settings, display settings, privacy settings, etc."
+    },
+    "settings_import_export_option_filters_title": {
+        "message": "Smart Tags"
+    },
+    "settings_import_export_option_filters_desc": {
+        "message": "Including all smart tag rules"
+    },
+    "settings_import_export_option_api_services_title": {
+        "message": "API Service Settings"
+    },
+    "settings_import_export_option_api_services_desc": {
+        "message": "Including custom service configurations and API keys, ⚠️ please keep them safe"
+    },
+    "settings_import_export_export_summary_prefix": {
+        "message": "Estimated export"
+    },
+    "settings_import_export_export_button_text": {
+        "message": "Export"
+    },
+    "settings_import_export_import_dialog_title": {
+        "message": "Import Data"
+    },
+    "settings_import_export_import_drop_text": {
+        "message": "Drag and drop files here or click to select a file"
+    },
+    "settings_import_export_import_drop_tip": {
+        "message": "(Only supports files exported by this extension)"
+    },
+    "settings_import_export_import_select_file": {
+        "message": "Select File"
+    },
+    "settings_import_export_import_options_title": {
+        "message": "Import Options"
+    },
+    "settings_import_export_import_found": {
+        "message": "Found"
+    },
+    "settings_import_export_bookmarks_unit": {
+        "message": "bookmarks"
+    },
+    "settings_import_export_filter_rules_unit": {
+        "message": "tag rules"
+    },
+    "settings_import_export_api_services_unit": {
+        "message": "API services"
+    },
+    "settings_import_export_import_mode_title": {
+        "message": "Import Mode"
+    },
+    "settings_import_export_import_mode_merge_title": {
+        "message": "Merge"
+    },
+    "settings_import_export_import_mode_merge_desc": {
+        "message": "Keep existing data, only add new content"
+    },
+    "settings_import_export_import_mode_overwrite_title": {
+        "message": "Overwrite"
+    },
+    "settings_import_export_import_mode_overwrite_desc": {
+        "message": "Completely replace existing data"
+    },
+    "settings_import_export_import_summary": {
+        "message": "Ready to import"
+    },
+    "settings_import_export_items_unit": {
+        "message": "items"
+    },
+    "settings_import_export_import_button_text": {
+        "message": "Import"
+    },
+    "settings_import_export_calculating": {
+        "message": "Calculating..."
+    },
+    "settings_import_export_estimated_seconds": {
+        "message": "About $1$ seconds",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "30"
+            }
+        }
+    },
+    "settings_import_export_estimated_minutes": {
+        "message": "About $1$ minutes",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "5"
+            }
+        }
+    },
+    "settings_import_export_estimated_hours_minutes": {
+        "message": "About $1$ hours $2$ minutes",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "1"
+            },
+            "2": {
+                "content": "$2",
+                "example": "30"
+            }
+        }
+    },
+    "settings_import_export_importing_bookmarks": {
+        "message": "Importing bookmarks..."
+    },
+    "settings_privacy_dialog_domain_example_specific": {
+        "message": "Specific domain: www.example.com"
+    },
+    "settings_filters_title": {
+        "message": "Smart Tags"
+    },
+    "settings_filters_description": {
+        "message": "Create rule-based smart tags to automatically categorize and organize bookmarks that meet the conditions"
+    },
+    "settings_filters_list_title": {
+        "message": "Smart Tags List"
+    },
+    "settings_filters_add": {
+        "message": "Add Tag"
+    },
+    "settings_filters_dialog_add_title": {
+        "message": "Add Smart Tag"
+    },
+    "settings_filters_dialog_name_label": {
+        "message": "Tag Name"
+    },
+    "settings_filters_dialog_name_placeholder": {
+        "message": "Give this tag a name"
+    },
+    "settings_filters_dialog_conditions_label": {
+        "message": "Tag Conditions (all conditions must be met when multiple conditions exist)"
+    },
+    "settings_filters_dialog_add_condition": {
+        "message": "Add Condition"
+    },
+    "settings_filters_name_required": {
+        "message": "Please enter tag name"
+    },
+    "settings_filters_conditions_incomplete": {
+        "message": "Please fill in complete tag conditions"
+    },
+    "settings_filters_conditions_required": {
+        "message": "Please add at least one tag condition"
+    },
+    "settings_filters_tags_input_placeholder": {
+        "message": "Enter keywords and press Enter to add"
+    },
+    "settings_filters_edit": {
+        "message": "Edit"
+    },
+    "settings_filters_delete": {
+        "message": "Delete"
+    },
+    "settings_filters_view": {
+        "message": "View"
+    },
+    "settings_filters_hide": {
+        "message": "Hide"
+    },
+    "settings_filters_show": {
+        "message": "Show"
+    },
+    "settings_filters_built_in": {
+        "message": "Built-in"
+    },
+    "settings_filters_built_in_rule_today_added": {
+        "message": "Added Today"
+    },
+    "settings_filters_built_in_rule_today_used": {
+        "message": "Used Today"
+    },
+    "settings_filters_unit_days": {
+        "message": "days"
+    },
+    "settings_filters_unit_times": {
+        "message": "times"
+    },
+    "settings_filters_field_title": {
+        "message": "Title"
+    },
+    "settings_filters_field_domain": {
+        "message": "Domain"
+    },
+    "settings_filters_field_url": {
+        "message": "URL"
+    },
+    "settings_filters_field_tag": {
+        "message": "Tag"
+    },
+    "settings_filters_field_create": {
+        "message": "Created Time"
+    },
+    "settings_filters_field_last_use": {
+        "message": "Last Used Time"
+    },
+    "settings_filters_field_use": {
+        "message": "Usage Count"
+    },
+    "settings_filters_operator_is": {
+        "message": "is"
+    },
+    "settings_filters_operator_is_not": {
+        "message": "is not"
+    },
+    "settings_filters_operator_has": {
+        "message": "contains"
+    },
+    "settings_filters_operator_not_has": {
+        "message": "does not contain"
+    },
+    "settings_filters_operator_greater": {
+        "message": "greater than"
+    },
+    "settings_filters_operator_less": {
+        "message": "less than"
+    },
+    "settings_filters_operator_equal": {
+        "message": "equals"
+    },
+    "settings_filters_operator_or": {
+        "message": "or"
+    },
+    "settings_filters_operator_and": {
+        "message": "and"
+    },
+    "settings_filters_condition_group_title": {
+        "message": "Condition Group (conditions within group are \"OR\" relationship)"
+    },
+    "settings_filters_archive_btn": {
+        "message": "Archives"
+    },
+    "settings_filters_archive_empty": {
+        "message": "No archives"
+    },
+    "settings_filters_archive_restore": {
+        "message": "Restore"
+    },
+    "settings_filters_archive_restore_confirm": {
+        "message": "Restore to this archive? Current filters will be replaced."
+    },
+    "settings_filters_archive_restore_success": {
+        "message": "Restored"
+    },
+    "settings_filters_archive_trigger_save_rule": {
+        "message": "Save rule"
+    },
+    "settings_filters_archive_trigger_delete_rule": {
+        "message": "Delete rule"
+    },
+    "settings_filters_archive_trigger_import": {
+        "message": "Import"
+    },
+    "settings_filters_archive_trigger_reorder": {
+        "message": "Reorder"
+    },
+    "settings_filters_archive_trigger_restore": {
+        "message": "Restore"
+    },
+    "settings_filters_archive_trigger_toggle_hidden": {
+        "message": "Toggle visibility"
+    },
+    "settings_filters_archive_rules_unit": {
+        "message": "rules"
+    },
+    "settings_filters_icon_picker_title": {
+        "message": "Choose Icon"
+    },
+    "settings_filters_icon_picker_no_color": {
+        "message": "No color"
+    },
+    "settings_import_export_title": {
+        "message": "Import/Export"
+    },
+    "settings_import_export_description": {
+        "message": "Import or export your bookmark data"
+    },
+    "settings_import_export_browser_title": {
+        "message": "Import Browser Bookmarks"
+    },
+    "settings_import_export_browser_desc": {
+        "message": "Import existing bookmarks from browser favorites"
+    },
+    "settings_import_export_browser_button": {
+        "message": "Start Import"
+    },
+    "settings_import_export_export_title": {
+        "message": "Export to Local"
+    },
+    "settings_import_export_export_desc": {
+        "message": "Export bookmarks as a local file"
+    },
+    "settings_import_export_export_button": {
+        "message": "Start Export"
+    },
+    "settings_import_export_import_title": {
+        "message": "Import from Local"
+    },
+    "settings_import_export_import_desc": {
+        "message": "Import bookmark data from a local file"
+    },
+    "settings_import_export_import_button": {
+        "message": "Select File"
+    },
+    "settings_import_export_dialog_title": {
+        "message": "Import Browser Bookmarks"
+    },
+    "settings_import_export_progress_importing": {
+        "message": "Importing..."
+    },
+    "settings_import_export_progress_details": {
+        "message": "Import Details"
+    },
+    "settings_import_export_select_dialog_title": {
+        "message": "Select Bookmarks to Import"
+    },
+    "settings_import_export_select_all": {
+        "message": "Select All"
+    },
+    "settings_import_export_folder_tags_tooltip": {
+        "message": "For example: if a bookmark is in the 'Study Materials/Programming' folder, it will automatically add the tags 'Study Materials' and 'Programming'"
+    },
+    "settings_import_export_folder_tags": {
+        "message": "Add folder name as tag"
+    },
+    "settings_import_export_skip_existing_tooltip": {
+        "message": "When enabled, existing bookmarks will not be imported"
+    },
+    "settings_import_export_skip_existing": {
+        "message": "Skip existing bookmarks"
+    },
+    "settings_import_export_selected_label": {
+        "message": "Selected:"
+    },
+    "settings_import_export_selected_unit": {
+        "message": "bookmarks"
+    },
+    "settings_import_export_estimated_chat_tokens": {
+        "message": "Estimated Chat Tokens:"
+    },
+    "settings_import_export_estimated_embedding_tokens": {
+        "message": "Estimated Embedding Tokens:"
+    },
+    "settings_import_export_start_import": {
+        "message": "Start Import"
+    },
+    "settings_import_export_browser_disabled": {
+        "message": "Browser bookmark batch import feature is disabled"
+    },
+    "settings_import_export_get_bookmarks_failed": {
+        "message": "Failed to get bookmarks: $1"
+    },
+    "settings_import_export_import_cancelled": {
+        "message": "Import cancelled"
+    },
+    "settings_import_export_import_failed": {
+        "message": "Import failed: $1"
+    },
+    "settings_import_export_bookmark_folder": {
+        "message": "Favorites🌟"
+    },
+    "settings_import_export_unnamed": {
+        "message": "Unnamed"
+    },
+    "settings_import_export_unnamed_bookmark": {
+        "message": "Unnamed Bookmark"
+    },
+    "settings_import_export_bookmark_count": {
+        "message": "$1 bookmarks"
+    },
+    "settings_sync_title": {
+        "message": "Sync"
+    },
+    "settings_sync_description": {
+        "message": "Configure data sync services to sync your bookmarks and personalized settings across different devices"
+    },
+    "settings_sync_cloud_name": {
+        "message": "Cloud Sync"
+    },
+    "settings_sync_cloud_go_login": {
+        "message": "Go to Login"
+    },
+    "settings_sync_cloud_logged_in": {
+        "message": "Logged In"
+    },
+    "settings_sync_toggle_title": {
+        "message": "Enable/Disable Sync"
+    },
+    "settings_sync_last_sync_never": {
+        "message": "Last sync: Never"
+    },
+    "sync_last_sync_time": {
+        "message": "Last sync: $1",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "2024-01-01 12:00:00"
+            }
+        }
+    },
+    "sync_never_synced": {
+        "message": "Last sync: Never"
+    },
+    "sync_auto_sync_enabled": {
+        "message": "Auto sync enabled"
+    },
+    "sync_auto_sync_disabled": {
+        "message": "Auto sync disabled"
+    },
+    "sync_auto_sync_update_failed": {
+        "message": "Failed to update auto sync settings"
+    },
+    "sync_completed": {
+        "message": "Sync completed"
+    },
+    "sync_failed": {
+        "message": "Sync failed"
+    },
+    "sync_cloud_config_saved": {
+        "message": "Cloud sync configuration saved"
+    },
+    "sync_config_save_failed": {
+        "message": "Failed to save configuration"
+    },
+    "sync_cache_reset_success": {
+        "message": "Sync cache reset"
+    },
+    "sync_cache_reset_failed": {
+        "message": "Failed to reset sync cache: $1",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "Network error"
+            }
+        }
+    },
+    "sync_cloud_disabled": {
+        "message": "Cloud sync is disabled"
+    },
+    "sync_please_login": {
+        "message": "Please login first"
+    },
+    "sync_webdav_error_url_empty": {
+        "message": "Server address cannot be empty"
+    },
+    "sync_webdav_error_url_invalid": {
+        "message": "Invalid server address"
+    },
+    "sync_webdav_error_credentials_empty": {
+        "message": "Username and password cannot be empty"
+    },
+    "sync_webdav_error_interval_invalid": {
+        "message": "Sync interval must be between 5 minutes and 24 hours"
+    },
+    "sync_webdav_error_no_data_selected": {
+        "message": "Please select at least one data type to sync"
+    },
+    "sync_webdav_config_saved": {
+        "message": "WebDAV configuration saved"
+    },
+    "sync_webdav_testing": {
+        "message": "Testing..."
+    },
+    "sync_webdav_test_success": {
+        "message": "Connection test successful! WebDAV server configuration is valid"
+    },
+    "sync_webdav_test_connection": {
+        "message": "Test Connection"
+    },
+    "sync_error_unknown": {
+        "message": "Unknown error"
+    },
+    "webdav_error_operation_failed": {
+        "message": "$1 failed (status: $2)",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "Connection test"
+            },
+            "2": {
+                "content": "$2",
+                "example": "401"
+            }
+        }
+    },
+    "webdav_error_401": {
+        "message": "Authentication failed, please check username and password"
+    },
+    "webdav_error_403": {
+        "message": "Insufficient permissions, server denied access"
+    },
+    "webdav_error_404": {
+        "message": "Resource not found"
+    },
+    "webdav_error_405": {
+        "message": "Method not allowed, server does not support this operation"
+    },
+    "webdav_error_409": {
+        "message": "Resource conflict, parent folder may not exist"
+    },
+    "webdav_error_500": {
+        "message": "Internal server error"
+    },
+    "webdav_error_501": {
+        "message": "Server does not support this feature"
+    },
+    "webdav_error_507": {
+        "message": "Insufficient storage space"
+    },
+    "webdav_error_suggestion": {
+        "message": ". Please check server configuration or network connection"
+    },
+    "webdav_operation_test_connection": {
+        "message": "Connection Test"
+    },
+    "webdav_operation_create_folder": {
+        "message": "Create Folder"
+    },
+    "webdav_operation_upload_file": {
+        "message": "Upload File"
+    },
+    "webdav_operation_download_file": {
+        "message": "Download File"
+    },
+    "webdav_operation_delete": {
+        "message": "Delete"
+    },
+    "webdav_operation_access_file": {
+        "message": "Access Server File"
+    },
+    "webdav_operation_get_file_info": {
+        "message": "Get File Info"
+    },
+    "webdav_operation_list_directory": {
+        "message": "List Directory"
+    },
+    "webdav_error_401_test": {
+        "message": "Authentication failed, username or password is incorrect"
+    },
+    "webdav_error_403_test": {
+        "message": "Access denied, cannot access this directory"
+    },
+    "webdav_error_405_test": {
+        "message": "Server does not support WebDAV methods"
+    },
+    "webdav_error_405_create": {
+        "message": "Folder already exists or server does not support creating folders"
+    },
+    "webdav_error_409_upload": {
+        "message": "Remote folder does not exist"
+    },
+    "webdav_error_404_file": {
+        "message": "File not found"
+    },
+    "webdav_error_404_delete": {
+        "message": "File or folder not found"
+    },
+    "webdav_error_404_directory": {
+        "message": "Directory not found"
+    },
+    "webdav_error_423": {
+        "message": "Resource is locked"
+    },
+    "webdav_error_invalid_response": {
+        "message": "Connection test failed: Server response is not a valid WebDAV format, please confirm the URL is correct"
+    },
+    "webdav_error_connection_failed": {
+        "message": "Connection test failed: Cannot connect to server, please check if the URL is correct or network connection is normal"
+    },
+    "settings_sync_cloud_description": {
+        "message": "Official cloud sync service, currently only supports syncing bookmark data"
+    },
+    "settings_sync_button_settings": {
+        "message": "Settings"
+    },
+    "settings_sync_button_sync_now": {
+        "message": "Sync Now"
+    },
+    "settings_sync_webdav_name": {
+        "message": "WebDAV"
+    },
+    "settings_sync_webdav_description": {
+        "message": "Sync to your private storage space using WebDAV protocol"
+    },
+    "settings_sync_webdav_recommendations": {
+        "message": "Recommended cloud storage:"
+    },
+    "settings_sync_webdav_dialog_title": {
+        "message": "WebDAV Sync Settings"
+    },
+    "settings_sync_webdav_dialog_server_title": {
+        "message": "Server Information"
+    },
+    "settings_sync_webdav_dialog_server_url": {
+        "message": "Server Address"
+    },
+    "settings_sync_webdav_dialog_server_url_help": {
+        "message": "Complete URL address of the WebDAV server"
+    },
+    "settings_sync_webdav_dialog_username": {
+        "message": "Username"
+    },
+    "settings_sync_webdav_dialog_password": {
+        "message": "Password"
+    },
+    "settings_sync_webdav_dialog_folder": {
+        "message": "Sync Folder"
+    },
+    "settings_sync_webdav_dialog_folder_help": {
+        "message": "Folder path on the server where data is stored (can be automatically created by clicking the test button below)"
+    },
+    "settings_sync_webdav_dialog_test_connection": {
+        "message": "Test Connection"
+    },
+    "settings_sync_webdav_dialog_data_title": {
+        "message": "Sync Data"
+    },
+    "settings_sync_webdav_dialog_data_bookmarks": {
+        "message": "Bookmark Data"
+    },
+    "settings_sync_webdav_dialog_data_settings": {
+        "message": "Settings Options"
+    },
+    "settings_sync_webdav_dialog_data_filters": {
+        "message": "Smart Tags"
+    },
+    "settings_sync_webdav_dialog_data_services": {
+        "message": "API Service Configuration ⚠️"
+    },
+    "settings_sync_webdav_dialog_behavior_title": {
+        "message": "Sync Behavior"
+    },
+    "settings_sync_webdav_dialog_auto_sync": {
+        "message": "Auto Sync"
+    },
+    "settings_sync_webdav_dialog_auto_sync_help": {
+        "message": "When enabled, bookmark data will be synced to WebDAV server periodically, and 30 seconds after you modify local data"
+    },
+    "settings_sync_webdav_dialog_sync_interval": {
+        "message": "Sync Interval"
+    },
+    "settings_sync_webdav_dialog_sync_interval_help": {
+        "message": "Set the time interval for auto sync, minimum 5 minutes, maximum 24 hours"
+    },
+    "settings_sync_webdav_dialog_conflict_strategy": {
+        "message": "Conflict Resolution Strategy"
+    },
+    "settings_sync_webdav_dialog_conflict_merge_title": {
+        "message": "Merge"
+    },
+    "settings_sync_webdav_dialog_conflict_merge_desc": {
+        "message": "Merge local and server data (Recommended)"
+    },
+    "settings_sync_webdav_dialog_conflict_local_title": {
+        "message": "Local First"
+    },
+    "settings_sync_webdav_dialog_conflict_local_desc": {
+        "message": "Use local data to completely overwrite server data (⚠️ It is recommended to backup first)"
+    },
+    "settings_sync_webdav_dialog_conflict_remote_title": {
+        "message": "Remote First"
+    },
+    "settings_sync_webdav_dialog_conflict_remote_desc": {
+        "message": "Use server data to completely overwrite local data (⚠️ It is recommended to backup first)"
+    },
+    "settings_sync_cloud_dialog_title": {
+        "message": "Cloud Sync Settings"
+    },
+    "settings_sync_cloud_dialog_options_title": {
+        "message": "Sync Options"
+    },
+    "settings_sync_cloud_dialog_auto_sync": {
+        "message": "Auto Sync"
+    },
+    "settings_sync_cloud_dialog_auto_sync_help": {
+        "message": "When enabled, bookmark data will be synced to the cloud periodically and automatically when bookmarks change"
+    },
+    "settings_sync_cloud_dialog_management_title": {
+        "message": "Sync Management"
+    },
+    "settings_sync_cloud_dialog_reset_title": {
+        "message": "Start Sync from Scratch"
+    },
+    "settings_sync_cloud_dialog_reset_help": {
+        "message": "Reset local sync cache. On next sync, no data will be deleted, only server and local bookmarks will be merged together"
+    },
+    "settings_sync_cloud_dialog_reset_button": {
+        "message": "Reset Cache"
+    },
+    "settings_about_title": {
+        "message": "About"
+    },
+    "settings_about_version": {
+        "message": "Version"
+    },
+    "settings_about_last_update": {
+        "message": "Last Update:"
+    },
+    "settings_about_intro_title": {
+        "message": "Product Introduction"
+    },
+    "settings_about_intro_description": {
+        "message": "Smart Bookmark is an intelligent bookmark management tool that helps you manage and search bookmarks more efficiently. Through AI technology, it can automatically analyze web page content and generate tags, making your bookmark management easier."
+    },
+    "settings_about_project_title": {
+        "message": "Project Information"
+    },
+    "settings_about_link_github": {
+        "message": "GitHub"
+    },
+    "settings_about_link_contact": {
+        "message": "Contact Us"
+    },
+    "settings_about_link_review": {
+        "message": "Rate & Review"
+    },
+    "settings_about_link_donate": {
+        "message": "Support Development"
+    },
+    "folder_recommend_reason_recent": {
+        "message": "$1 bookmarks recently saved to this folder",
+        "placeholders": { "1": { "content": "$1" } }
+    },
+    "folder_recommend_reason_recent_generic": {
+        "message": "Recently active folder"
+    },
+    "folder_recommend_reason_domain": {
+        "message": "$1 bookmarks from the same site in this folder",
+        "placeholders": { "1": { "content": "$1" } }
+    },
+    "folder_recommend_reason_name_match": {
+        "message": "Folder name matches current bookmark"
+    },
+    "folder_recommend_reason_tag_match": {
+        "message": "Tag \"$1\" matches folder name",
+        "placeholders": { "1": { "content": "$1" } }
+    },
+    "folder_recommend_reason_similar": {
+        "message": "This folder has similar bookmarks"
+    },
+    "folder_recommend_reason_default": {
+        "message": "Current default save folder"
+    },
+    "folder_recommend_reason_new_folder": {
+        "message": "Recently created folder"
+    },
+    "folder_recommend_reason_domain_short": {
+        "message": "Same site"
+    },
+    "folder_recommend_reason_recent_short": {
+        "message": "Frequent"
+    },
+    "folder_recommend_reason_recent_generic_short": {
+        "message": "Active"
+    },
+    "folder_recommend_reason_name_match_short": {
+        "message": "Name match"
+    },
+    "folder_recommend_reason_similar_short": {
+        "message": "Similar"
+    },
+    "folder_recommend_reason_default_short": {
+        "message": "Default"
+    },
+    "folder_recommend_reason_new_folder_short": {
+        "message": "New"
     }
 }

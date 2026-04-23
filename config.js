@@ -2,8 +2,8 @@
 const API_SERVICES = {
     OPENAI: {
         id: 'openai',
-        name: 'OpenAI',
-        description: 'OpenAI大模型，由OpenAI提供',
+        name: i18n.getMessage('config_services_openai_name'),
+        description: i18n.getMessage('config_services_openai_description'),
         baseUrl: 'https://api.openai.com/v1/',
         defaultEmbedModel: 'text-embedding-3-small',
         defaultChatModel: 'gpt-3.5-turbo',
@@ -18,12 +18,76 @@ const API_SERVICES = {
         },
         getKeyUrl: 'https://platform.openai.com/api-keys',
         pricingUrl: 'https://openai.com/api/pricing/',
-        recommendTags: []
+        recommendTags: [],
+        thinkingParam: { key: 'reasoning_effort', disabledValue: 'none' }
+    },
+    OPENROUTER: {
+        id: 'openrouter',
+        name: i18n.getMessage('config_services_openrouter_name'),
+        description: i18n.getMessage('config_services_openrouter_description'),
+        baseUrl: 'https://openrouter.ai/api/v1/',
+        defaultEmbedModel: 'openai/text-embedding-3-small',
+        defaultChatModel: 'deepseek/deepseek-v3.2',
+        embedModel: 'openai/text-embedding-3-small',
+        chatModel: 'deepseek/deepseek-v3.2',
+        logo: 'logo-openrouter.svg',
+        similarityThreshold: {
+            MAX: 0.7,
+            HIGH: 0.50,
+            MEDIUM: 0.35,
+            LOW: 0.2
+        },
+        getKeyUrl: 'https://openrouter.ai/keys',
+        pricingUrl: 'https://openrouter.ai/models',
+        recommendTags: [i18n.getMessage('config_services_tag_rich_models')],
+        thinkingParam: { key: 'reasoning_effort', disabledValue: 'none' }
+    },
+    DASHSCOPE: {
+        id: 'dashscope',
+        name: i18n.getMessage('config_services_dashscope_name'),
+        description: i18n.getMessage('config_services_dashscope_description'),
+        baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1/',
+        defaultEmbedModel: 'text-embedding-v3',
+        defaultChatModel: 'qwen3.5-plus',
+        embedModel: 'text-embedding-v3',
+        chatModel: 'qwen3.5-plus',
+        logo: 'logo-dashscope.svg',
+        similarityThreshold: {
+            MAX: 0.85,
+            HIGH: 0.65,
+            MEDIUM: 0.50,
+            LOW: 0.4
+        },
+        getKeyUrl: 'https://bailian.console.aliyun.com/cn-beijing/?apiKey=1&tab=model#/api-key',
+        pricingUrl: 'https://help.aliyun.com/zh/model-studio/getting-started/models',
+        recommendTags: [i18n.getMessage('config_services_tag_rich_models'), i18n.getMessage('config_services_tag_stable'), i18n.getMessage('config_services_tag_free_tokens')],
+        thinkingParam: { key: 'enable_thinking', disabledValue: false }
+    },
+    SILICONFLOW: {
+        id: 'siliconflow',
+        name: i18n.getMessage('config_services_siliconflow_name'),
+        description: i18n.getMessage('config_services_siliconflow_description'),
+        baseUrl: 'https://api.siliconflow.cn/v1',
+        defaultEmbedModel: 'BAAI/bge-m3',
+        defaultChatModel: 'Qwen/Qwen2.5-32B-Instruct',
+        embedModel: 'BAAI/bge-m3',
+        chatModel: 'Qwen/Qwen2.5-32B-Instruct',
+        logo: 'logo-siliconflow.svg',
+        similarityThreshold: {
+            MAX: 0.85,
+            HIGH: 0.60,
+            MEDIUM: 0.50,
+            LOW: 0.4
+        },
+        getKeyUrl: 'https://cloud.siliconflow.cn/account/ak',
+        pricingUrl: 'https://cloud.siliconflow.cn/models',
+        recommendTags: [i18n.getMessage('config_services_tag_free_model'), i18n.getMessage('config_services_tag_rich_models')],
+        thinkingParam: { key: 'enable_thinking', disabledValue: false }
     },
     GLM: {
         id: 'glm',
-        name: '智谱AI',
-        description: '智谱GLM大模型，由智谱AI提供',
+        name: i18n.getMessage('config_services_glm_name'),
+        description: i18n.getMessage('config_services_glm_description'),
         baseUrl: 'https://open.bigmodel.cn/api/paas/v4/',
         defaultEmbedModel: 'embedding-2',
         defaultChatModel: 'glm-4-flash',
@@ -38,52 +102,13 @@ const API_SERVICES = {
         },
         getKeyUrl: 'https://open.bigmodel.cn/usercenter/apikeys',
         pricingUrl: 'https://open.bigmodel.cn/pricing',
-        recommendTags: ['免费模型']
-    },
-    DASHSCOPE: {
-        id: 'dashscope',
-        name: '阿里云百炼',
-        description: '阿里云百炼大模型平台，它集成了通义系列大模型和第三方大模型',
-        baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1/',
-        defaultEmbedModel: 'text-embedding-v3',
-        defaultChatModel: 'qwen-plus',
-        embedModel: 'text-embedding-v3',
-        chatModel: 'qwen-plus',
-        logo: 'logo-dashscope.svg',
-        similarityThreshold: {
-            MAX: 0.85,
-            HIGH: 0.65,
-            MEDIUM: 0.50,
-            LOW: 0.4
-        },
-        getKeyUrl: 'https://bailian.console.aliyun.com/cn-beijing/?apiKey=1&tab=model#/api-key',
-        pricingUrl: 'https://help.aliyun.com/zh/model-studio/getting-started/models',
-        recommendTags: ['模型丰富', '稳定', '赠送Token']
-    },
-    SILICONFLOW: {
-        id: 'siliconflow',
-        name: '硅基流动',
-        description: 'SiliconCloud 硅基流动云服务，高效、模型丰富、性价比高的大模型服务平台',
-        baseUrl: 'https://api.siliconflow.cn/v1',
-        defaultEmbedModel: 'BAAI/bge-m3',
-        defaultChatModel: 'Qwen/Qwen2.5-7B-Instruct',
-        embedModel: 'BAAI/bge-m3',
-        chatModel: 'Qwen/Qwen2.5-7B-Instruct',
-        logo: 'logo-siliconflow.svg',
-        similarityThreshold: {
-            MAX: 0.85,
-            HIGH: 0.60,
-            MEDIUM: 0.50,
-            LOW: 0.4
-        },
-        getKeyUrl: 'https://cloud.siliconflow.cn/account/ak',
-        pricingUrl: 'https://cloud.siliconflow.cn/models',
-        recommendTags: ['免费模型', '模型丰富']
+        recommendTags: [i18n.getMessage('config_services_tag_free_model')],
+        thinkingParam: { key: 'thinking', disabledValue: { type: 'disabled' } }
     },
     HUNYUAN: {
         id: 'hunyuan',
-        name: '腾讯混元',
-        description: '腾讯混元大模型，由腾讯云提供',
+        name: i18n.getMessage('config_services_hunyuan_name'),
+        description: i18n.getMessage('config_services_hunyuan_description'),
         baseUrl: 'https://api.hunyuan.cloud.tencent.com/v1',
         defaultEmbedModel: 'hunyuan-embedding',
         defaultChatModel: 'hunyuan-standard-256K',
@@ -101,6 +126,9 @@ const API_SERVICES = {
         recommendTags: []
     }
 };
+
+// 自定义服务默认使用 OpenAI 兼容的 reasoning_effort 参数探测推理模型
+const DEFAULT_THINKING_PARAM = { key: 'reasoning_effort', disabledValue: 'none' };
 
 function getHeaders(key) {
     return {
@@ -177,12 +205,17 @@ class ConfigManager {
             builtInService.apiKey = await this.getBuiltinAPIKey(serviceId);
             const setting = await this.getBuiltinServiceSettingByServiceId(serviceId);
             builtInService.chatModel = setting?.chatModel || builtInService.defaultChatModel;
+            builtInService.supportsThinkingParam = setting?.supportsThinkingParam || false;
             return builtInService;
         }
 
         // 检查是否是自定义服务
         const customServices = await this.getCustomServices();
-        return customServices[serviceId] || null;
+        const customService = customServices[serviceId] || null;
+        if (customService) {
+            customService.thinkingParam = customService.thinkingParam || DEFAULT_THINKING_PARAM;
+        }
+        return customService;
     }
 
     // 获取当前激活的服务
@@ -223,14 +256,14 @@ class ConfigManager {
     // 新增：设置特定类型的服务
     static async setServiceType(type, serviceId) {
         if (!['chat', 'embedding'].includes(type)) {
-            throw new Error('无效的服务类型');
+            throw new Error(i18n.getMessage('config_error_invalid_service_type'));
         }
         
         if (serviceId !== null) {
-            // 验证服务ID是否有效
             const service = await this.findServiceById(serviceId);
             if (!service) {
-                throw new Error('无效的服务ID');
+                logger.warn(`设置${type}服务时服务ID无效，可能已被删除:`, serviceId);
+                return null;
             }
         }
         
@@ -252,7 +285,7 @@ class ConfigManager {
     // 新增：获取特定类型的服务
     static async getServiceByType(type) {
         if (!['chat', 'embedding'].includes(type)) {
-            throw new Error('无效的服务类型');
+            throw new Error(i18n.getMessage('config_error_invalid_service_type'));
         }
         
         try {
@@ -336,15 +369,17 @@ class ConfigManager {
     }
 
     // 设置 API Key
-    static async saveBuiltinAPIKey(serviceId, apiKey, setting) {
+    // @param {AbortSignal} signal - 可选的取消信号，用于中断验证请求
+    static async saveBuiltinAPIKey(serviceId, apiKey, setting, signal = null) {
         try {
             const service = this.findBuiltinServiceById(serviceId);
             if (!service) {
-                throw new Error('无效的服务ID');
+                throw new Error(i18n.getMessage('config_error_invalid_service_id'));
             }
 
-            // 验证 API Key 是否可用
-            await this.verifyAPIKey(serviceId, apiKey, setting?.chatModel);
+            // 验证 API Key 是否可用，同时探测推理参数支持
+            const verifyResult = await this.verifyAPIKey(serviceId, apiKey, setting?.chatModel, signal);
+            setting.supportsThinkingParam = verifyResult.supportsThinkingParam;
 
             // 获取现有的 API Keys
             const data = await this.STORAGE.get(this.STORAGE_KEYS.API_KEYS);
@@ -363,24 +398,34 @@ class ConfigManager {
                 [this.STORAGE_KEYS.BUILTIN_SERVICES_SETTINGS]: serviceSettings
             });
         } catch (error) {
+            if (isUserCanceledError(error)) throw error;
             logger.error('保存 API Key 失败:', error);
             throw error;
         }
     }
 
     // 验证 API Key
-    static async verifyAPIKey(serviceId, apiKey, chatModel) {
+    // @param {AbortSignal} signal - 可选的取消信号，用于中断 HTTP 请求
+    // @returns {{ supportsThinkingParam: boolean }}
+    static async verifyAPIKey(serviceId, apiKey, chatModel, signal = null) {
         const service = this.findBuiltinServiceById(serviceId);
         if (!service) {
             throw new Error('无效的服务ID');
         }
 
         try {
-            await this.testChatAPI(service.baseUrl, apiKey, chatModel);
-            await this.testEmbeddingAPI(service.baseUrl, apiKey, service.embedModel);
+            const chatResult = await this.testChatAPI(
+                service.baseUrl, apiKey, chatModel, signal, service.thinkingParam || null
+            );
+            await this.testEmbeddingAPI(service.baseUrl, apiKey, service.embedModel, signal);
+            return { supportsThinkingParam: chatResult.supportsThinkingParam };
         } catch (error) {
+            if (isUserCanceledError(error)) {
+                logger.debug('[取消功能] API Key 验证请求已被用户取消');
+                throw error;
+            }
             logger.error('API Key 验证失败:', error);
-            throw new Error(`验证失败: ${error.message}`);
+            throw new Error(i18n.getMessage('config_error_verify_failed', [error.message]));
         }
     }
 
@@ -407,7 +452,7 @@ class ConfigManager {
                 customServices[config.id] = config;
             }else {
                 if (Object.keys(customServices).length >= MAX_CUSTOM_SERVICES) {
-                    throw new Error('自定义服务数量已达到最大限制');
+                    throw new Error(i18n.getMessage('config_error_max_custom_services'));
                 }
                 customServices[config.id] = config;
             }
@@ -427,7 +472,7 @@ class ConfigManager {
             
             // 检查服务是否存在
             if (!customServices[serviceId]) {
-                throw new Error('服务不存在');
+                throw new Error(i18n.getMessage('config_error_service_not_found'));
             }
 
             // 如果是当前激活的服务，需要切换到默认服务
@@ -451,73 +496,81 @@ class ConfigManager {
     }
 
     // 测试自定义服务的chat接口
-    static async testChatAPI(baseUrl, apiKey, chatModel) {
+    // @param {AbortSignal} signal - 可选的取消信号，用于中断 HTTP 请求
+    // @param {Object} thinkingParam - 可选的推理参数配置，用于探测模型是否支持关闭推理
+    // @returns {{ success: boolean, supportsThinkingParam: boolean }}
+    static async testChatAPI(baseUrl, apiKey, chatModel, signal = null, thinkingParam = null) {
         try {
             try {
                 new URL(baseUrl);
             } catch (error) {
-                throw new Error('无效的API服务URL');
+                throw new Error(i18n.getMessage('config_error_invalid_api_url'));
             }
             if (!apiKey) {
-                throw new Error('API Key 不能为空');
+                throw new Error(i18n.getMessage('config_error_api_key_empty'));
             }
             if (!chatModel) {
-                throw new Error('Chat 模型不能为空');
+                throw new Error(i18n.getMessage('config_error_chat_model_empty'));
             }
-            const response = await fetch(joinUrl(baseUrl, 'chat/completions'), {
+
+            const baseBody = {
+                model: chatModel,
+                messages: [{ role: "user", content: "Hello" }]
+            };
+            const url = joinUrl(baseUrl, 'chat/completions');
+
+            if (thinkingParam) {
+                const bodyWithThinking = { ...baseBody, [thinkingParam.key]: thinkingParam.disabledValue };
+                const fetchOptions = {
+                    method: 'POST',
+                    headers: getHeaders(apiKey),
+                    body: JSON.stringify(bodyWithThinking)
+                };
+                if (signal) fetchOptions.signal = signal;
+
+                try {
+                    const data = await fetchApi(url, fetchOptions);
+                    if (!data.choices?.[0]?.message?.content) {
+                        logger.debug('Chat接口数据格式错误:', { data });
+                        throw new Error(i18n.getMessage('config_error_api_data_format'));
+                    }
+                    logger.debug('Chat模型支持关闭推理参数:', { chatModel, thinkingParam: thinkingParam.key });
+                    return { success: true, supportsThinkingParam: true };
+                } catch (error) {
+                    if (isAbortError(error)) {
+                        logger.debug('[取消功能] Chat 接口测试请求已被用户取消');
+                        throw new Error(USER_CANCELED);
+                    }
+                    // 带推理参数失败，去掉参数重试
+                    logger.debug('带推理参数请求失败，尝试不带参数:', error.message);
+                }
+            }
+
+            const fetchOptions = {
                 method: 'POST',
                 headers: getHeaders(apiKey),
-                body: JSON.stringify({
-                    model: chatModel,
-                    messages: [{
-                        role: "user",
-                        content: "Hello"
-                    }]
-                })
-            });
+                body: JSON.stringify(baseBody)
+            };
+            if (signal) fetchOptions.signal = signal;
 
-            if (!response.ok) {
-                let errorMessage = response.statusText || `API 返回状态码: ${response.status}` || '未知错误';
-                try {
-                    const data = await response.json();
-                    logger.debug('Chat接口测试失败:', {
-                        data: data,
-                        status: response.status,
-                        statusText: response.statusText
-                    });
-                    // 如果data是字符串，则直接使用
-                    if (typeof data === 'string') {
-                        errorMessage = data;
-                    } else {
-                        errorMessage = data.error?.message || data.message || errorMessage;
-                    }
-                } catch (error) {
-                    logger.debug('获取错误信息失败:', error);
-                }
-                throw new Error(errorMessage);
-            } else {
-                try {
-                    const data = await response.json();
-                    // 检查数据格式是否满足openai的格式
-                    if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
-                        logger.debug('Chat接口数据格式错误:', {
-                            data: data
-                        });
-                        throw new Error('API 返回数据格式错误');
-                    }
-                } catch (error) {
-                    throw new Error('API 返回数据格式错误');
-                }
+            const data = await fetchApi(url, fetchOptions);
+            if (!data.choices?.[0]?.message?.content) {
+                logger.debug('Chat接口数据格式错误:', { data });
+                throw new Error(i18n.getMessage('config_error_api_data_format'));
             }
-
-            return true;
+            return { success: true, supportsThinkingParam: false };
         } catch (error) {
+            if (isAbortError(error)) {
+                logger.debug('[取消功能] Chat 接口测试请求已被用户取消');
+                throw new Error(USER_CANCELED);
+            }
             throw new Error(`${error.message}`);
         }
     }
 
     // 测试自定义服务的embedding接口
-    static async testEmbeddingAPI(baseUrl, apiKey, embedModel) {
+    // @param {AbortSignal} signal - 可选的取消信号，用于中断 HTTP 请求
+    static async testEmbeddingAPI(baseUrl, apiKey, embedModel, signal = null) {
         try {
             try {
                 new URL(baseUrl);
@@ -528,53 +581,30 @@ class ConfigManager {
                 throw new Error('API Key 不能为空');
             }
             if (!embedModel) {
-                throw new Error('Embedding 模型不能为空');
+                throw new Error(i18n.getMessage('config_error_embedding_model_empty'));
             }
-            const response = await fetch(joinUrl(baseUrl, 'embeddings'), {
+            const fetchOptions = {
                 method: 'POST',
                 headers: getHeaders(apiKey),
                 body: JSON.stringify({
                     model: embedModel,
                     input: "test"
                 })
-            });
-
-            if (!response.ok) {
-                let errorMessage = response.statusText || `API 返回状态码: ${response.status}` || '未知错误';
-                try {
-                    const data = await response.json();
-                    logger.debug('Embedding接口测试失败:', {
-                        data: data,
-                        status: response.status,
-                        statusText: response.statusText
-                    });
-                    // 如果data是字符串，则直接使用
-                    if (typeof data === 'string') {
-                        errorMessage = data;
-                    } else {
-                        errorMessage = data.error?.message || data.message || errorMessage;
-                    }
-                } catch (error) {
-                    logger.debug('获取错误信息失败:', error);
-                }
-                throw new Error(errorMessage);
-            } else {
-                try {
-                    const data = await response.json();
-                    // 检查数据格式是否满足 data.data[0].embedding
-                    if (!data.data || !data.data[0] || !data.data[0].embedding) {
-                        logger.debug('Embedding接口数据格式错误:', {
-                            data: data
-                        });
-                        throw new Error('API 返回数据格式错误');
-                    }
-                } catch (error) {
-                    throw new Error('API 返回数据格式错误');
-                }
+            };
+            if (signal) {
+                fetchOptions.signal = signal;
             }
-
+            const data = await fetchApi(joinUrl(baseUrl, 'embeddings'), fetchOptions);
+            if (!data.data?.[0]?.embedding) {
+                logger.debug('Embedding接口数据格式错误:', { data });
+                throw new Error(i18n.getMessage('config_error_api_data_format'));
+            }
             return true;
         } catch (error) {
+            if (isAbortError(error)) {
+                logger.debug('[取消功能] Embedding 接口测试请求已被用户取消');
+                throw new Error(USER_CANCELED);
+            }
             throw new Error(`${error.message}`);
         }
     }
@@ -630,7 +660,7 @@ class ConfigManager {
     static async savePinnedSites(sites) {
         try {
             if (sites.length > MAX_PINNED_SITES) {
-                throw new Error(`最多只能固定 ${MAX_PINNED_SITES} 个网站`);
+                throw new Error(i18n.getMessage('config_error_max_pinned_sites', [MAX_PINNED_SITES]));
             }
             await this.STORAGE.set({
                 [this.STORAGE_KEYS.PINNED_SITES]: sites

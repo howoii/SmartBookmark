@@ -5,6 +5,45 @@ function joinUrl(baseUrl, path) {
     return baseUrl + '/' + path;
 }
 
+/**
+ * 从 API 错误响应中提取错误信息
+ * 兼容 OpenAI 格式 { error: { message } }、{ message }、字符串等
+ * @param {Object|string|undefined} data - 解析后的响应体，解析失败时为 undefined
+ * @param {Response} response - fetch 返回的 Response 对象
+ * @returns {string} 错误信息
+ */
+function extractApiErrorMessage(data, response) {
+    const fallback = response.statusText ||
+        i18n.getMessage('api_error_status_code', [response.status.toString()]) ||
+        i18n.getMessage('api_error_unknown');
+    if (data == null) return fallback;
+    if (typeof data === 'string') return data;
+    return data.error?.message || data.message || fallback;
+}
+
+/**
+ * 统一的 API 请求封装：fetch + 解析 JSON + 错误检查
+ * 有错误则抛出异常，无错误则返回解析后的数据
+ * @param {string} url - 请求 URL
+ * @param {Object} options - fetch 选项（method, headers, body, signal 等）
+ * @returns {Promise<Object>} 解析后的 JSON 数据，仅当 response.ok 时返回
+ * @throws {Error} 当 fetch 失败、response 不 ok、或解析失败时抛出
+ */
+async function fetchApi(url, options = {}) {
+    const response = await fetch(url, options);
+    let data;
+    try {
+        data = await response.json();
+    } catch (error) {
+        throwIfAbortError(error);
+        throw new Error(extractApiErrorMessage(undefined, response));
+    }
+    if (!response.ok) {
+        throw new Error(extractApiErrorMessage(data, response));
+    }
+    return data;
+}
+
 function makeEmbeddingText(bookmarkInfo) {
     if (!bookmarkInfo) {
         return '';
@@ -62,16 +101,13 @@ function estimateTokens(text) {
         case 'cyrillic':
         case 'arabic':
             // 拉丁字母、西里尔字母、阿拉伯文：按单词计算更准确
-            // 平均每个单词约 4-5 个字符，每个单词约 1 token
-            // 因此约 0.2-0.25 tokens/字符
+            // 平均每个单词约 4-5 个字符，每个单词约 1.33 token
             const words = text.split(/\s+/).filter(word => word.length > 0);
-            // 每个单词算 1 token，加上标点符号等
-            return Math.ceil(words.length * 1.1);
+            return Math.ceil(words.length * 1.33);
             
         case 'cjk':
-            // 中日韩文字：通常 1 个字符 = 1-2 tokens
-            // 对于中文，常用字约 1.5 tokens/字符
-            tokensPerChar = 1.5;
+            // 对于中文，常用字约 0.75 tokens/字符
+            tokensPerChar = 0.75;
             return Math.ceil(text.length * tokensPerChar);
             
         case 'mixed':
@@ -124,13 +160,12 @@ function splitTextsToBatches(texts) {
 async function getEmbedding(text) {
     logger.debug('生成嵌入向量:', text);
     try {
-        // 使用专门用于embedding的服务
         const apiService = await ConfigManager.getEmbeddingService();
         const apiKey = apiService.apiKey;
         if (!apiKey || !apiService.embedModel) {
-            throw new Error('未配置有效的向量模型');
+            throw new Error(i18n.getMessage('api_error_embedding_model_not_configured'));
         }
-        const response = await fetch(joinUrl(apiService.baseUrl, 'embeddings'), {
+        const data = await fetchApi(joinUrl(apiService.baseUrl, 'embeddings'), {
             method: 'POST',
             headers: getHeaders(apiKey),
             body: JSON.stringify({
@@ -139,36 +174,11 @@ async function getEmbedding(text) {
                 dimensions: 1024
             })
         });
-
-        // 检查错误码
-        if (!response.ok) {
-            let errorMessage = response.statusText || `API 返回状态码: ${response.status}` || '未知错误';
-            try {
-                const errorData = await response.json();
-                if (typeof errorData === 'string') {
-                    errorMessage = errorData;
-                } else {
-                    errorMessage = errorData.error?.message || errorData.message || errorMessage;
-                }
-            } catch (error) {
-                logger.debug('获取错误信息失败:', error);
-            }
-            throw new Error(`${errorMessage}`);
+        if (!data.data?.[0]?.embedding) {
+            throw new Error(i18n.getMessage('api_error_invalid_response_format'));
         }
-
-        // 获取嵌入向量
-        try {
-            const data = await response.json();
-            logger.debug('embedding response:', data);
-            if (!data.data?.[0]?.embedding) {
-                throw new Error('无效的API响应格式');
-            }
-             // 记录使用统计    
-            await statsManager.recordEmbeddingUsage(data.usage?.total_tokens || 0);
-            return data.data[0].embedding;
-        } catch (error) {
-            throw new Error(`${error.message}`);
-        }
+        await statsManager.recordEmbeddingUsage(data.usage?.total_tokens || 0);
+        return data.data[0].embedding;
     } catch (error) {
         logger.error(`获取嵌入向量失败: ${error.message}`);
     }
@@ -195,7 +205,7 @@ async function getBatchEmbeddings(texts) {
         const apiService = await ConfigManager.getEmbeddingService();
         const apiKey = apiService.apiKey;
         if (!apiKey || !apiService.embedModel) {
-            throw new Error('未配置有效的向量模型');
+            throw new Error(i18n.getMessage('api_error_embedding_model_not_configured'));
         }
         
         // 将文本分批
@@ -212,51 +222,21 @@ async function getBatchEmbeddings(texts) {
             logger.debug(`处理第 ${batchIndex + 1}/${batches.length} 批次，包含 ${batch.length} 个文本`);
             
             try {
-                const response = await fetch(joinUrl(apiService.baseUrl, 'embeddings'), {
+                const data = await fetchApi(joinUrl(apiService.baseUrl, 'embeddings'), {
                     method: 'POST',
                     headers: getHeaders(apiKey),
                     body: JSON.stringify({
                         model: apiService.embedModel,
-                        input: batch, // 传入文本数组
+                        input: batch,
                         dimensions: 1024
                     })
                 });
-                
-                // 检查错误码
-                if (!response.ok) {
-                    let errorMessage = response.statusText || `API 返回状态码: ${response.status}` || '未知错误';
-                    try {
-                        const errorData = await response.json();
-                        if (typeof errorData === 'string') {
-                            errorMessage = errorData;
-                        } else {
-                            errorMessage = errorData.error?.message || errorData.message || errorMessage;
-                        }
-                    } catch (error) {
-                        logger.debug('获取错误信息失败:', error);
-                    }
-                    
-                    // 当前批次失败，为该批次的所有文本添加错误结果
-                    logger.error(`批次 ${batchIndex + 1} 请求失败: ${errorMessage}`);
-                    for (const text of batch) {
-                        allResults.push({
-                            text: text,
-                            embedding: null,
-                            error: errorMessage
-                        });
-                    }
-                    continue; // 继续处理下一批次
-                }
-                
-                // 解析响应
-                const data = await response.json();
                 logger.debug(`批次 ${batchIndex + 1} 响应:`, {
                     dataCount: data.data?.length,
                     usage: data.usage
                 });
-                
                 if (!data.data || !Array.isArray(data.data)) {
-                    throw new Error('无效的API响应格式');
+                    throw new Error(i18n.getMessage('api_error_invalid_response_format'));
                 }
                 
                 // 记录 token 使用量
@@ -278,19 +258,19 @@ async function getBatchEmbeddings(texts) {
                         allResults.push({
                             text: batch[i],
                             embedding: null,
-                            error: '未返回有效的embedding数据'
+                            error: i18n.getMessage('api_error_no_embedding_data')
                         });
                     }
                 }
                 
             } catch (error) {
+                const errorMessage = error.message || i18n.getMessage('api_error_unknown');
                 logger.error(`批次 ${batchIndex + 1} 处理失败:`, error);
-                // 为该批次的所有文本添加错误结果
                 for (const text of batch) {
                     allResults.push({
                         text: text,
                         embedding: null,
-                        error: error.message
+                        error: errorMessage
                     });
                 }
             }
@@ -315,30 +295,42 @@ async function getBatchEmbeddings(texts) {
     }
 }
 
-async function getChatCompletion(systemPrompt, userPrompt, signal = null) {
+async function getChatCompletion(systemPrompt, userPrompt, signal = null, maxTokens = null) {
     try {
         // 使用专门用于Chat的服务
         const apiService = await ConfigManager.getChatService();
         const apiKey = apiService.apiKey;
         if (!apiKey || !apiService.chatModel) {
-            throw new Error('未配置有效的对话模型');
+            throw new Error(i18n.getMessage('api_error_chat_model_not_configured'));
         }   
+        // 构建请求体
+        const requestBody = {
+            model: apiService.chatModel,
+            messages: [{
+                role: "system",
+                content: systemPrompt
+            }, {
+                role: "user",
+                content: userPrompt
+            }],
+            temperature: 0.2
+        };
+
+        // 如果平台支持且当前模型经探测确认支持关闭推理，添加对应参数
+        if (apiService.supportsThinkingParam && apiService.thinkingParam) {
+            requestBody[apiService.thinkingParam.key] = apiService.thinkingParam.disabledValue;
+        }
+        
+        // 只有当 maxTokens 有值时才设置 max_tokens
+        if (maxTokens != null) {
+            requestBody.max_tokens = maxTokens;
+        }
+        
         // 调用 API 生成标签
         const options = {
             method: 'POST',
             headers: getHeaders(apiKey),
-            body: JSON.stringify({
-                model: apiService.chatModel,
-                messages: [{
-                    role: "system",
-                    content: systemPrompt
-                }, {
-                    role: "user",
-                    content: userPrompt
-                }],
-                temperature: 0.3, // 降低温度以获得更稳定的输出
-                max_tokens: 100,
-            })
+            body: JSON.stringify(requestBody)
         };
         
         // 如果提供了signal，添加到请求选项中
@@ -346,69 +338,106 @@ async function getChatCompletion(systemPrompt, userPrompt, signal = null) {
             options.signal = signal;
         }
         
-        const response = await fetch(joinUrl(apiService.baseUrl, 'chat/completions'), options);
-
-        // 检查错误码
-        if (!response.ok) {
-            let errorMessage = response.statusText || `API 返回状态码: ${response.status}` || '未知错误';
-            try {
-                const errorData = await response.json();
-                if (typeof errorData === 'string') {
-                    errorMessage = errorData;
-                } else {
-                    errorMessage = errorData.error?.message || errorData.message || errorMessage;
-                }
-            } catch (error) {
-                logger.debug('获取错误信息失败:', error);
-            }
-            throw new Error(`${errorMessage}`);
+        const data = await fetchApi(joinUrl(apiService.baseUrl, 'chat/completions'), options);
+        logger.debug('completion response:', data);
+        if (!data.choices?.[0]?.message?.content) {
+            throw new Error(i18n.getMessage('api_error_invalid_response_format'));
         }
-        
-        try {
-            const data = await response.json();
-            logger.debug('completion response:', data);
-            if (!data.choices?.[0]?.message?.content) {
-                throw new Error('无效的API响应格式');
-            }
-            // 记录使用统计
-            await statsManager.recordChatUsage(
-                data.usage?.prompt_tokens || 0,
-                data.usage?.completion_tokens || 0
-            );
-            return data.choices[0].message.content.trim();
-        } catch (error) {
-            throw error;
-        }
+        await statsManager.recordChatUsage(
+            data.usage?.prompt_tokens || 0,
+            data.usage?.completion_tokens || 0
+        );
+        return data.choices[0].message.content.trim();
     } catch (error) {
-        if(typeof error === 'string' && error.includes('UserCanceled')){
-            throw new Error('UserCanceled');
+        if (isAbortError(error) || isUserCanceledError(error)) {
+            throw new Error(USER_CANCELED);
         }
-        logger.error(`Chat Completion 失败: ${error.message}`);
+        logger.error(`Chat Completion 失败: ${error}`);
     }
     return null;
 }
 
-const SYSTEM_PROMPT_TAGS = i18n.M('prompt_generate_tags_sys');
-const USER_PROMPT_TAGS = i18n.M('prompt_generate_tags_user');
+// ==================== AI 提示词统一管理 ====================
+
+/**
+ * 标签生成的系统提示词
+ */
+const SYSTEM_PROMPT_TAGS = '你是一个专业的网页内容分析专家，擅长提取文章和网页的核心主题和关键信息并生成准确的标签。';
+
+/**
+ * 标签生成的用户提示词模板
+ * 注意：需要在调用时替换 {{content}} 和 {{targetLanguage}}
+ */
+const USER_PROMPT_TAGS_TEMPLATE = `请根据以下网页内容提取2-5个简短、具有区分度的关键词，用于分类和查找。
+##关键词应符合以下要求：
+1. 简洁：简短明了，去除无实质意义的修饰词。
+2. 输出语言：所有关键词必须使用{{targetLanguage}}，除专有名词、人名及习惯用法外。
+3. 准确性：需精准反映网页的核心主题和关键信息，忽略无关信息，如广告、导航栏文本、评论列表等。
+4. 多样性：要有辨识度，且必须涵盖以下四类信息（如有）：
+   - 网站名称或品牌信息。
+   - 网站标题核心内容。
+   - 网站涉及的领域（如科技、教育、金融等）。
+   - 页面具体内容的关键词（如技术名词、专业术语）。
+5. 避免重复：同义或重复的关键词只保留一个。
+6. 输出格式：仅返回关键词列表，关键词之间用竖线"|"分隔，无需其他说明或标点符号。
+例如：小红书|AI生成|内容分析|关键词优化|提示词设计
+##网页内容如下：
+{{content}}`;
+
+/**
+ * 摘要生成的系统提示词模板
+ * 注意：需要在调用时替换 {{targetLanguage}}、{{lengthLimit}} 和 {{lengthUnit}}
+ */
+const SYSTEM_PROMPT_EXCERPT_TEMPLATE = `你是"书签摘要生成助手"，负责根据网页内容用{{targetLanguage}}为其生成一句话的摘要。
+请严格遵守：
+1. 清洗掉无关信息，如广告、导航栏文本、评论列表等。
+2. 请保持中立和准确性，避免主观评价。
+3. 内容长度精确控制在{{lengthLimit}}{{lengthUnit}}以内，超出则自动删减到{{lengthLimit}}{{lengthUnit}}以内。`;
+
+/**
+ * 摘要生成的用户提示词模板
+ * 注意：需要在调用时替换 {{content}}、{{targetLanguage}}、{{lengthLimit}} 和 {{lengthUnit}}
+ */
+const USER_PROMPT_EXCERPT_TEMPLATE = `下面是网页正文内容，请基于此生成一句话的{{targetLanguage}}的摘要：
+{{content}}`;
+
+/**
+ * 翻译文本的系统提示词
+ */
+const SYSTEM_PROMPT_TRANSLATE = `你是一个专业的翻译助手，负责将文本准确、流畅地翻译成目标语言。
+请严格遵守：
+1. 只输出翻译后的文本，不要包含任何多余说明、引号或格式标记。
+2. 保持原文的语气和风格。
+3. 确保翻译准确、自然、流畅。`;
+
+// ==================== 辅助函数 ====================
 
 function makeChatPrompt(pageContent, tab, prompt) {
     const { content, excerpt, isReaderable, metadata } = pageContent;
     const cleanUrl = tab.url.replace(/\?.+$/, '').replace(/[#&].*$/, '').replace(/\/+$/, '');
-    const formatContent =` title: ${tab.title}
+    const formatContent =`title: ${tab.title}
 url:${cleanUrl}
 ${excerpt ? `excerpt: ${smartTruncate(excerpt, 300)}` : ''}
 ${metadata?.keywords ? `keywords: ${metadata.keywords.slice(0, 300)}` : ''}
-${content && isReaderable ? `content: ${smartTruncate(content, 500)}` : ''}
+${content && isReaderable ? `content: ${smartTruncate(content, 8000)}` : ''}
 `;
 
     return prompt.replace('{{content}}', formatContent);
 }
 
 // 用 ChatGPT API 生成标签
-async function generateTags(pageContent, tab) {
-    const prompt = makeChatPrompt(pageContent, tab, USER_PROMPT_TAGS);
+async function generateTags(pageContent, tab, signal = null) {
+    // 获取目标语言设置
+    const targetLanguage = await SettingsManager.get('ai.targetLanguage') || AI_DEFAULT_TARGET_LANGUAGE;
+    const targetLanguageName = AI_SUPPORTED_LANGUAGES[targetLanguage] || targetLanguage;
+    
+    // 使用统一的中文提示词，并在提示词中明确要求输出目标语言
+    const systemPrompt = SYSTEM_PROMPT_TAGS;
+    let userPrompt = USER_PROMPT_TAGS_TEMPLATE.replace(/\{\{targetLanguage\}\}/g, targetLanguageName);
+    
+    const prompt = makeChatPrompt(pageContent, tab, userPrompt);
     logger.debug('生成标签的prompt:\n ', prompt);
-    const tagsText = await getChatCompletion(SYSTEM_PROMPT_TAGS, prompt) || '';
+    const tagsText = await getChatCompletion(systemPrompt, prompt, signal, 100) || '';
 
     // 处理返回的标签
     let tags = tagsText
@@ -416,15 +445,24 @@ async function generateTags(pageContent, tab) {
         .map(tag => tag.trim())
         .filter(tag => {
             if (!tag) return false;
-            const tagLength = getStringVisualLength(tag);
-            logger.debug('标签长度:', {
-                tag: tag,
-                length: tagLength
-            });
-            if (tagLength < 2 || tagLength > 20) {
-                return false;
+            const cjkChars = (tag.match(/[\u4e00-\u9fa5\u3040-\u30ff\u3400-\u4dbf\uac00-\ud7af]/g) || []).length;
+            const isCJK = cjkChars / tag.length > 0.5;
+            if (isCJK) {
+                // CJK 标签：按字数计，最少 1 字，最多 10 字
+                if (cjkChars < 1 || cjkChars > 10) return false;
+            } else {
+                // 非 CJK 标签：按单词数计，最少 1 词，最多 4 词；视觉长度最短 2
+                const wordCount = tag.trim().split(/\s+/).filter(Boolean).length;
+                const visualLen = getStringVisualLength(tag);
+                if (visualLen < 2 || wordCount > 3) return false;
             }
-            return /^[^\.,\/#!$%\^&\*;:{}=\-_`~()]+$/.test(tag);
+            logger.debug('标签长度校验:', {
+                tag,
+                isCJK,
+                cjkChars,
+                wordCount: isCJK ? null : tag.trim().split(/\s+/).filter(Boolean).length
+            });
+            return /^[^\,\/#!$%\^\*;:{}=\_`~()]+$/.test(tag);
         })
         // 添加去重逻辑
         .filter((tag, index, self) => self.indexOf(tag) === index)
@@ -442,23 +480,56 @@ async function generateTags(pageContent, tab) {
 }
 
 // 用 ChatGPT API 生成摘要
-const SYSTEM_PROMPT_EXCERPT = `
-你是"书签摘要生成助手"，负责从完整的网页内容中提取客观、简洁的要点，生成一段不超过100字的中文摘要。
-请严格遵守：
-1. 只输出摘要本身，不要包含任何多余说明、引号或标点符号之外的格式。
-2. 摘要中不得出现"我"、"我们"等主观评价词，只陈述页面的核心信息。
-3. 精确控制在100字以内，超出则自动删减到100字以内。
-`;
-
-const USER_PROMPT_EXCERPT = `
-下面是网页正文内容，请基于此生成不超过100字的摘要，仅输出摘要，不要添加其他文字：
-{{content}}
-`;
-
 async function generateExcerpt(pageContent, tab, signal = null) {
-    const prompt = makeChatPrompt(pageContent, tab, USER_PROMPT_EXCERPT);
+    // 获取目标语言设置
+    const targetLanguage = await SettingsManager.get('ai.targetLanguage') || AI_DEFAULT_TARGET_LANGUAGE;
+    const targetLanguageName = AI_SUPPORTED_LANGUAGES[targetLanguage] || targetLanguage;
+    
+    // 根据目标语言确定长度单位和限制
+    // 对于 CJK 语言（中文、日文、韩文），使用"字"作为单位；对于其他语言，使用"词"作为单位
+    const isCJK = ['zh', 'ja', 'ko'].includes(targetLanguage);
+    const lengthUnit = isCJK ? '字' : '词';
+    const lengthLimit = isCJK ? 100 : 50; // 非 CJK 语言使用词数限制
+    
+    // 使用统一的中文提示词模板，替换目标语言和长度参数
+    let systemPrompt = SYSTEM_PROMPT_EXCERPT_TEMPLATE
+        .replace(/\{\{targetLanguage\}\}/g, targetLanguageName)
+        .replace(/\{\{lengthLimit\}\}/g, lengthLimit)
+        .replace(/\{\{lengthUnit\}\}/g, lengthUnit);
+    
+    let userPrompt = USER_PROMPT_EXCERPT_TEMPLATE
+        .replace(/\{\{targetLanguage\}\}/g, targetLanguageName)
+        .replace(/\{\{lengthLimit\}\}/g, lengthLimit)
+        .replace(/\{\{lengthUnit\}\}/g, lengthUnit);
+    
+    const prompt = makeChatPrompt(pageContent, tab, userPrompt);
     logger.debug('生成摘要的prompt:\n ', prompt);
 
-    const excerptText = await getChatCompletion(SYSTEM_PROMPT_EXCERPT, prompt, signal) || '';
+    const excerptText = await getChatCompletion(systemPrompt, prompt, signal, 100) || '';
     return excerptText;
+}
+
+/**
+ * 翻译文本
+ * @param {string} text - 要翻译的文本
+ * @param {AbortSignal} signal - 可选的取消信号
+ * @returns {Promise<string>} 翻译后的文本
+ */
+async function translateText(text, signal = null) {
+    if (!text || !text.trim()) {
+        throw new Error(i18n.getMessage('api_error_text_empty'));
+    }
+
+    // 获取目标语言设置
+    const targetLanguage = await SettingsManager.get('ai.targetLanguage') || AI_DEFAULT_TARGET_LANGUAGE;
+    const targetLanguageName = AI_SUPPORTED_LANGUAGES[targetLanguage] || targetLanguage;
+    
+    const userPrompt = `请将以下文本翻译成${targetLanguageName}。如果原文已经是${targetLanguageName}，不需要翻译，直接返回原文。
+
+${text}`;
+
+    logger.debug('翻译文本的prompt:\n ', userPrompt);
+
+    const translatedText = await getChatCompletion(SYSTEM_PROMPT_TRANSLATE, userPrompt, signal) || '';
+    return translatedText.trim();
 }

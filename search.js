@@ -11,7 +11,6 @@ class SearchManager {
             debounce = true,
             maxResults = null, // 改为null，从设置中获取
             includeUrl = false,
-            includeChromeBookmarks = false,
             recordSearch = true
         } = options;
 
@@ -57,7 +56,7 @@ class SearchManager {
                     }
 
                     // 搜索书签
-                    const results = await this.searchBookmarks(queryEmbedding, query, actualMaxResults, includeUrl, includeChromeBookmarks);
+                    const results = await this.searchBookmarks(queryEmbedding, query, actualMaxResults, includeUrl);
 
                     logger.debug('搜索结果:', {
                         query,
@@ -86,8 +85,8 @@ class SearchManager {
     }
 
     // 搜索书签
-    async searchBookmarks(queryEmbedding, searchInput, maxResults = 50, includeUrl = false, includeChromeBookmarks = false) {
-        const allBookmarks = await getBookmarksForSearch(includeChromeBookmarks);
+    async searchBookmarks(queryEmbedding, searchInput, maxResults = 50, includeUrl = false) {
+        const allBookmarks = await getBookmarksForSearch();
         
         // 获取API服务配置
         const apiService = await ConfigManager.getEmbeddingService();

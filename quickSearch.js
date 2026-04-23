@@ -74,6 +74,16 @@ class QuickSearchManager {
             batchOpenButton: document.getElementById('batch-open-btn'),
             exitEditModeButton: document.getElementById('exit-edit-mode-btn')
         }
+        const iconMap = {
+            batchOpenButton: 'ExternalLink',
+            batchDeleteButton: 'Trash2',
+            exitEditModeButton: 'X'
+        };
+        for (const [key, iconName] of Object.entries(iconMap)) {
+            if (editElements[key]) {
+                editElements[key].innerHTML = IconPicker.getIconSvg(iconName, 16);
+            }
+        }
         const callbacks = {
             showStatus: (message, isError = false) => {
                 this.showStatus(message, isError ? 'error' : 'success');
@@ -117,7 +127,7 @@ class QuickSearchManager {
             }
         } catch (error) {
             logger.error('初始化失败:', error);
-            this.showStatus('初始化失败: ' + error.message, 'error', true);
+            this.showStatus(i18n.getMessage('quicksearch_error_init_failed', [error.message]), 'error', true);
         }
     }
 
@@ -172,7 +182,7 @@ class QuickSearchManager {
                         const pinBtn = document.querySelector(`.search-result-item[data-url="${url}"] .pin-btn`);
                         if (pinBtn) {
                             pinBtn.setAttribute('data-pinned', 'false');
-                            pinBtn.title = '固定到常用网站';
+                            pinBtn.title = i18n.getMessage('quicksearch_pin_site_title');
                         }
                     }, 300);
 
@@ -184,7 +194,7 @@ class QuickSearchManager {
                     });
                 } catch (error) {
                     logger.error('删除失败:', error);
-                    this.showStatus('删除失败: ' + error.message, 'error');
+                    this.showStatus(i18n.getMessage('quicksearch_error_delete_failed', [error.message]), 'error');
                 }
             }
         });
@@ -297,7 +307,7 @@ class QuickSearchManager {
             });
         } catch (error) {
             logger.error('保存常用网站顺序失败:', error);
-            this.showStatus('保存顺序失败: ' + error.message, 'error');
+            this.showStatus(i18n.getMessage('quicksearch_error_save_order_failed', [error.message]), 'error');
         }
     }
 
@@ -382,7 +392,7 @@ class QuickSearchManager {
             pinnedSites.parentElement.style.display = pinnedSites.children.length > 0 ? 'flex' : 'none';
         } catch (error) {
             logger.error('渲染网站失败:', error);
-            this.showStatus('渲染网站失败: ' + error.message, 'error');
+            this.showStatus(i18n.getMessage('quicksearch_error_render_sites_failed', [error.message]), 'error');
         }
     }
 
@@ -461,7 +471,7 @@ class QuickSearchManager {
     addAddButton() {
         const addButton = document.createElement('div');
         addButton.className = 'add-current-site';
-        addButton.title = '添加当前页面到常用网站';
+        addButton.title = i18n.getMessage('quicksearch_add_current_page_title');
         addButton.innerHTML = `
             <svg viewBox="0 0 24 24">
                 <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
@@ -474,7 +484,7 @@ class QuickSearchManager {
                 if (tab) {
                     await ConfigManager.addPinnedSite({
                         url: tab.url,
-                        title: tab.title || '未命名网站'
+                        title: tab.title || i18n.getMessage('quicksearch_unnamed_site')
                     });
                     await this.renderSites();
 
@@ -487,7 +497,7 @@ class QuickSearchManager {
                 }
             } catch (error) {
                 logger.error('添加当前页面失败:', error);
-                this.showStatus('添加失败: ' + error.message, 'error');
+                this.showStatus(i18n.getMessage('quicksearch_error_add_failed', [error.message]), 'error');
             }
         });
     }
@@ -502,7 +512,7 @@ class QuickSearchManager {
                 newSites = await ConfigManager.addPinnedSite(site);
                 // 更新按钮状态为取消固定
                 if (pinBtn) {
-                    pinBtn.title = '取消固定';
+                    pinBtn.title = i18n.getMessage('quicksearch_unpin_site_title');
                     pinBtn.setAttribute('data-pinned', 'true');
                 }
             } else {
@@ -641,6 +651,13 @@ class QuickSearchManager {
                     break;
 
                 case 'Escape':
+                    if (this.editManager.isInEditMode()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.editManager.exitEditMode();
+                        break;
+                    }
+
                     e.preventDefault();
                     if (query || this.isSearchHistoryVisible()) {
                         // 如果有搜索词，先清空搜索
@@ -742,20 +759,26 @@ class QuickSearchManager {
                 if (confirmDialog.classList.contains('show')) {
                     e.preventDefault();
                     e.stopPropagation();
+                    e.stopImmediatePropagation();
                     this.hideConfirmDialog();
+                    return;
                 }
                 if (editTagsDialog.classList.contains('show')) {
                     e.preventDefault();
                     e.stopPropagation();
+                    e.stopImmediatePropagation();
                     this.hideEditTagsDialog();
+                    return;
                 }
                 if (renameDialog.classList.contains('show')) {
                     e.preventDefault();
                     e.stopPropagation();
+                    e.stopImmediatePropagation();
                     this.hideRenameDialog();
+                    return;
                 }
             }
-        });
+        }, true);
         
     }
 
@@ -801,6 +824,7 @@ class QuickSearchManager {
         }
 
         // 清空容器并添加新的历史记录
+        const deleteHistoryTitle = i18n.getMessage('quicksearch_delete_history_title');
         wrapper.innerHTML = history.map(item => `
             <div class="recent-search-item" data-query="${item.query}" title="${item.query}">
                 <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -808,7 +832,7 @@ class QuickSearchManager {
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
                 <span>${item.query}</span>
-                <svg class="delete-history-btn" viewBox="0 0 24 24" title="删除此搜索记录">
+                <svg class="delete-history-btn" viewBox="0 0 24 24" title="${deleteHistoryTitle}">
                     <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
                 </svg>
             </div>
@@ -851,7 +875,7 @@ class QuickSearchManager {
         let html = message;
         if (showClose) {
             html += `
-                <button class="close-status" title="关闭">
+                <button class="close-status" title="${i18n.getMessage('ui_button_close')}">
                     <svg viewBox="0 0 24 24" width="16" height="16">
                         <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
                     </svg>
@@ -887,9 +911,10 @@ class QuickSearchManager {
         searchResults.innerHTML = `
             <div class="loading">
                 <div class="loading-spinner"></div>
-                <span>正在搜索书签...</span>
+                <span data-i18n="quicksearch_searching">正在搜索书签...</span>
             </div>
         `;
+        i18n.updateNodeText(searchResults);
     }
 
     clearSelected() {
@@ -903,7 +928,7 @@ class QuickSearchManager {
         const { searchResults, resultsCount, searchTime } = this.elements;
         searchResults.innerHTML = '';
         searchResults.classList.remove('has-results');
-        resultsCount.textContent = '0 个结果';
+        resultsCount.textContent = i18n.getMessage('quicksearch_results_count', ['0']);
         searchTime.textContent = '0ms';
         this.lastQuery = '';
         this.lastQueryResult = [];
@@ -942,15 +967,10 @@ class QuickSearchManager {
 
             const startTime = performance.now();
             
-            // 获取用户设置
-            const settings = await SettingsManager.getAll();
-            const includeChromeBookmarks = settings.display?.showChromeBookmarks || false;
-
             // 执行搜索
             const results = await searchBookmarksFromBackground(query, {
                 debounce: false,
-                includeUrl: true,
-                includeChromeBookmarks: includeChromeBookmarks
+                includeUrl: true
             });
 
             const endTime = performance.now();
@@ -962,7 +982,7 @@ class QuickSearchManager {
             this.lastQueryResult = results;
 
             // 更新统计信息
-            resultsCount.textContent = `${results.length} 个结果`;
+            resultsCount.textContent = i18n.getMessage('quicksearch_results_count', [results.length.toString()]);
             searchTime.textContent = `${timeSpent}ms`;
 
             // 渲染结果
@@ -972,10 +992,10 @@ class QuickSearchManager {
             this.editManager.initialize(this.lastQueryResult);
         } catch (error) {
             logger.error('搜索失败:', error);
-            this.showStatus('搜索失败: ' + error.message, 'error');
+            this.showStatus(i18n.getMessage('quicksearch_error_search_failed', [error.message]), 'error');
             searchResults.innerHTML = this.getEmptyResultsHTML({
-                message: '搜索出错',
-                description: '请稍后重试，或联系开发者解决',
+                message: i18n.getMessage('quicksearch_error_search_error'),
+                description: i18n.getMessage('quicksearch_error_search_error_desc'),
                 type: 'error'
             });
         } finally {
@@ -1045,15 +1065,30 @@ class QuickSearchManager {
         // 生成相关度星级
         const relevanceStarsHtml = this.getRelevanceStarsHtml(result.score, result.similarity);
 
-        const tags = result.tags.map(tag => `<span class="result-tag">${tag}</span>`).join('');
-        
-        // 处理保存时间格式化
-        const formattedDate = result.savedAt ? new Date(result.savedAt).toLocaleDateString(navigator.language, {year: 'numeric', month: 'long', day: 'numeric'}) : '未知时间';
+        const firstTag = result.tags.length > 0 ? (
+            result.source === BookmarkSource.CHROME
+                ? `<span class="result-tag folder-tag">${result.tags[0]}</span>`
+                : `<span class="result-tag">${result.tags[0]}</span>`
+        ) : '';
+        const restCount = result.tags.length - 1;
+        const tagsHtml = firstTag + (restCount > 0
+            ? `<span class="tag-overflow-count" title="${result.tags.slice(1).join(', ')}">+${restCount}</span>`
+            : '');
+
+        const folderPathText = !bookmarkOps.isExtensionOnly(result) ? formatBookmarkFolderPath(result.folderTags) : '';
+        const folderPathSlot = folderPathText
+            ? `<div class="result-folder-path">
+                <svg class="result-folder-path-icon" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                    <path fill="currentColor" d="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z"/>
+                </svg>
+                <span class="result-folder-path-text"></span>
+            </div>`
+            : '';
 
         // 设置HTML内容
         resultItem.innerHTML = `
             <div class="bookmark-checkbox">
-                <input type="checkbox" title="选择此书签">
+                <input type="checkbox" title="${i18n.getMessage('quicksearch_select_bookmark_title')}">
             </div>
             <a href="${result.url}" class="result-link" target="_blank">
                 <div class="result-title">
@@ -1065,20 +1100,14 @@ class QuickSearchManager {
                 </div>
                 <div class="result-url" title="${result.url}">${result.url}</div>
                 <div class="result-excerpt" title="${result.excerpt}">${result.excerpt}</div>
-                <div class="result-tags">${tags}</div>
-                <!-- 书签底部信息栏 -->
-                <div class="result-metadata">
-                    <div class="result-saved-time" title="收藏于 ${formattedDate}">
-                        <svg viewBox="0 0 24 24" width="14" height="14">
-                            <path fill="currentColor" d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z" />
-                        </svg>
-                        <span>${formattedDate}</span>
-                    </div>
-                </div>
+                ${(tagsHtml || folderPathSlot) ? `<div class="result-footer">
+                    <div class="result-tags">${tagsHtml}</div>
+                    <div class="result-metadata">${folderPathSlot}</div>
+                </div>` : ''}
             </a>
 
             <!-- 三点菜单按钮 -->
-            <div class="more-actions-btn" title="更多操作">
+            <div class="more-actions-btn" title="${i18n.getMessage('quicksearch_more_actions_title')}">
                 <svg viewBox="0 0 24 24" width="16" height="16">
                     <circle cx="12" cy="5" r="2.2" fill="currentColor" />
                     <circle cx="12" cy="12" r="2.2" fill="currentColor" />
@@ -1089,38 +1118,38 @@ class QuickSearchManager {
             <!-- 操作菜单（默认隐藏） -->
             <div class="actions-menu">
                 <div class="actions-menu-content">
-                    <button class="action-btn share-btn" title="复制链接">
+                    <button class="action-btn share-btn" title="${i18n.getMessage('quicksearch_copy_link_title')}">
                         <svg viewBox="0 0 24 24" width="20" height="20">
                             <path fill="currentColor" d="M18,16.08C17.24,16.08 16.56,16.38 16.04,16.85L8.91,12.7C8.96,12.47 9,12.24 9,12C9,11.76 8.96,11.53 8.91,11.3L15.96,7.19C16.5,7.69 17.21,8 18,8A3,3 0 0,0 21,5A3,3 0 0,0 18,2A3,3 0 0,0 15,5C15,5.24 15.04,5.47 15.09,5.7L8.04,9.81C7.5,9.31 6.79,9 6,9A3,3 0 0,0 3,12A3,3 0 0,0 6,15C6.79,15 7.5,14.69 8.04,14.19L15.16,18.34C15.11,18.55 15.08,18.77 15.08,19C15.08,20.61 16.39,21.91 18,21.91C19.61,21.91 20.92,20.61 20.92,19A2.92,2.92 0 0,0 18,16.08Z" />
                         </svg>
                     </button>
-                    <button class="action-btn rename-btn" title="修改名称">
+                    <button class="action-btn rename-btn" title="${i18n.getMessage('quicksearch_rename_title')}">
                         <svg viewBox="0 0 24 24" width="20" height="20">
                             <path fill="currentColor" d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" />
                         </svg>
                     </button>
                     ${result.source === BookmarkSource.EXTENSION ? `
-                    <button class="action-btn edit-tags-btn" title="编辑标签">
+                    <button class="action-btn edit-tags-btn" title="${i18n.getMessage('quicksearch_edit_tags_title')}">
                         <svg viewBox="0 0 24 24" width="20" height="20">
                             <path fill="currentColor" d="M21.41,11.58L12.41,2.58C12.04,2.21 11.53,2 11,2H4C2.9,2 2,2.9 2,4V11C2,11.53 2.21,12.04 2.59,12.41L11.58,21.4C11.95,21.78 12.47,22 13,22C13.53,22 14.04,21.79 14.41,21.41L21.41,14.41C21.79,14.04 22,13.53 22,13C22,12.47 21.79,11.96 21.41,11.58M5.5,7C4.67,7 4,6.33 4,5.5C4,4.67 4.67,4 5.5,4C6.33,4 7,4.67 7,5.5C7,6.33 6.33,7 5.5,7Z" />
                         </svg>
                     </button>
                     ` : ''}
                     ${this.sitesDisplayType === 'pinned' ? `
-                    <button class="action-btn pin-btn" title="${isPinned ? '取消固定' : '固定到常用网站'}" data-pinned="${isPinned}">
+                    <button class="action-btn pin-btn" title="${isPinned ? i18n.getMessage('quicksearch_unpin_site_title') : i18n.getMessage('quicksearch_pin_site_title')}" data-pinned="${isPinned}">
                         <svg viewBox="0 0 24 24" width="20" height="20">
                             <path fill="currentColor" d="M16,12V4H17V2H7V4H8V12L6,14V16H11.2V22H12.8V16H18V14L16,12Z" />
                         </svg>
                     </button>
                     ` : ''}
-                    <button class="action-btn delete-btn" title="删除">
+                    <button class="action-btn delete-btn" title="${i18n.getMessage('action_delete_bookmark')}">
                         <svg viewBox="0 0 24 24" width="20" height="20">
                             <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
                         </svg>
                     </button>
                 </div>
                 <div class="actions-menu-header">
-                    <button class="close-menu-btn" title="关闭">
+                    <button class="close-menu-btn" title="${i18n.getMessage('ui_button_close')}">
                         <svg viewBox="0 0 24 24" width="20" height="20">
                             <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"></path>
                         </svg>
@@ -1128,6 +1157,18 @@ class QuickSearchManager {
                 </div>
             </div>
         `;
+        
+        // 更新国际化文本
+        i18n.updateNodeText(resultItem);
+
+        if (folderPathText) {
+            const folderWrap = resultItem.querySelector('.result-folder-path');
+            const folderTextEl = folderWrap?.querySelector('.result-folder-path-text');
+            if (folderWrap && folderTextEl) {
+                folderTextEl.textContent = folderPathText;
+                folderWrap.title = folderPathText;
+            }
+        }
         
         // 设置各种事件监听
         this.setupResultItemEvents(resultItem, result);
@@ -1219,10 +1260,10 @@ class QuickSearchManager {
             if (isNonMarkableUrl(result.url)) {
                 e.preventDefault();
                 // 显示提示并提供复制链接选项
-                const copyConfirm = confirm('此页面无法直接打开。是否复制链接到剪贴板？');
+                const copyConfirm = confirm(i18n.getMessage('quicksearch_confirm_copy_link'));
                 if (copyConfirm) {
                     await navigator.clipboard.writeText(result.url);
-                    updateStatus('链接已复制到剪贴板');
+                    updateStatus(i18n.getMessage('quicksearch_status_link_copied'));
                 }
             } else {
                 await this.openResult(result.url);
@@ -1310,9 +1351,9 @@ class QuickSearchManager {
                 
                 try {
                     await navigator.clipboard.writeText(url);
-                    this.showStatus('链接已复制到剪贴板', 'success');
+                    this.showStatus(i18n.getMessage('quicksearch_status_link_copied'), 'success');
                 } catch (error) {
-                    this.showStatus('复制链接失败', 'error');
+                    this.showStatus(i18n.getMessage('quicksearch_error_copy_failed'), 'error');
                 }
                 
                 // 关闭菜单
@@ -1331,7 +1372,7 @@ class QuickSearchManager {
                 if (bookmark) {
                     this.showRenameDialog(bookmark, resultItem);
                 } else {
-                    this.showStatus('未找到要修改的书签', 'error');
+                    this.showStatus(i18n.getMessage('quicksearch_error_bookmark_not_found'), 'error');
                 }
                 
                 // 关闭菜单
@@ -1352,10 +1393,10 @@ class QuickSearchManager {
                     if (bookmark.source === BookmarkSource.EXTENSION) {
                         this.showEditTagsDialog(bookmark, resultItem);
                     } else {
-                        this.showStatus('原生书签不支持标签功能', 'warning');
+                        this.showStatus(i18n.getMessage('quicksearch_error_chrome_bookmark_no_tags'), 'warning');
                     }
                 } else {
-                    this.showStatus('未找到要编辑的书签', 'error');
+                    this.showStatus(i18n.getMessage('quicksearch_error_bookmark_not_found'), 'error');
                 }
                 
                 // 关闭菜单
@@ -1386,10 +1427,10 @@ class QuickSearchManager {
                 e.stopPropagation();
                 
                 this.showConfirmDialog({
-                    title: '删除书签',
-                    message: '确定要删除此书签吗？',
-                    primaryText: '删除',
-                    secondaryText: '取消',
+                    title: i18n.getMessage('quicksearch_confirm_delete_title'),
+                    message: i18n.getMessage('quicksearch_confirm_delete_message'),
+                    primaryText: i18n.getMessage('action_delete_bookmark'),
+                    secondaryText: i18n.getMessage('ui_button_cancel'),
                     messageAlign: 'center',
                     onPrimary: () => {
                         this.deleteBookmark(url, resultItem);
@@ -1443,7 +1484,7 @@ class QuickSearchManager {
             }
         } catch (error) {
             logger.error('打开链接失败:', error);
-            this.showStatus('打开链接失败: ' + error.message, 'error');
+            this.showStatus(i18n.getMessage('quicksearch_error_open_link_failed', [error.message]), 'error');
         }
     }
 
@@ -1455,16 +1496,12 @@ class QuickSearchManager {
 
             const bookmark = this.lastQueryResult.find(item => item.url === url);
             if (!bookmark) {
-                this.showStatus('未找到要删除的书签', 'warning');
+                this.showStatus(i18n.getMessage('quicksearch_error_bookmark_not_found'), 'warning');
                 resultItem.classList.remove('deleting');
                 return;
             }
 
-            if (bookmark.source === BookmarkSource.EXTENSION) {
-                await LocalStorageMgr.removeBookmark(bookmark.url);
-            } else {
-                await chrome.bookmarks.remove(bookmark.chromeId);
-            }
+            await bookmarkOps.deleteBookmark(bookmark);
 
             sendMessageSafely({
                 type: MessageType.BOOKMARKS_UPDATED,
@@ -1472,7 +1509,7 @@ class QuickSearchManager {
             });
             
             // 显示成功提示
-            this.showStatus('书签已删除', 'success');
+            this.showStatus(i18n.getMessage('quicksearch_status_bookmark_deleted'), 'success');
 
             // 从结果列表中移除这个项目
             this.lastQueryResult = this.lastQueryResult.filter(item => item.url !== url);
@@ -1484,7 +1521,7 @@ class QuickSearchManager {
                 
                 // 更新结果数量
                 this.resultItems = Array.from(this.elements.searchResults.querySelectorAll('.search-result-item'));
-                this.elements.resultsCount.textContent = `${this.resultItems.length} 个结果`;
+                this.elements.resultsCount.textContent = i18n.getMessage('quicksearch_results_count', [this.resultItems.length.toString()]);
                 
                 // 如果删除后没有结果了，显示无结果提示
                 if (this.resultItems.length === 0) {
@@ -1497,7 +1534,7 @@ class QuickSearchManager {
             // 移除删除中的样式
             resultItem.classList.remove('deleting');
             logger.error('删除书签失败:', error);
-            this.showStatus('删除书签失败: ' + error.message, 'error');
+            this.showStatus(i18n.getMessage('quicksearch_error_delete_bookmark_failed', [error.message]), 'error');
         }
     }
 
@@ -1535,7 +1572,7 @@ class QuickSearchManager {
         const newTitle = newBookmarkTitle.value.trim();
         
         if (!newTitle) {
-            this.showStatus('书签名称不能为空', 'warning');
+            this.showStatus(i18n.getMessage('quicksearch_error_title_empty'), 'warning');
             return;
         }
         
@@ -1546,7 +1583,7 @@ class QuickSearchManager {
 
         // 检查名称是否发生变化
         if (newTitle === this.renamingBookmark.title) {
-            this.showStatus('书签名称未发生变化', 'success');
+            this.showStatus(i18n.getMessage('quicksearch_status_title_unchanged'), 'success');
             this.hideRenameDialog();
             return;
         }
@@ -1556,17 +1593,8 @@ class QuickSearchManager {
             const bookmark = this.renamingBookmark;
             const url = bookmark.url;
             
-            // 根据书签来源执行不同的更新操作
-            if (bookmark.source === BookmarkSource.EXTENSION) {
-                // 更新标题
-                bookmark.title = newTitle;
-                await updateBookmarksAndEmbedding(bookmark);
-            } else if (bookmark.source === BookmarkSource.CHROME) {
-                // 更新Chrome书签
-                await chrome.bookmarks.update(bookmark.chromeId, {
-                    title: newTitle
-                });
-            }
+            // 统一使用 bookmarkOps 更新标题（extension + Chrome）
+            await bookmarkOps.updateBookmarkTitle(bookmark, newTitle);
 
             // 更新SearchResult
             const index = this.lastQueryResult.findIndex(item => item.url === url);
@@ -1588,10 +1616,10 @@ class QuickSearchManager {
                 source: 'quickSearch'
             });
             
-            this.showStatus('书签名称修改成功', 'success');
+            this.showStatus(i18n.getMessage('quicksearch_status_rename_success'), 'success');
         } catch (error) {
             logger.error('修改书签名称失败:', error);
-            this.showStatus('修改书签名称失败: ' + error.message, 'error');
+            this.showStatus(i18n.getMessage('quicksearch_error_rename_failed', [error.message]), 'error');
         } finally {
             this.hideRenameDialog();
         }
@@ -1657,30 +1685,34 @@ class QuickSearchManager {
         const { tagsPreview } = this.elements;
         
         if (this.currentTags.length === 0) {
-            tagsPreview.innerHTML = '<div class="tags-empty-message">暂无标签，在上方输入框输入标签后按回车添加</div>';
+            tagsPreview.innerHTML = `<div class="tags-empty-message" data-i18n="quicksearch_tags_empty_message">暂无标签，在上方输入框输入标签后按回车添加</div>`;
+            i18n.updateNodeText(tagsPreview);
             return;
         }
         
         tagsPreview.innerHTML = this.currentTags.map(tag => `
             <div class="tag-preview-item" data-tag="${tag}">
                 <span>${tag}</span>
-                <div class="remove-tag" title="删除此标签">×</div>
+                <div class="remove-tag" title="${i18n.getMessage('quicksearch_remove_tag_title')}">×</div>
             </div>
-        `).join('');
+        `).join('') + `<button class="clear-all-tags-btn" title="${i18n.getMessage('ui_tags_clear_all_title')}"><svg viewBox="0 0 24 24" width="12" height="12"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>${i18n.getMessage('ui_tags_clear_all')}</button>`;
         
-        // 添加删除标签的事件
         tagsPreview.querySelectorAll('.remove-tag').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const tagItem = e.target.closest('.tag-preview-item');
                 const tag = tagItem.dataset.tag;
-                
-                // 从标签列表中移除
                 this.currentTags = this.currentTags.filter(t => t !== tag);
-                
-                // 更新预览
                 this.updateTagsPreview();
             });
         });
+
+        const clearBtn = tagsPreview.querySelector('.clear-all-tags-btn');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                this.currentTags = [];
+                this.updateTagsPreview();
+            });
+        }
     }
     
     // 保存新的书签标签
@@ -1698,36 +1730,32 @@ class QuickSearchManager {
             
             // 如果当前标签和原始标签相同，不进行更新
             if (JSON.stringify(this.currentTags) === JSON.stringify(bookmark.tags || [])) {
-                this.showStatus('标签未发生更改', 'success');
+                this.showStatus(i18n.getMessage('quicksearch_status_tags_unchanged'), 'success');
                 this.hideEditTagsDialog();
                 return;
             }
             
-            // 确保只处理扩展自身的书签
-            if (bookmark.source === BookmarkSource.EXTENSION) {
-                // 更新标签
-                bookmark.tags = this.currentTags;
-                await updateBookmarksAndEmbedding(bookmark);
-                
-                // 更新搜索结果中的标签
-                const index = this.lastQueryResult.findIndex(item => item.url === url);
-                if (index !== -1) {
-                    this.lastQueryResult[index].tags = this.currentTags;
-                }
-                
-                // 更新UI
-                this.updateResultItemTags(this.editingTagsResultItem, this.currentTags);
-
-                sendMessageSafely({
-                    type: MessageType.BOOKMARKS_UPDATED,
-                    source: 'quickSearch'
-                });
-                
-                this.showStatus('标签修改成功', 'success');
+            // 使用统一模块更新：chrome_only 会保存到插件（转为 both），extension_only 和 both 会更新插件存储
+            await bookmarkOps.updateBookmark(bookmark, { tags: this.currentTags });
+            
+            // 更新搜索结果中的标签
+            const index = this.lastQueryResult.findIndex(item => item.url === url);
+            if (index !== -1) {
+                this.lastQueryResult[index].tags = this.currentTags;
             }
+            
+            // 更新UI
+            this.updateResultItemTags(this.editingTagsResultItem, this.currentTags);
+
+            sendMessageSafely({
+                type: MessageType.BOOKMARKS_UPDATED,
+                source: 'quickSearch'
+            });
+            
+            this.showStatus(i18n.getMessage('quicksearch_status_tags_success'), 'success');
         } catch (error) {
             logger.error('修改书签标签失败:', error);
-            this.showStatus('修改标签失败: ' + error.message, 'error');
+            this.showStatus(i18n.getMessage('quicksearch_error_edit_tags_failed', [error.message]), 'error');
         } finally {
             this.hideEditTagsDialog();
         }
@@ -1737,9 +1765,24 @@ class QuickSearchManager {
     updateResultItemTags(resultItem, tags) {
         if (!resultItem) return;
 
-        let tagsElement = resultItem.querySelector('.result-tags');
-        // 更新标签内容
-        tagsElement.innerHTML = tags.map(tag => `<span class="result-tag">${tag}</span>`).join('');
+        const firstTag = tags.length > 0 ? `<span class="result-tag">${tags[0]}</span>` : '';
+        const restCount = tags.length - 1;
+        const tagsHtml = firstTag + (restCount > 0
+            ? `<span class="tag-overflow-count" title="${tags.slice(1).join(', ')}">+${restCount}</span>`
+            : '');
+        let footer = resultItem.querySelector('.result-footer');
+        if (footer) {
+            const tagsElement = footer.querySelector('.result-tags');
+            if (tagsElement) tagsElement.innerHTML = tagsHtml;
+        } else if (tagsHtml) {
+            const link = resultItem.querySelector('.result-link');
+            if (link) {
+                const footerDiv = document.createElement('div');
+                footerDiv.className = 'result-footer';
+                footerDiv.innerHTML = `<div class="result-tags">${tagsHtml}</div><div class="result-metadata"></div>`;
+                link.appendChild(footerDiv);
+            }
+        }
     }
 
     hideConfirmDialog() {
@@ -1759,10 +1802,10 @@ class QuickSearchManager {
             this.hideConfirmDialog();
         }
 
-        confirmTitle.textContent = params.title || '提示';
+        confirmTitle.textContent = params.title || i18n.getMessage('quicksearch_confirm_dialog_title');
         confirmMessage.textContent = params.message;
-        confirmPrimaryBtn.textContent = params.primaryText || '确定';
-        confirmSecondaryBtn.textContent = params.secondaryText || '取消';
+        confirmPrimaryBtn.textContent = params.primaryText || i18n.getMessage('quicksearch_confirm_button');
+        confirmSecondaryBtn.textContent = params.secondaryText || i18n.getMessage('ui_button_cancel');
 
         if (params.messageAlign === 'center') {
             confirmMessage.classList.add('align-center');
@@ -1776,8 +1819,8 @@ class QuickSearchManager {
     // 生成空搜索结果的HTML
     getEmptyResultsHTML(options = {}) {
         const defaults = {
-            message: '未找到相关书签',
-            description: '您可以尝试使用不同的关键词，或检查拼写是否正确',
+            message: i18n.getMessage('quicksearch_empty_results_message'),
+            description: i18n.getMessage('quicksearch_empty_results_description'),
             type: 'empty', // 可选值: empty, error, warning, no-access
         };
 
@@ -1813,5 +1856,7 @@ class QuickSearchManager {
 
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
+    i18n.initializeI18n();
+    // 更新页面文本
     new QuickSearchManager();
 }); 

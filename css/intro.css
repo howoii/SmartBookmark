@@ -220,7 +220,7 @@ video {
 }
 
 .video-container::after {
-    content: '点击放大';
+    content: attr(data-click-to-enlarge);
     position: absolute;
     bottom: 10px;
     right: 10px;

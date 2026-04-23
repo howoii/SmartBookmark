@@ -1,39 +1,37 @@
 // background.js
 importScripts('consts.js', 'common.js', 'env.js', 'logger.js', 'i18n.js', 'config.js', 'models.js', 'storageManager.js', 'settingsManager.js', 'statsManager.js',
-     'util.js', 'api.js', 'search.js', 'customFilter.js', 'syncSettingManager.js', 'sync.js', 'webdavClient.js', 'webdavSync.js', 'autoSync.js');
+     'util.js', 'api.js', 'search.js', 'customFilter.js', 'syncSettingManager.js', 'sync.js', 'webdavClient.js', 'webdavSync.js', 'autoSync.js',
+     'chromeBookmarkSync.js');
 
 EnvIdentifier = 'background';
 // ------------------------------ 辅助函数分割线 ------------------------------
 // 更新页面状态（图标和按钮）
 async function updatePageState() {
     try {
-        const [tab] = await chrome.tabs.query({ 
-            active: true, 
-            currentWindow: true 
-        });
-        
-        if (!tab) {
-            logger.debug('未找到活动标签页');
-            return;
-        }
-
-        // 检查标签页是否仍然存在
-        try {
-            await chrome.tabs.get(tab.id);
-            handleRuntimeError();
-        } catch (error) {
-            logger.debug('标签页已不存在:', tab.id);
-            return;
-        }
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (!tab?.url) return;
 
         const isSaved = await checkIfPageSaved(tab.url);
         await updateExtensionIcon(tab.id, isSaved);
-        sendMessageSafely({
-            type: MessageType.UPDATE_TAB_STATE
-        });
+        sendMessageSafely({ type: MessageType.UPDATE_TAB_STATE });
     } catch (error) {
+        if (error.message?.includes('No tab with id')) {
+            logger.debug('标签页已关闭，忽略状态更新');
+            return;
+        }
         logger.error('更新页面状态失败:', error);
     }
+}
+
+let _updatePageStateTimer = null;
+const UPDATE_PAGE_STATE_DEBOUNCE_MS = 80;
+
+function scheduleUpdatePageState() {
+    if (_updatePageStateTimer) clearTimeout(_updatePageStateTimer);
+    _updatePageStateTimer = setTimeout(() => {
+        _updatePageStateTimer = null;
+        updatePageState();
+    }, UPDATE_PAGE_STATE_DEBOUNCE_MS);
 }
 
 // 创建初始化函数
@@ -66,15 +64,34 @@ chrome.sidePanel
   .catch((error) => logger.error(error));
 
 // 监听插件首次安装时的事件
-chrome.runtime.onInstalled.addListener(async ({ reason }) => {
+chrome.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
+    const currentVersion = chrome.runtime.getManifest().version;
     if (reason === 'install') {
         logger.info("Smart Bookmark 插件已成功安装！");
+        try {
+            await ChromeBookmarkSync.runBootstrapSync({
+                reason,
+                previousVersion,
+                currentVersion,
+            });
+        } catch (error) {
+            logger.error('安装期浏览器书签同步失败:', error);
+        }
         // 打开介绍页
         chrome.tabs.create({
             url: chrome.runtime.getURL('intro.html')
         });
     } else if (reason === 'update') {
         logger.info("Smart Bookmark 插件已成功更新！");
+        try {
+            await ChromeBookmarkSync.runBootstrapSync({
+                reason,
+                previousVersion,
+                currentVersion,
+            });
+        } catch (error) {
+            logger.error('升级期浏览器书签同步失败:', error);
+        }
         // 打开介绍页
         const introCompleted = await LocalStorageMgr.get('intro-completed');
         if (!introCompleted) {
@@ -115,7 +132,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     } else if (message.type === MessageType.EXECUTE_CLOUD_SYNC) {
         // 检查云同步功能是否启用
         if (!FEATURE_FLAGS.ENABLE_CLOUD_SYNC) {
-            sendResponse({ success: false, error: '云同步功能已禁用' });
+            sendResponse({ success: false, error: i18n.getMessage('autosync_error_cloud_sync_disabled') });
             return false; // 同步调用 sendResponse，不需要返回 true
         }
         // 执行云同步
@@ -167,6 +184,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 sendResponse({ success: false, error: error.message });
             });
         return true;
+    } else if (message.type === MessageType.GET_BOOKMARKS_LOCAL_CACHE) {
+        // 非 background 页面冷启动时从此获取书签缓存，确保拿到最新数据（含刚更新后未 flush 到 storage 的）
+        LocalStorageMgr.getBookmarksFromLocalCache()
+            .then(bookmarksMap => {
+                sendResponse({ success: true, bookmarksMap: bookmarksMap });
+            })
+            .catch(error => {
+                logger.error('获取书签本地缓存失败:', error);
+                sendResponse({ success: false, error: error.message });
+            });
+        return true;
     } else if (message.type === MessageType.SET_BOOKMARKS) {
         LocalStorageMgr.setBookmarks(message.data.bookmarks, message.data.options)
             .then(() => {
@@ -206,6 +234,31 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 logger.error('更新书签和向量失败:', error);
                 sendResponse({ success: false, error: error.message });
             });
+        return true;
+    } else if (message.type === MessageType.PROXY_CHROME_BOOKMARK_CREATE) {
+        ChromeBookmarkSync.proxyCreate(message.data.createDetails)
+            .then(result => sendResponse({ success: true, result }))
+            .catch(error => sendResponse({ success: false, error: error.message }));
+        return true;
+    } else if (message.type === MessageType.PROXY_CHROME_BOOKMARK_UPDATE) {
+        ChromeBookmarkSync.proxyUpdate(message.data.chromeId, message.data.changes)
+            .then(result => sendResponse({ success: true, result }))
+            .catch(error => sendResponse({ success: false, error: error.message }));
+        return true;
+    } else if (message.type === MessageType.PROXY_CHROME_BOOKMARK_REMOVE) {
+        ChromeBookmarkSync.proxyRemove(message.data.chromeId)
+            .then(() => sendResponse({ success: true }))
+            .catch(error => sendResponse({ success: false, error: error.message }));
+        return true;
+    } else if (message.type === MessageType.PROXY_CHROME_BOOKMARK_MOVE) {
+        ChromeBookmarkSync.proxyMove(message.data.chromeId, message.data.destination)
+            .then(result => sendResponse({ success: true, result }))
+            .catch(error => sendResponse({ success: false, error: error.message }));
+        return true;
+    } else if (message.type === MessageType.PROXY_CHROME_BOOKMARK_REMOVE_TREE) {
+        ChromeBookmarkSync.proxyRemoveTree(message.data.chromeId)
+            .then(() => sendResponse({ success: true }))
+            .catch(error => sendResponse({ success: false, error: error.message }));
         return true;
     }
 });
@@ -262,56 +315,22 @@ chrome.storage.onChanged.addListener(async (changes, areaName) => {
     }
 });
 
-// 监听标签页更新事件
+// 标签页 URL 变化时更新图标状态（仅活动标签页，避免后台标签页冗余调用）
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    logger.debug("background 标签页更新", {
-        tabId: tabId,
-        changeInfo: changeInfo,
-        tab: tab,
-    });
-    if (changeInfo.url) {
-        try {
-            updatePageState().catch(error => {
-                if (error.message.includes('No tab with id')) {
-                    logger.debug('标签页已关闭，忽略更新');
-                    return;
-                }
-                logger.error('更新页面状态失败:', error);
-            });
-        } catch (error) {
-            logger.error('处理标签页更新事件失败:', error);
-        }
+    if (changeInfo.url && tab.active) {
+        scheduleUpdatePageState();
     }
 });
 
-// 监听标签页激活事件（切换标签页）
-chrome.tabs.onActivated.addListener(async (activeInfo) => {
-    logger.debug("background 标签页激活", {
-        activeInfo: activeInfo,
-    });
-    try {
-        const tab = await chrome.tabs.get(activeInfo.tabId);
-        handleRuntimeError();
-        if (tab && tab.url) {
-            updatePageState();
-        }
-    } catch (error) {
-        logger.error('获取标签页信息失败:', error);
-    }
+// 切换标签页时更新图标状态
+chrome.tabs.onActivated.addListener(() => {
+    scheduleUpdatePageState();
 });
 
-// 监听窗口焦点变化事件（切换窗口）
-chrome.windows.onFocusChanged.addListener(async (windowId) => {
-    logger.debug("background 窗口焦点变化", {
-        windowId: windowId,
-    });
+// 切换窗口时更新图标状态
+chrome.windows.onFocusChanged.addListener((windowId) => {
     if (windowId === chrome.windows.WINDOW_ID_NONE) return;
-    
-    try {
-        updatePageState();
-    } catch (error) {
-        logger.error('获取窗口活动标签页失败:', error);
-    }
+    scheduleUpdatePageState();
 });
 
 // 监听快捷键命令
@@ -392,7 +411,6 @@ if (chrome.omnibox) {
                 debounce: false,
                 maxResults: omniboxLimit, // 使用设置中的限制值
                 includeUrl: true,
-                includeChromeBookmarks: true,
                 recordSearch: false
             });
 
@@ -461,35 +479,5 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     await AutoSyncManager.handleAlarm(alarm);
 });
 
-// 监听书签变化事件
-chrome.bookmarks.onChanged.addListener(async (id, changeInfo, bookmark) => {
-    logger.debug('书签变化', {
-        id: id,
-        changeInfo: changeInfo,
-        bookmark: bookmark,
-    });
-});
-
-// 监听书签创建事件
-chrome.bookmarks.onCreated.addListener(async (id, bookmark) => {
-    logger.debug('书签创建', {
-        id: id,
-        bookmark: bookmark,
-    });
-});
-
-// 监听书签删除事件
-chrome.bookmarks.onRemoved.addListener(async (id, removeInfo) => {
-    logger.debug('书签删除', {
-        id: id,
-        removeInfo: removeInfo,
-    });
-});
-
-// 监听书签移动事件
-chrome.bookmarks.onMoved.addListener(async (id, moveInfo) => {
-    logger.debug('书签移动', {
-        id: id,
-        moveInfo: moveInfo,
-    });
-});
+// 注册 Chrome 书签事件监听（mute + 外部变更同步 + 刷新通知）
+ChromeBookmarkSync.registerListeners();

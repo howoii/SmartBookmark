@@ -12,7 +12,7 @@ const ENV = {
     
     development: {
         SERVER_URL: 'http://localhost:8080',
-        LOG_LEVEL: LOG_LEVELS.DEBUG,
+        LOG_LEVEL: LOG_LEVELS.TRACE,
         DEBUG: true,
     },
     

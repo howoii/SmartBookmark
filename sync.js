@@ -71,14 +71,14 @@ class SyncManager {
     // 同步本地修改
     async syncChange() {
         if (this.isSyncing) {
-            throw new Error('同步正在进行中');
+            throw new Error(i18n.getMessage('sync_error_syncing'));
         }
         this.isSyncing = true;
 
         try {
             if (!await this.canSync()) {
                 logger.warn('无法同步: 离线或未登录');
-                throw new Error('未登录，请登录后重试');
+                throw new Error(i18n.getMessage('sync_error_not_logged_in'));
             }
 
             const result = {
@@ -123,13 +123,13 @@ class SyncManager {
 
         if (this.isSyncing) {
             logger.warn('同步正在进行中');
-            throw new Error('同步正在进行中');
+            throw new Error(i18n.getMessage('sync_error_syncing'));
         }
         this.isSyncing = true;
 
         try {
             if (!await this.canSync()) {
-                throw new Error('未登录，请登录后重试');
+                throw new Error(i18n.getMessage('sync_error_not_logged_in'));
             }
 
             const result = {
@@ -172,7 +172,7 @@ class SyncManager {
     async syncToServer(syncData) {
         const token = await LocalStorageMgr.get('token');
         if (!token) {
-            throw new Error('未登录');
+            throw new Error(i18n.getMessage('sync_error_not_logged_in'));
         }
 
         const { lastSyncVersion, changes } = syncData;
@@ -263,12 +263,12 @@ class SyncManager {
                 case 401:
                     // token过期，清除登录状态
                     await LocalStorageMgr.remove(['token']);
-                    throw new Error('登录已过期，请重新登录');
+                    throw new Error(i18n.getMessage('sync_error_token_expired'));
                 default:
-                    let errorMessage = `${response.status} ${response.statusText || '未知错误'}`;
+                    let errorMessage = `${response.status} ${response.statusText || i18n.getMessage('api_error_unknown')}`;
                     try {
                         const errorBody = await response.json();
-                        errorMessage = `${errorBody.error || '未知错误'}`;
+                        errorMessage = `${errorBody.error || i18n.getMessage('api_error_unknown')}`;
                     } catch (error) {
                         logger.error('获取错误信息失败:', error);
                     }
@@ -276,7 +276,7 @@ class SyncManager {
             }
         } catch (error) {
             if (error.name === 'SyntaxError') {
-                throw new Error('响应格式错误');
+                throw new Error(i18n.getMessage('sync_error_response_format'));
             }
             throw error;
         }
@@ -338,6 +338,24 @@ class SyncManager {
         logger.info('处理服务器变更 - 最终结果:', {
             待保存数量: bookmarksToSave.size,
             待删除数量: urlsToDelete.size
+        });
+
+        const localBookmarks = await LocalStorageMgr.getBookmarksList();
+        const localBookmarkUrls = new Set(localBookmarks.map(bookmark => bookmark.url));
+
+        const renamedBookmarks = detectLikelyRenamedBookmarks(
+            localBookmarks,
+            Array.from(bookmarksToSave.values()),
+            {
+                added: Array.from(bookmarksToSave.values()).filter(bookmark => !localBookmarkUrls.has(bookmark.url)),
+                removed: Array.from(urlsToDelete),
+            }
+        );
+
+        await syncExistingBrowserBookmarksForExtensionChanges({
+            removedUrls: Array.from(urlsToDelete),
+            updatedBookmarks: Array.from(bookmarksToSave.values()),
+            renamedBookmarks,
         });
 
         // 批量处理删除操作

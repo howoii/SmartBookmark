@@ -36,9 +36,11 @@ class ThemeManager {
      * @param {Object} sender - 发送者
      * @param {Function} sendResponse - 发送响应
      */
-    async handleMessage(message, sender, sendResponse) {
+    handleMessage(message, sender, sendResponse) {
         if (message.type === MessageType.THEME_CHANGED) {
-            await this.loadAndApplyTheme();
+            (async () => {
+                await this.loadAndApplyTheme();
+            })();
         }
     }
 

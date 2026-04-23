@@ -72,10 +72,8 @@
     --tag-bg: #e8f5e9;
     --tag-text: #2e7d32;
     --tag-recommended-bg: #e3f2fd;
-    --tag-recommended-bg-hover: #bbdefb;
     --tag-recommended-text: #1976d2;
     --tag-recommended-border: #bbdefb;
-
     --text-tag: #ffffff;
     --tag-color: #69acc8;
 
@@ -98,6 +96,8 @@
     --shadow-xs: 0 0 0 1px rgba(0, 0, 0, 0.03);
     --shadow-lg: 0 2px 8px rgba(0, 0, 0, 0.1);
     --shadow-flow: 0 2px 6px rgba(0, 0, 0, 0.16), 0 2px 2px rgba(0, 0, 0, 0.32);
+    --shadow-toolbar-actions: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    --shadow-toolbar-actions-hover: 0 0 0 1px rgba(76, 175, 80, 0.15), 0 2px 6px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 /* 深色主题变量 */
@@ -174,7 +174,6 @@
     --tag-bg: #1b4d1b;
     --tag-text: #a5d6a7;
     --tag-recommended-bg: #1a3f5f;
-    --tag-recommended-bg-hover: #2b4359;
     --tag-recommended-text: #90caf9;
     --tag-recommended-border: #1e4b73;
 
@@ -200,6 +199,8 @@
     --shadow-xs: 0 0 0 1px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 2px 8px rgba(0, 0, 0, 0.3);
     --shadow-flow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 2px 3px rgba(0, 0, 0, 0.4);
+    --shadow-toolbar-actions: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 1px 3px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    --shadow-toolbar-actions-hover: 0 0 0 1px rgba(102, 187, 106, 0.25), 0 2px 6px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 /* 系统主题跟随 */
@@ -277,7 +278,6 @@
         --tag-bg: #1b4d1b;
         --tag-text: #a5d6a7;
         --tag-recommended-bg: #1a3f5f;
-        --tag-recommended-bg-hover: #2b4359;
         --tag-recommended-text: #90caf9;
         --tag-recommended-border: #1e4b73;
 
@@ -303,6 +303,8 @@
         --shadow-xs: 0 0 0 1px rgba(0, 0, 0, 0.1);
         --shadow-lg: 0 2px 8px rgba(0, 0, 0, 0.3);
         --shadow-flow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 2px 3px rgba(0, 0, 0, 0.4);
+        --shadow-toolbar-actions: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 1px 3px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        --shadow-toolbar-actions-hover: 0 0 0 1px rgba(102, 187, 106, 0.25), 0 2px 6px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
     }
 } 
 

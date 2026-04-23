@@ -56,7 +56,7 @@ async function handlePrivacyIconClick(isPrivate) {
                 
                 // 更新图标状态
                 await updatePrivacyIconState(tab);
-                updateStatus(`已将 ${domain} 添加到隐私域名列表`);
+                updateStatus(i18n.getMessage('popup_privacy_domain_added', [domain]), false);
 
                 // 更新域名列表
                 sendMessageSafely({
@@ -66,7 +66,7 @@ async function handlePrivacyIconClick(isPrivate) {
             }
         } catch (error) {
             logger.error('添加隐私域名失败:', error);
-            updateStatus('添加隐私域名时出错');
+            updateStatus(i18n.getMessage('popup_privacy_domain_add_error'), true);
         }
     } else {
         const autoPrivacyMode = await SettingsManager.get('privacy.autoDetect');
@@ -105,13 +105,14 @@ async function updatePrivacyIconState(tab) {
         const autoPrivacyMode = await SettingsManager.get('privacy.autoDetect');
         privacyIcon.classList.add('active');
         toolbar.classList.add('privacy-mode');
-        privacyIcon.title = autoPrivacyMode ? 
-            '此页面可能包含隐私内容，将不会读取页面内容' : 
-            '隐私模式已开启，将不会读取页面内容';
+        const privacyTitleKey = autoPrivacyMode ? 
+            'popup_privacy_mode_auto' : 
+            'popup_privacy_mode_active';
+        privacyIcon.title = i18n.getMessage(privacyTitleKey);
     } else {
         privacyIcon.classList.remove('active');
         toolbar.classList.remove('privacy-mode');
-        privacyIcon.title = '点击将此网站标记为隐私域名';
+        privacyIcon.title = i18n.getMessage('popup_privacy_domain_mark');
     }
 
     // 更新数据属性以供点击事件使用
@@ -255,8 +256,9 @@ class SyncStatusDialog {
             loadingElement.className = 'loading-state';
             loadingElement.innerHTML = `
                 <div class="loading-spinner"></div>
-                <div class="loading-text">正在获取同步状态...</div>
+                <div class="loading-text" data-i18n="popup_sync_status_loading"></div>
             `;
+            i18n.updateNodeText(loadingElement);
             this.servicesContainer.appendChild(loadingElement);
             
             // 获取同步配置
@@ -274,7 +276,7 @@ class SyncStatusDialog {
                 if (valid) {
                     enabledServices.push({
                         id: 'cloud',
-                        name: '云同步',
+                        name: i18n.getMessage('popup_sync_service_cloud'),
                         status: status.cloud || {},
                         isSyncing: isSyncing && syncProcess.service === 'cloud'
                     });
@@ -287,7 +289,7 @@ class SyncStatusDialog {
                 if (valid) {
                     enabledServices.push({
                         id: 'webdav',
-                        name: 'WebDAV同步',
+                        name: i18n.getMessage('popup_sync_service_webdav'),
                         status: status.webdav || {},
                         isSyncing: isSyncing && syncProcess.service === 'webdav'
                     });
@@ -301,15 +303,16 @@ class SyncStatusDialog {
             if (enabledServices.length === 0) {
                 this.servicesContainer.innerHTML = `
                     <div class="no-services-message">
-                        <p>您尚未配置任何同步服务，您可以前往设置页面开启同步功能，实现跨浏览器同步您的书签。</p>
+                        <p data-i18n="popup_sync_no_services"></p>
                         <a href="#" id="go-to-sync-settings" class="primary-button">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16">
                                 <path fill="currentColor" d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
                             </svg>
-                            配置同步服务
+                            <span data-i18n="popup_sync_configure_button"></span>
                         </a>
                     </div>
                 `;
+                i18n.updateNodeText(this.servicesContainer);
 
                 const goToSyncSettingsBtn = document.getElementById('go-to-sync-settings');
                 // 绑定事件
@@ -334,7 +337,7 @@ class SyncStatusDialog {
             }
         } catch (error) {
             logger.error('刷新同步状态失败:', error);
-            updateStatus('获取同步状态失败', true);
+            updateStatus(i18n.getMessage('popup_sync_status_fetch_error'), true);
             this.close();
         }
     }
@@ -355,18 +358,20 @@ class SyncStatusDialog {
         
         // 设置服务状态
         const statusElement = serviceItem.querySelector('.sync-service-status');
+        let statusKey;
         if (service.isSyncing) {
-            statusElement.textContent = '同步中';
+            statusKey = 'popup_status_syncing';
             statusElement.classList.add('syncing');
         } else if (service.status.lastSyncResult && service.status.lastSyncResult !== 'success') {
-            statusElement.textContent = '同步失败';
+            statusKey = 'popup_status_sync_failed';
             statusElement.classList.add('error');
         } else if (service.status.lastSync) {
-            statusElement.textContent = '已同步';
+            statusKey = 'popup_status_synced';
             statusElement.classList.add('success');
         } else {
-            statusElement.textContent = '未同步';
+            statusKey = 'popup_status_not_synced';
         }
+        statusElement.setAttribute('data-i18n', statusKey);
         
         // 设置上次同步时间
         const timeContainer = serviceItem.querySelector('.sync-time-container');
@@ -384,6 +389,8 @@ class SyncStatusDialog {
             // 成功同步 - 显示时间，隐藏结果
             timeContainer.classList.add('success-text');
             const date = new Date(service.status.lastSync);
+            // 移除data-i18n属性，因为我们要显示动态时间
+            timeElement.removeAttribute('data-i18n');
             timeElement.textContent = date.toLocaleString();
             timeContainer.style.display = 'flex';
             resultContainer.style.display = 'none';
@@ -395,7 +402,7 @@ class SyncStatusDialog {
             resultContainer.style.display = 'flex';
         } else {
             // 未同步过 - 显示默认提示
-            timeElement.textContent = '从未同步';
+            timeElement.setAttribute('data-i18n', 'popup_sync_never');
             timeContainer.style.display = 'flex';
             resultContainer.style.display = 'none';
         }
@@ -412,15 +419,22 @@ class SyncStatusDialog {
         const buttonText = syncButton.querySelector('span');
         if (service.isSyncing) {
             syncButton.classList.add('syncing');
-            buttonText.textContent = '同步中...';
+            buttonText.setAttribute('data-i18n', 'popup_sync_syncing');
+        } else {
+            // 确保按钮文本使用国际化
+            buttonText.setAttribute('data-i18n', 'popup_sync_button_text');
         }
+        
+        // 更新模板中的所有国际化文本（必须在设置动态内容之后调用）
+        i18n.updateNodeText(serviceItem);
         
         // 添加同步按钮事件
         syncButton.addEventListener('click', async () => {
             if (service.isSyncing) return; // 如果正在同步中，不执行操作
             
             syncButton.classList.add('syncing');
-            buttonText.textContent = '同步中...';
+            buttonText.setAttribute('data-i18n', 'popup_sync_syncing');
+            buttonText.textContent = i18n.getMessage('popup_sync_syncing');
             
             try {
                 // 根据服务类型执行不同的同步操作
@@ -436,13 +450,14 @@ class SyncStatusDialog {
                 
                 // 显示同步结果
                 if (result && result.success) {
-                    updateStatus('同步成功', false);
+                    updateStatus(i18n.getMessage('popup_sync_success'), false);
                 } else {
-                    updateStatus('同步失败: ' + (result?.error || '未知错误'), true);
+                    const errorMsg = result?.error || i18n.getMessage('popup_sync_error_unknown');
+                    updateStatus(i18n.getMessage('popup_sync_failed_with_error', [errorMsg]), true);
                 }
             } catch (error) {
                 logger.error(`${service.name}同步失败:`, error);
-                updateStatus('同步失败: ' + error.message, true);
+                updateStatus(i18n.getMessage('popup_sync_failed_with_error', [error.message]), true);
             } finally { 
                 await this.refreshSyncStatus(); 
             }
@@ -481,7 +496,7 @@ class SyncStatusDialog {
      */
     async executeCloudSync() {
         if (!FEATURE_FLAGS.ENABLE_CLOUD_SYNC) {
-            throw new Error('云同步功能已禁用');
+            throw new Error(i18n.getMessage('popup_sync_cloud_disabled'));
         }
         try {
             return new Promise((resolve, reject) => {
@@ -516,7 +531,14 @@ class BookmarkManager {
         };
         this.isEditMode = false;
         this.editingBookmark = null;
+        this.tagRequest = null;
         this.excerptRequest = null;
+        this.translateRequest = null;
+        this.originalTitle = null; // 保存原始标题
+        this.hasTranslated = false; // 标记是否已翻译
+        this.browserBookmarkSavePreference = BrowserBookmarkSelector.normalizePreference({}, { directoryOnly: true });
+        this.browserBookmarkSelector = null;
+        this.browserBookmarkSelectorRefreshTimer = null;
         // 将 DOM 元素分为必需和可选两类
         this.elements = {
             required: {                
@@ -534,10 +556,19 @@ class BookmarkManager {
                 cancelTagsBtn: document.getElementById('cancel-tags-btn'),
                 deleteBookmarkBtn: document.getElementById('delete-bookmark-btn'),
                 dialogContent: document.querySelector('#tags-dialog .dialog-content'),
-                recommendedTags: document.querySelector('.recommended-tags'),
+                generateTagsBtn: document.getElementById('generate-tags-btn'),
                 pageExcerpt: document.getElementById('page-excerpt'),
                 dialogTitle: document.querySelector('.page-title'),
-                pageUrl: document.querySelector('.page-url')
+                pageUrl: document.querySelector('.page-url'),
+                translateTitleBtn: document.getElementById('translate-title-btn'),
+                browserBookmarkSelector: document.getElementById('browser-bookmark-selector'),
+                folderInputDialog: document.getElementById('folder-input-dialog'),
+                folderInputTitle: document.getElementById('folder-input-dialog-title'),
+                folderInputField: document.getElementById('folder-input-field'),
+                folderInputConfirmBtn: document.getElementById('folder-input-confirm-btn'),
+                folderInputCancelBtn: document.getElementById('folder-input-cancel-btn'),
+                folderMoveSelectorRoot: document.getElementById('folder-move-selector-root'),
+                batchMoveSelectorRoot: document.getElementById('batch-move-selector-root')
             }
         };
 
@@ -552,6 +583,40 @@ class BookmarkManager {
         
         this.alertDialog = new AlertDialog();
         this.syncStatusDialog = new SyncStatusDialog();
+        this.browserBookmarkSelector = new BrowserBookmarkSelector({
+            root: this.elements.optional.browserBookmarkSelector,
+            directoryOnly: true,
+            preferredVerticalPlacement: 'above',
+            recommendationProvider: () => this.getRecommendedFolders()
+        });
+        this.folderInputDialog = new FolderInputDialog({
+            dialog: this.elements.optional.folderInputDialog,
+            title: this.elements.optional.folderInputTitle,
+            input: this.elements.optional.folderInputField,
+            confirm: this.elements.optional.folderInputConfirmBtn,
+            cancel: this.elements.optional.folderInputCancelBtn
+        });
+        if (this.elements.optional.folderMoveSelectorRoot) {
+            this.elements.optional.folderMoveSelectorRoot.hidden = false;
+        }
+        this.folderMoveSelector = new BrowserBookmarkSelector({
+            root: this.elements.optional.folderMoveSelectorRoot,
+            directoryOnly: false,
+            preferredVerticalPlacement: 'auto',
+            onChange: async (value) => {
+                await this.directoryFolderActionsController?.handleMoveSelectorChange(value);
+            }
+        });
+        this.directoryFolderActionsController = new DirectoryFolderActionsController({
+            selector: this.folderMoveSelector,
+            folderDialog: this.folderInputDialog,
+            alertDialog: this.alertDialog,
+            onRefresh: async () => this.refreshBookmarksList()
+        });
+
+        this.batchMoveSelector = this.createBatchMoveSelector(
+            this.elements.optional.batchMoveSelectorRoot
+        );
 
         this.showDialog = this.showDialog.bind(this);
         this.refreshBookmarksList = this.refreshBookmarksList.bind(this);
@@ -569,7 +634,8 @@ class BookmarkManager {
             await Promise.all([
                 this.updateRegeneratingStatus(),
                 this.checkApiKeyConfig(true),
-                this.updateSyncButtonState()
+                this.updateSyncButtonState(),
+                this.loadBrowserBookmarkSavePreference()
             ]);
                         
             logger.info('BookmarkManager 初始化成功');
@@ -579,41 +645,383 @@ class BookmarkManager {
         }
     }
 
+    async loadBrowserBookmarkSavePreference() {
+        const savedPreference = await SettingsManager.get('display.browserBookmarkSave');
+        const preference = await BrowserBookmarkSelector.resolvePreferenceInCurrentBrowser(savedPreference || {}, {
+            directoryOnly: true
+        });
+
+        this.browserBookmarkSavePreference = preference;
+        this.browserBookmarkSelector.setValue(this.browserBookmarkSavePreference);
+    }
+
+    isTagsDialogOpen() {
+        return Boolean(this.elements.required.dialog?.classList.contains('show'));
+    }
+
+    areBrowserBookmarkPreferencesEqual(left, right) {
+        const normalizedLeft = BrowserBookmarkSelector.normalizePreference(left || {}, {
+            directoryOnly: true
+        });
+        const normalizedRight = BrowserBookmarkSelector.normalizePreference(right || {}, {
+            directoryOnly: true
+        });
+        return JSON.stringify(normalizedLeft) === JSON.stringify(normalizedRight);
+    }
+
+    async syncStoredBrowserBookmarkPreference(options = {}) {
+        const { syncVisibleSelector = false } = options;
+        const previousPreference = this.browserBookmarkSavePreference;
+        const savedPreference = await SettingsManager.get('display.browserBookmarkSave');
+        const nextPreference = await BrowserBookmarkSelector.resolvePreferenceInCurrentBrowser(savedPreference || {}, {
+            directoryOnly: true
+        });
+        this.browserBookmarkSavePreference = nextPreference;
+
+        if (!syncVisibleSelector || !this.browserBookmarkSelector || !this.isTagsDialogOpen()) {
+            return;
+        }
+
+        if (this.isEditMode && this.editingBookmark?.chromeId) {
+            return;
+        }
+
+        const currentValue = this.browserBookmarkSelector.getValue();
+        if (this.areBrowserBookmarkPreferencesEqual(currentValue, previousPreference)) {
+            this.browserBookmarkSelector.setValue(nextPreference);
+        }
+    }
+
+    async refreshVisibleBrowserBookmarkSelector() {
+        if (!this.browserBookmarkSelector || !this.isTagsDialogOpen()) {
+            return;
+        }
+
+        if (this.isEditMode && this.editingBookmark?.chromeId) {
+            await this.syncBrowserBookmarkSelectorState();
+            return;
+        }
+
+        const currentValue = this.browserBookmarkSelector.getValue();
+        const matchesSavedPreference = this.areBrowserBookmarkPreferencesEqual(
+            currentValue,
+            this.browserBookmarkSavePreference
+        );
+        const resolvedValue = await BrowserBookmarkSelector.resolvePreferenceInCurrentBrowser(currentValue, {
+            directoryOnly: true
+        });
+        this.browserBookmarkSelector.setValue(resolvedValue);
+
+        if (matchesSavedPreference) {
+            this.browserBookmarkSavePreference = BrowserBookmarkSelector.normalizePreference(resolvedValue, {
+                directoryOnly: true
+            });
+        }
+    }
+
+    async refreshBrowserBookmarkSelectorFromExternalChange() {
+        if (this.isTagsDialogOpen()) {
+            await this.refreshVisibleBrowserBookmarkSelector();
+            return;
+        }
+
+        await this.syncStoredBrowserBookmarkPreference();
+    }
+
+    async prepareBrowserBookmarkSelectorForDialog() {
+        await this.syncStoredBrowserBookmarkPreference();
+        await this.syncBrowserBookmarkSelectorState();
+    }
+
+    scheduleBrowserBookmarkSelectorRefresh() {
+        if (this.browserBookmarkSelectorRefreshTimer) {
+            clearTimeout(this.browserBookmarkSelectorRefreshTimer);
+        }
+
+        this.browserBookmarkSelectorRefreshTimer = setTimeout(() => {
+            this.browserBookmarkSelectorRefreshTimer = null;
+            void this.refreshBrowserBookmarkSelectorFromExternalChange();
+        }, 50);
+    }
+
+    async resolveChromeBookmarkTarget(chromeId) {
+       if (!chromeId) return null;
+
+        const [node] = await chrome.bookmarks.get(chromeId);
+        if (!node) return null;
+        return BrowserBookmarkSelector.buildTargetFromBookmarkNode(node);
+    }
+
+    async syncBrowserBookmarkSelectorState() {
+        if (!this.browserBookmarkSelector) return;
+
+        if (this.editingBookmark?.chromeId) {
+            const lockedTarget = await this.resolveChromeBookmarkTarget(this.editingBookmark.chromeId);
+            this.browserBookmarkSelector.setValue({
+                mode: BrowserBookmarkSaveMode.BROWSER,
+                target: lockedTarget
+            });
+            this.browserBookmarkSelector.setLockMode(true, '');
+            return;
+        }
+
+        this.browserBookmarkSelector.setLockMode(false, '');
+        this.browserBookmarkSelector.setValue(this.browserBookmarkSavePreference);
+    }
+
+    async persistBrowserBookmarkPreference(preferredValue = null) {
+        if (!this.browserBookmarkSelector) {
+            return;
+        }
+
+        const sourceValue = preferredValue ?? this.browserBookmarkSelector.getValue();
+        const value = await BrowserBookmarkSelector.resolvePreferenceInCurrentBrowser(
+            sourceValue,
+            { directoryOnly: true }
+        );
+        this.browserBookmarkSelector.setValue(value);
+        await BrowserBookmarkSelector.savePreference(value);
+        this.browserBookmarkSavePreference = BrowserBookmarkSelector.normalizePreference(value, {
+            directoryOnly: true
+        });
+    }
+
+    async resolveBrowserBookmarkSaveForSubmit() {
+        if (!this.browserBookmarkSelector) {
+            return BrowserBookmarkSelector.buildPreferencePayload(BrowserBookmarkSaveMode.NONE, null);
+        }
+
+        const preference = await BrowserBookmarkSelector.resolvePreferenceInCurrentBrowser(
+            this.browserBookmarkSelector.getValue(),
+            { directoryOnly: true }
+        );
+
+        if (
+            this.isEditMode &&
+            this.editingBookmark?.chromeId &&
+            this.browserBookmarkSelector.directoryOnly &&
+            this.browserBookmarkSelector.lockMode
+        ) {
+            const lockedTarget = await this.resolveChromeBookmarkTarget(this.editingBookmark.chromeId);
+            if (lockedTarget?.folderId !== preference.target?.folderId) {
+                return preference;
+            }
+            
+            return await BrowserBookmarkSelector.resolvePreferenceInCurrentBrowser({
+                mode: BrowserBookmarkSaveMode.BROWSER,
+                target: lockedTarget
+            });
+        }
+
+        return preference
+    }
+
+    async getRecommendedFolders() {
+        if (this.editingBookmark?.chromeId) return [];
+
+        try {
+            const url = this.currentTab?.url || '';
+            let embedding = null;
+            if (url) {
+                const stored = await LocalStorageMgr.getBookmark(url, true);
+                embedding = stored?.embedding || null;
+            }
+            const bookmarkInfo = {
+                url,
+                title: this.currentTab?.title || '',
+                tags: this.getCurrentTags(),
+                excerpt: this.pageContent?.excerpt || this.editingBookmark?.excerpt || '',
+                embedding,
+            };
+            return await FolderRecommender.recommend(bookmarkInfo);
+        } catch (error) {
+            logger.error('获取推荐目录失败:', error);
+            return [];
+        }
+    }
+
+    createBatchMoveSelector(rootElement) {
+        if (!rootElement) return null;
+        rootElement.hidden = false;
+
+        const selector = new BrowserBookmarkSelector({
+            root: rootElement,
+            directoryOnly: true,
+            preferredVerticalPlacement: 'below',
+            onChange: async (value) => {
+                if (this._batchMoveSuppressChange) return;
+                await this.handleBatchMoveSelectorChange(value);
+            }
+        });
+        return selector;
+    }
+
+    async openBatchMoveSelector(editManager) {
+        const selector = this.batchMoveSelector;
+        if (!selector || !editManager?.isEditMode || editManager.selectedBookmarks.size === 0) {
+            return;
+        }
+
+        this._batchMoveEditManager = editManager;
+        this._batchMoveSuppressChange = true;
+
+        try {
+            await this.syncStoredBrowserBookmarkPreference();
+            selector.setValue(this.browserBookmarkSavePreference);
+
+            const toolbar = editManager.container.querySelector(
+                '.edit-toolbar, .search-edit-toolbar'
+            );
+            if (toolbar) {
+                selector.setAnchorElement(toolbar);
+            }
+
+            await selector.openPopover();
+        } finally {
+            this._batchMoveSuppressChange = false;
+        }
+    }
+
+    async handleBatchMoveSelectorChange(value) {
+        const editManager = this._batchMoveEditManager;
+        if (!editManager?.isEditMode) return;
+
+        const nextValue = value;
+        if (nextValue?.mode !== BrowserBookmarkSaveMode.BROWSER || !nextValue?.target) {
+            return;
+        }
+
+        const bookmarks = editManager.getSelectedBookmarksList();
+        if (bookmarks.length === 0) return;
+
+        await this.executeBatchMove(bookmarks, nextValue.target, editManager);
+    }
+
+    async executeBatchMove(bookmarks, browserTarget, editManager) {
+        const target = BrowserBookmarkSelector.normalizeTarget(browserTarget);
+        if (!target?.folderId) {
+            updateStatus(i18n.getMessage('popup_batch_move_no_target'), true);
+            return;
+        }
+
+        const targetFolderId = target.folderId;
+        updateStatus(i18n.getMessage('popup_batch_move_moving'), false);
+
+        let movedCount = 0;
+        let createdCount = 0;
+        let skippedCount = 0;
+        let failCount = 0;
+
+        for (const bookmark of bookmarks) {
+            try {
+                if (bookmark.chromeId) {
+                    const [currentNode] = await chrome.bookmarks.get(bookmark.chromeId);
+                    if (!currentNode) {
+                        failCount++;
+                        continue;
+                    }
+                    if (currentNode.parentId === targetFolderId) {
+                        skippedCount++;
+                        continue;
+                    }
+                    const children = await chrome.bookmarks.getChildren(targetFolderId);
+                    await bookmarkOps._proxyMove(bookmark.chromeId, {
+                        parentId: targetFolderId,
+                        index: children.length
+                    });
+                    movedCount++;
+                } else if (bookmark.url) {
+                    const children = await chrome.bookmarks.getChildren(targetFolderId);
+                    await bookmarkOps._proxyCreate({
+                        parentId: targetFolderId,
+                        index: children.length,
+                        title: bookmark.title || '',
+                        url: bookmark.url
+                    });
+                    createdCount++;
+                }
+            } catch (e) {
+                logger.error('批量移动书签失败:', bookmark.url, e);
+                failCount++;
+            }
+        }
+
+        const totalSuccess = movedCount + createdCount;
+        if (failCount === 0 && totalSuccess > 0) {
+            updateStatus(
+                i18n.getMessage('popup_batch_move_success', [totalSuccess]),
+                false
+            );
+        } else if (totalSuccess > 0) {
+            updateStatus(
+                i18n.getMessage('popup_batch_move_partial', [totalSuccess, bookmarks.length]),
+                false
+            );
+        } else if (skippedCount === bookmarks.length) {
+            updateStatus(i18n.getMessage('popup_batch_move_all_skipped'), false);
+        } else {
+            updateStatus(i18n.getMessage('popup_batch_move_failed'), true);
+        }
+
+        editManager.exitEditMode();
+        await this.refreshBookmarksList();
+    }
+
+    _injectEditToolbarIcons(elements) {
+        const iconMap = {
+            batchMoveButton: 'FolderInput',
+            batchOpenButton: 'ExternalLink',
+            batchDeleteButton: 'Trash2',
+            exitEditModeButton: 'X'
+        };
+        for (const [key, iconName] of Object.entries(iconMap)) {
+            if (elements[key]) {
+                elements[key].innerHTML = IconPicker.getIconSvg(iconName, 16);
+            }
+        }
+    }
+
     initBookmarkListEditMode() {
         const editElements = {
             container: document.querySelector('.container'),
             bookmarkList: document.getElementById('bookmarks-list'),
             selectAllCheckbox: document.getElementById('select-all-checkbox'),
             selectedCountElement: document.getElementById('selected-count'),
+            batchMoveButton: document.getElementById('batch-move-btn'),
             batchDeleteButton: document.getElementById('batch-delete-btn'),
             batchOpenButton: document.getElementById('batch-open-btn'),
             exitEditModeButton: document.getElementById('exit-edit-mode-btn')
         }
+        this._injectEditToolbarIcons(editElements);
         const callbacks = {
             showStatus: updateStatus,
             showDialog: this.showDialog,
-            afterDelete: this.refreshBookmarksList
+            afterDelete: this.refreshBookmarksList,
+            onBatchMove: (mgr) => this.openBatchMoveSelector(mgr),
+            onExitEditMode: () => this.batchMoveSelector?.closePopover()
         }
         this.editManager = new BookmarkEditManager(editElements, callbacks, 'bookmark-item');
     }
 
     initSearchListEditMode() {
-        // 准备编辑管理器需要的元素和回调
         const editElements = {
             container: document.querySelector('.search-content'),
             bookmarkList: document.getElementById('search-results'),
             selectAllCheckbox: document.getElementById('search-select-all-checkbox'),
             selectedCountElement: document.getElementById('search-selected-count'),
+            batchMoveButton: document.getElementById('search-batch-move-btn'),
             batchDeleteButton: document.getElementById('search-batch-delete-btn'),
             batchOpenButton: document.getElementById('search-batch-open-btn'),
             exitEditModeButton: document.getElementById('search-exit-edit-mode-btn')
         };
+        this._injectEditToolbarIcons(editElements);
         const callbacks = {
             showStatus: updateStatus,
             showDialog: this.showDialog,
-            afterDelete: this.refreshBookmarksList
+            afterDelete: this.refreshBookmarksList,
+            onBatchMove: (mgr) => this.openBatchMoveSelector(mgr),
+            onExitEditMode: () => this.batchMoveSelector?.closePopover()
         };
-        // 创建编辑管理器实例
         this.searchEditManager = new BookmarkEditManager(editElements, callbacks, 'result-item');
     }
 
@@ -628,6 +1036,7 @@ class BookmarkManager {
         this.elements.required.privacyIcon.addEventListener('click', this.handlePrivacyIconClick.bind(this));
         this.setupTagsDialogEvents();
         this.setupStorageListener();
+        this.setupBrowserBookmarkSelectorListener();
     }
 
     async handleSyncClick() {
@@ -683,14 +1092,17 @@ class BookmarkManager {
             switch (state) {
                 case 'syncing':
                     syncButton.classList.add('syncing');
-                    syncButton.title = '同步中...';
+                    syncButton.setAttribute('data-i18n-title', 'popup_sync_syncing');
+                    syncButton.title = i18n.getMessage('popup_sync_syncing');
                     break;
                 case 'error':
                     syncButton.classList.add('error');
-                    syncButton.title = '同步失败';
+                    syncButton.setAttribute('data-i18n-title', 'popup_status_sync_failed');
+                    syncButton.title = i18n.getMessage('popup_status_sync_failed');
                     break;
                 default:
-                    syncButton.title = '同步';
+                    syncButton.setAttribute('data-i18n-title', 'popup_sync_button_text');
+                    syncButton.title = i18n.getMessage('popup_sync_button_text');
                     break;
             }
         } catch (error) {
@@ -700,6 +1112,43 @@ class BookmarkManager {
 
     showDialog(params) {
         this.alertDialog.show(params);
+    }
+
+    closeTagsDialog(event = null) {
+        event?.stopPropagation?.();
+        event?.preventDefault?.();
+
+        const dialog = this.elements.required.dialog;
+        dialog.classList.remove('show');
+        if (!this.isEditMode) {
+            updateStatus(i18n.getMessage('popup_status_cancel_save'), false);
+        }
+        this.resetEditMode();
+        if (this.excerptRequest) {
+            this.excerptRequest.abort();
+            this.excerptRequest = null;
+        }
+        this._resolveTagsReady = null;
+        this._tagsReadyPromise = null;
+
+        return true;
+    }
+
+    handleTagsDialogEscape(event) {
+        if (this.browserBookmarkSelector?.consumeEscapeKey?.(event)) {
+            return true;
+        }
+
+        const dialog = this.elements.required.dialog;
+        if (event.key !== 'Escape' || !dialog?.classList.contains('show')) {
+            return false;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        this.closeTagsDialog();
+        return true;
     }
 
     setupTagsDialogEvents() {
@@ -715,20 +1164,11 @@ class BookmarkManager {
             pageExcerpt
         } = this.elements.optional;
 
-        // 基本的对话框关闭功能（必需）
-        const closeDialog = (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            dialog.classList.remove('show');
-            if (!this.isEditMode) {
-                updateStatus('已取消保存');
-            }
-            this.resetEditMode();
-            if (this.excerptRequest) {
-                this.excerptRequest.abort();
-                this.excerptRequest = null;
-            }
-        };
+        const closeDialog = (e) => this.closeTagsDialog(e);
+
+        document.addEventListener('keydown', (e) => {
+            this.handleTagsDialogEscape(e);
+        });
 
         // 必需的事件监听器
         dialog.addEventListener('click', (e) => {
@@ -756,7 +1196,7 @@ class BookmarkManager {
                             this.renderTags([...currentTags, newTag]);
                             newTagInput.value = '';
                         } else {
-                            updateStatus('标签已存在', true);
+                            updateStatus(i18n.getMessage('popup_tags_already_exists'), true);
                         }
                     }
                 }
@@ -765,12 +1205,15 @@ class BookmarkManager {
 
         if (tagsList) {
             tagsList.addEventListener('click', (e) => {
-                if (e.target.classList.contains('remove-tag-btn')) {
-                    // 点击删除按钮，删除标签
+                if (e.target.closest('.clear-all-tags-btn')) {
+                    this.renderTags([]);
+                } else if (e.target.classList.contains('remove-tag-btn')) {
                     const tagElement = e.target.parentElement;
                     tagElement.remove();
+                    if (this.getCurrentTags().length === 0) {
+                        this.renderTags([]);
+                    }
                 } else if (e.target.classList.contains('tag-text')) {
-                    // 点击标签本身，将标签内容设置到输入框中
                     const tagText = e.target.textContent.trim();
                     if (newTagInput && tagText) {
                         newTagInput.value = tagText;
@@ -786,8 +1229,8 @@ class BookmarkManager {
                 e.preventDefault();
                 const finalTags = this.getCurrentTags();
                 const title = this.getEditedTitle();
-                await this.saveBookmark(finalTags, title);
-                dialog.classList.remove('show');
+                const success = await this.saveBookmark(finalTags, title);
+                if (success) dialog.classList.remove('show');
             });
         }
 
@@ -801,10 +1244,10 @@ class BookmarkManager {
                 e.preventDefault();
                 
                 this.alertDialog.show({
-                    title: '确认删除',
-                    message: '确定要删除此书签吗？',
-                    primaryText: '删除',
-                    secondaryText: '取消',
+                    title: i18n.getMessage('popup_confirm_delete_title'),
+                    message: i18n.getMessage('msg_confirm_delete_bookmark'),
+                    primaryText: i18n.getMessage('action_delete_bookmark'),
+                    secondaryText: i18n.getMessage('ui_button_cancel'),
                     onPrimary: async () => {
                         dialog.classList.remove('show');
                         await this.handleUnsave(this.currentTab);
@@ -816,28 +1259,81 @@ class BookmarkManager {
 
 
         if (dialogTitle) { 
+            const { translateTitleBtn } = this.elements.optional;
+            
             const handlers = {
                 focus: () => {
                     dialogTitle.dataset.originalTitle = dialogTitle.textContent;
+                    // 显示翻译按钮
+                    if (translateTitleBtn) {
+                        translateTitleBtn.style.display = 'flex';
+                    }
                 },
                 
-                blur: () => {
+                blur: (e) => {
                     const newTitle = dialogTitle.textContent.trim();
                     if (!newTitle) {
                         dialogTitle.textContent = dialogTitle.dataset.originalTitle;
                     }
+                    
+                    // 如果失去焦点是因为点击了翻译按钮，则保持焦点
+                    if (translateTitleBtn && e.relatedTarget === translateTitleBtn) {
+                        setTimeout(() => {
+                            if (document.activeElement !== dialogTitle) {
+                                dialogTitle.focus();
+                            }
+                        }, 0);
+                        return;
+                    }
+                    
+                    // 延迟隐藏翻译按钮
+                    setTimeout(() => {
+                        if (document.activeElement !== dialogTitle && document.activeElement !== translateTitleBtn) {
+                            if (translateTitleBtn) {
+                                translateTitleBtn.style.display = 'none';
+                            }
+                        }
+                    }, 100);
                 },
                 
                 keydown: (e) => {
                     if (e.key === 'Escape') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
                         dialogTitle.textContent = dialogTitle.dataset.originalTitle;
                         dialogTitle.blur();
+                        return false;
+                    }
+                    // 监听撤销快捷键（只在翻译后支持）
+                    else if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+                        if (this.hasTranslated && this.originalTitle) {
+                            const currentText = dialogTitle.textContent.trim();
+                            if (currentText !== this.originalTitle) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                dialogTitle.textContent = this.originalTitle;
+                                dialogTitle.title = this.originalTitle;
+                                this.hasTranslated = false;
+                                return false;
+                            }
+                        }
                     }
                 },
                 keypress: (e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
                         dialogTitle.blur();
+                    }
+                },
+                
+                input: () => {
+                    // 用户手动编辑时，清除翻译标记
+                    if (this.hasTranslated) {
+                        const currentText = dialogTitle.textContent.trim();
+                        if (currentText !== this.originalTitle) {
+                            this.hasTranslated = false;
+                        }
                     }
                 }
             }
@@ -846,6 +1342,16 @@ class BookmarkManager {
             dialogTitle.addEventListener('blur', handlers.blur);
             dialogTitle.addEventListener('keydown', handlers.keydown);
             dialogTitle.addEventListener('keypress', handlers.keypress);
+            dialogTitle.addEventListener('input', handlers.input);
+            
+            // 翻译按钮点击事件 - 使用 mousedown 避免失去焦点
+            if (translateTitleBtn) {
+                translateTitleBtn.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.translateTitle();
+                });
+            }
         }
 
         if (pageUrl) {
@@ -874,6 +1380,20 @@ class BookmarkManager {
         if (generateExcerptBtn && pageExcerpt) {
             generateExcerptBtn.addEventListener('click', async () => {
                 await this.generateExcerpt(pageExcerpt);
+            });
+        }
+
+        const { generateTagsBtn } = this.elements.optional;
+        if (generateTagsBtn) {
+            generateTagsBtn.addEventListener('click', async () => {
+                if (generateTagsBtn.classList.contains('loading')) {
+                    if (this.tagRequest) {
+                        this.tagRequest.abort();
+                        this.tagRequest = null;
+                    }
+                    return;
+                }
+                await this.generateTagsForDialog({ useCache: false, interactive: true });
             });
         }
 
@@ -906,7 +1426,8 @@ class BookmarkManager {
         try {
             // 显示加载状态
             generateBtn.classList.add('loading');
-            generateBtn.title = "取消生成";
+            generateBtn.setAttribute('data-i18n-title', 'popup_tags_cancel_generate');
+            generateBtn.title = i18n.getMessage('popup_tags_cancel_generate');
 
             // 检查API Key是否有效
             await checkAPIKeyValid('chat');
@@ -924,23 +1445,92 @@ class BookmarkManager {
                 this.adjustTextareaHeight(textarea);
                 this.updateCharCount(textarea);
             } else {
-                throw new Error('摘要生成失败');
+                throw new Error(i18n.getMessage('popup_tags_generate_excerpt_failed'));
             }
         } catch (error) {
-            if (error.message.includes('UserCanceled')) {
-                updateStatus('已取消生成摘要', false);
+            if (isUserCanceledError(error)) {
+                updateStatus(i18n.getMessage('popup_tags_cancel_generate_excerpt'), false);
             } else {
                 updateStatus(`${error.message}`, true);
             }
         } finally {
             // 移除loading状态
             generateBtn.classList.remove('loading');
-            generateBtn.title = "AI生成摘要";
+            generateBtn.setAttribute('data-i18n-title', 'popup_tags_generate_excerpt_title');
+            generateBtn.title = i18n.getMessage('popup_tags_generate_excerpt_title');
             
             // 清理请求
             if (this.excerptRequest) {
                 this.excerptRequest.done();
                 this.excerptRequest = null;
+            }
+        }
+    }
+
+    async translateTitle() {
+        const { dialogTitle, translateTitleBtn } = this.elements.optional;
+        if (!dialogTitle || !translateTitleBtn) return;
+        
+        // 如果已经在loading状态，尝试取消请求
+        if (translateTitleBtn.classList.contains('loading')) {
+            if (this.translateRequest) {
+                this.translateRequest.abort();
+                this.translateRequest = null;
+            }
+            return;
+        }
+        
+        try {
+            // 显示加载状态
+            translateTitleBtn.classList.add('loading');
+            translateTitleBtn.setAttribute('data-i18n-title', 'ui_button_cancel_translate');
+            translateTitleBtn.title = i18n.M('ui_button_cancel_translate');
+
+            await checkAPIKeyValid('chat');
+
+            // 使用原始标题进行翻译，而不是当前标题
+            const textToTranslate = this.originalTitle || dialogTitle.textContent.trim();
+            if (!textToTranslate) {
+                throw new Error(i18n.M('msg_error_empty_title'));
+            }
+
+            // 创建可取消的请求
+            this.translateRequest = requestManager.create();
+
+            // 调用API进行翻译（使用原始标题）
+            const translatedText = await translateText(textToTranslate, this.translateRequest.signal);
+            
+            if (translatedText) {
+                // 保存原始标题（如果还没有保存）
+                if (!this.originalTitle) {
+                    this.originalTitle = dialogTitle.textContent.trim();
+                }
+                
+                // 替换标题内容
+                dialogTitle.textContent = translatedText;
+                dialogTitle.title = translatedText;
+                
+                // 标记已翻译，支持撤销
+                this.hasTranslated = true;
+            } else {
+                throw new Error(i18n.M('msg_error_translate_failed'));
+            }
+        } catch (error) {
+            if (isUserCanceledError(error)) {
+                updateStatus(i18n.M('msg_status_translate_canceled'), false);
+            } else {
+                updateStatus(error.message || i18n.M('msg_error_translate_failed'), true);
+            }
+        } finally {
+            // 移除loading状态
+            translateTitleBtn.classList.remove('loading');
+            translateTitleBtn.setAttribute('data-i18n-title', 'ui_button_translate_title');
+            translateTitleBtn.title = i18n.M('ui_button_translate_title');
+            
+            // 清理请求
+            if (this.translateRequest) {
+                this.translateRequest.done();
+                this.translateRequest = null;
             }
         }
     }
@@ -999,10 +1589,10 @@ class BookmarkManager {
             // 如果未设置跳过提示，显示欢迎对话框
             if (!skipApiKeyNotice && isInit) {
                 this.alertDialog.show({
-                    title: '欢迎使用',
-                    message: '您需要配置 API 服务才能使用书签搜索等核心功能。是否现在配置？',
-                    primaryText: '去配置',
-                    secondaryText: '暂不配置',
+                    title: i18n.getMessage('popup_welcome_title'),
+                    message: i18n.getMessage('popup_welcome_message'),
+                    primaryText: i18n.getMessage('popup_welcome_configure'),
+                    secondaryText: i18n.getMessage('popup_welcome_later'),
                     onPrimary: () => {
                         openOptionsPage('services');
                     },
@@ -1064,12 +1654,21 @@ class BookmarkManager {
                 if (changes[ConfigManager.STORAGE_KEYS.SERVICE_TYPES]) {
                     logger.debug('API Keys发生变化:', changes[ConfigManager.STORAGE_KEYS.SERVICE_TYPES], changes[ConfigManager.STORAGE_KEYS.SERVICE_TYPES]);
                     this.checkApiKeyConfig(false);
+                    if (settingsDialog) {
+                        settingsDialog.refreshServiceSelector();
+                    }
                 }
                 if (changes[ConfigManager.STORAGE_KEYS.API_KEYS]) {
                     this.checkApiKeyConfig(false);
+                    if (settingsDialog) {
+                        settingsDialog.refreshServiceSelector();
+                    }
                 }
                 if (changes[ConfigManager.STORAGE_KEYS.CUSTOM_SERVICES]) {
                     this.checkApiKeyConfig(false);
+                    if (settingsDialog) {
+                        settingsDialog.refreshServiceSelector();
+                    }
                 }
             } else if (areaName === 'local') {
                 // 监听重新生成索引状态
@@ -1084,12 +1683,128 @@ class BookmarkManager {
         });
     }
 
+    setupBrowserBookmarkSelectorListener() {
+        const handleBookmarkChange = () => {
+            this.scheduleBrowserBookmarkSelectorRefresh();
+        };
+
+        chrome.bookmarks.onCreated.addListener(handleBookmarkChange);
+        chrome.bookmarks.onRemoved.addListener(handleBookmarkChange);
+        chrome.bookmarks.onChanged.addListener(handleBookmarkChange);
+        chrome.bookmarks.onMoved.addListener(handleBookmarkChange);
+    }
+
     getCurrentTags() {
         const { tagsList } = this.elements.required;
         if (!tagsList) return [];
         
         const tagElements = tagsList.querySelectorAll('.tag-text');
         return Array.from(tagElements).map(el => el.textContent.trim());
+    }
+
+    showTagsLoading() {
+        const { tagsList } = this.elements.required;
+        tagsList.innerHTML = `
+            <div class="loading-spinner"></div>
+            <span data-i18n="ui_label_tags_loading">正在生成标签...</span>
+        `;
+        tagsList.classList.add('loading');
+        i18n.updateNodeText(tagsList);
+    }
+
+    setGenerateTagsButtonLoading(isLoading) {
+        const { generateTagsBtn } = this.elements.optional;
+        if (!generateTagsBtn) return;
+
+        generateTagsBtn.classList.toggle('loading', isLoading);
+        generateTagsBtn.title = i18n.getMessage(isLoading ? 'popup_tags_cancel_generate' : 'popup_tags_generate_tags_title');
+    }
+
+    async generateTagsForDialog({ useCache = false, interactive = false } = {}) {
+        if (this.isEditMode || !this.currentTab) return;
+
+        if (!interactive) {
+            const autoGenerate = await SettingsManager.get('ai.autoGenerateTags');
+            if (autoGenerate === false) {
+                this.generatedTags = [];
+                this.renderTags([]);
+                this.notifyTagsReady();
+                return;
+            }
+        }
+
+        const unclassifiedTag = i18n.M('ui_tag_unclassified');
+        const previousTags = this.getCurrentTags();
+
+        // 内存缓存命中：不展示加载态、不调 API
+        if (useCache && this.tagCache.url === this.currentTab.url && this.tagCache.tags.length > 0) {
+            logger.debug('使用缓存的标签:', this.tagCache.tags);
+            this.generatedTags = this.tagCache.tags;
+            this.renderTags(this.generatedTags);
+            this.notifyTagsReady();
+            return;
+        }
+
+        // 手动生成：未配置时直接提示并返回，不进入标签区 loading
+        if (interactive) {
+            try {
+                await checkAPIKeyValid('chat');
+            } catch (error) {
+                updateStatus(`${error.message}`, true);
+                this.notifyTagsReady();
+                return;
+            }
+        } else {
+            // 自动拉取：未配置时静默为未分类，不提示、不展示加载
+            try {
+                await checkAPIKeyValid('chat');
+            } catch {
+                this.generatedTags = [unclassifiedTag];
+                this.renderTags(this.generatedTags);
+                this.notifyTagsReady();
+                return;
+            }
+        }
+
+        this.showTagsLoading();
+        this.setGenerateTagsButtonLoading(true);
+
+        try {
+            this.tagRequest = requestManager.create('popup_generate_tags');
+            const tags = await generateTags(this.pageContent, this.currentTab, this.tagRequest.signal);
+
+            if (tags && tags.length > 0) {
+                this.generatedTags = tags;
+                this.tagCache = {
+                    url: this.currentTab.url,
+                    tags
+                };
+                this.renderTags(tags);
+            } else {
+                this.generatedTags = [unclassifiedTag];
+                this.renderTags(this.generatedTags);
+            }
+        } catch (error) {
+            logger.error('生成标签失败:', error);
+            if (isUserCanceledError(error)) {
+                updateStatus(i18n.getMessage('popup_tags_cancel_generate'), false);
+                this.generatedTags = previousTags;
+                this.renderTags(previousTags);
+                return;
+            }
+            if (interactive) {
+                updateStatus(`${error.message}`, true);
+            }
+            this.generatedTags = [unclassifiedTag];
+            this.renderTags(this.generatedTags);
+        } finally {
+            this.setGenerateTagsButtonLoading(false);
+            if (this.tagRequest) {
+                this.tagRequest.done();
+                this.tagRequest = null;
+            }
+            this.notifyTagsReady();
+        }
     }
 
     // 验证URL格式
@@ -1102,7 +1817,7 @@ class BookmarkManager {
             new URL(url);
         } catch (error) {
             // URL无效，恢复原始URL
-            updateStatus('URL格式错误', true);
+            updateStatus(i18n.getMessage('popup_url_format_error'), true);
             pageUrl.textContent = this.currentTab?.url;
         }
     }
@@ -1141,34 +1856,43 @@ class BookmarkManager {
                 const isSaved = await checkIfPageSaved(tab.url);
                 
                 if (isSaved) {
-                    const bookmark = await LocalStorageMgr.getBookmark(tab.url, true);
-                    this.handleEdit(bookmark);
-                    return;
+                    const bookmarks = await getAllBookmarks(false);
+                    const bookmark = bookmarks[tab.url] || Object.values(bookmarks).find(b => b.url === tab.url);
+                    logger.debug('handleSaveClick bookmark', {
+                        bookmark: bookmark,
+                        tab: tab,
+                        isSaved: isSaved,
+                    });
+                    if (bookmark) {
+                        this.handleEdit(bookmark);
+                        return;
+                    }
                 }
 
                 // 添加对非http页面的检查
                 if (isNonMarkableUrl(tab.url)) {
-                    updateStatus('基于浏览器安全策略，不支持保存此页面', false);
+                    updateStatus(i18n.getMessage('msg_status_page_unsupported'), false);
                     return;
                 }
 
                 await this.processAndShowTags(tab);
             } else {
-                updateStatus('基于浏览器安全策略，不支持保存此页面', false);
+                updateStatus(i18n.getMessage('msg_status_page_unsupported'), false);
             }
         } catch (error) {
             logger.error('保存过程中出错:', error);
-            updateStatus('保存失败: ' + error.message, true);
+            updateStatus(i18n.getMessage('msg_error_save_failed', [error.message]), true);
         } finally {
             SaveManager.endSave(this);
         }
     }
 
     async handleUnsave(tab) {
-        const bookmark = await LocalStorageMgr.getBookmark(tab.url, true);
+        const bookmarks = await getAllBookmarks(false);
+        const bookmark = bookmarks[tab.url] || Object.values(bookmarks).find(b => b.url === tab.url);
         if (bookmark) {
-            await LocalStorageMgr.removeBookmark(tab.url);
-            updateStatus('已取消收藏');
+            await bookmarkOps.deleteBookmark(bookmark);
+            updateStatus(i18n.getMessage('popup_status_cancel_bookmark'), false);
             await refreshBookmarksInfo();
         }
     }
@@ -1179,7 +1903,7 @@ class BookmarkManager {
                 this.pageContent = {};
                 logger.debug('页面正在加载中，不访问页面内容', tab);
             } else {
-                updateStatus('页面正在加载中，请等待加载完成后再试', true);
+                updateStatus(i18n.getMessage('msg_status_page_loading'), true);
                 return;
             }
         } else {
@@ -1187,19 +1911,15 @@ class BookmarkManager {
             logger.debug('获取页面内容:', this.pageContent);
         }
 
-        // 检查是否有缓存的标签
-        if (this.tagCache.url === tab.url && this.tagCache.tags.length > 0) {
-            logger.debug('使用缓存的标签:', this.tagCache.tags);
-            this.generatedTags = this.tagCache.tags;
-        } else {
-            // 没有缓存或URL不匹配，重新生成标签
-            StatusManager.startOperation('正在生成标签');
-            this.generatedTags = await generateTags(this.pageContent, tab);
-            StatusManager.endOperation('标签生成完成');
-        }   
+        const cachedTags = this.tagCache.url === tab.url ? this.tagCache.tags : [];
+        this.generatedTags = cachedTags;
 
-        // 直接显示标签对话框
-        await this.showTagsDialog(this.generatedTags);
+        await this.showTagsDialog(cachedTags);
+        if (cachedTags.length > 0) {
+            return;
+        }
+
+        void this.generateTagsForDialog({ useCache: true });
     }
 
     // 添加重置编辑模式的方法
@@ -1218,6 +1938,10 @@ class BookmarkManager {
             title: bookmark.title
         };
         
+        // 保存原始标题
+        this.originalTitle = bookmark.title;
+        this.hasTranslated = false; // 重置翻译标记
+        
         // 设置页面内容
         this.pageContent = {
             title: bookmark.title,
@@ -1235,7 +1959,6 @@ class BookmarkManager {
         const dialogUrl = dialog.querySelector('.page-url');
         const dialogFavicon = dialog.querySelector('.page-favicon img');
         const dialogExcerpt = dialog.querySelector('#page-excerpt');
-        const recommendedTags = dialog.querySelector('.recommended-tags');
         const deleteBookmarkBtn = dialog.querySelector('#delete-bookmark-btn');
 
         if (this.isEditMode) {
@@ -1255,6 +1978,11 @@ class BookmarkManager {
 
         // 设置删除按钮
         deleteBookmarkBtn.style.display = this.isEditMode ? 'flex' : 'none';
+        
+        // 保存原始标题
+        this.originalTitle = this.currentTab.title;
+        this.hasTranslated = false; // 重置翻译标记
+        
         // 设置标题
         dialogTitle.textContent = this.currentTab.title;
         dialogTitle.title = this.currentTab.title;
@@ -1279,60 +2007,52 @@ class BookmarkManager {
             dialogExcerpt.value = this.pageContent.excerpt;
         } else {
             dialogExcerpt.value = '';
-            dialogExcerpt.placeholder = '添加或编辑书签摘要...';
+            dialogExcerpt.setAttribute('data-i18n', 'popup_tags_excerpt_placeholder');
+            dialogExcerpt.placeholder = i18n.getMessage('popup_tags_excerpt_placeholder');
         }
+        
+        // 渲染已有标签
+        this.renderTags(tags);
+        await this.prepareBrowserBookmarkSelectorForDialog();
+        
+        // 显示对话框
+        dialog.classList.add('show');
         requestAnimationFrame(() => {
             this.adjustTextareaHeight(dialogExcerpt);
             this.updateCharCount(dialogExcerpt);
         });
-        
-        // 处理推荐标签
-        recommendedTags.innerHTML = '';
-        const metaKeywords = this.pageContent?.metadata?.keywords;
-        if (metaKeywords) {
-            const keywordTags = metaKeywords
-                .split(/[,，;；]/)
-                .map(tag => tag.trim())
-                .filter(tag => tag.length > 0 && tag.length <= 20)
-                .slice(0, 10);
-                
-            if (keywordTags.length > 0) {
-                // 限制推荐标签数量
-                const maxRecommendedTags = 10;
-                const limitedTags = keywordTags.slice(0, maxRecommendedTags);
-                
-                // 在生成推荐标签的部分
-                const recommendedTagsHtml = `
-                    <div class="recommended-tags-title">推荐标签：</div>
-                    <div class="recommended-tags-list">
-                        ${limitedTags.map(tag => `<span class="tag" data-tag="${tag}">${tag}</span>`).join('')}
-                    </div>
-                `;
-                
-                recommendedTags.innerHTML = recommendedTagsHtml;
-                
-                // 为推荐标签添加点击事件
-                recommendedTags.querySelectorAll('.tag').forEach(tagElement => {
-                    tagElement.addEventListener('click', () => {
-                        const tag = tagElement.dataset.tag;
-                        const currentTags = this.getCurrentTags();
-                        if (!currentTags.includes(tag)) {
-                            this.renderTags([...currentTags, tag]);
-                        }
-                    });
-                });
-            }
+        if (this.isEditMode) {
+            this.browserBookmarkSelector?.clearRecommendations();
+        } else {
+            this.scheduleAutoRecommend(tags.length > 0);
         }
+    }
 
-        // 渲染已有标签
-        this.renderTags(tags);
-        
-        // 显示对话框
-        dialog.classList.add('show');
+    scheduleAutoRecommend(tagsReady) {
+        if (tagsReady) {
+            void this.browserBookmarkSelector?.autoRecommend();
+            return;
+        }
+        this._resolveTagsReady = null;
+        this._tagsReadyPromise = new Promise(resolve => {
+            this._resolveTagsReady = resolve;
+        });
+        void this._tagsReadyPromise.then(() => {
+            this.browserBookmarkSelector?.autoRecommend();
+        });
+    }
+
+    notifyTagsReady() {
+        if (this._resolveTagsReady) {
+            this._resolveTagsReady();
+            this._resolveTagsReady = null;
+            this._tagsReadyPromise = null;
+        }
     }
 
     renderTags(tags) {
         const tagsList = document.getElementById('tags-list');
+        tagsList.classList.remove('loading');
         tagsList.innerHTML = '';
         
         tags.forEach(tag => {
@@ -1344,6 +2064,14 @@ class BookmarkManager {
             `;
             tagsList.appendChild(tagElement);
         });
+
+        if (tags.length > 0) {
+            const clearBtn = document.createElement('button');
+            clearBtn.className = 'clear-all-tags-btn';
+            clearBtn.title = i18n.getMessage('ui_tags_clear_all_title');
+            clearBtn.innerHTML = `<svg viewBox="0 0 24 24" width="12" height="12"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>${i18n.getMessage('ui_tags_clear_all')}`;
+            tagsList.appendChild(clearBtn);
+        }
     }
 
     getEditedExcerpt() {
@@ -1354,45 +2082,87 @@ class BookmarkManager {
     async saveBookmark(tags, title) {
         try {
             if (!this.currentTab) {
-                throw new Error('页面信息获取失败');
+                throw new Error(i18n.getMessage('popup_page_info_fetch_failed'));
             }
-            StatusManager.startOperation(this.isEditMode ? '正在更新书签' : '正在保存书签');
+            const operationKey = this.isEditMode ? 'popup_status_updating_bookmark' : 'msg_status_saving_bookmark';
+            StatusManager.startOperation(i18n.getMessage(operationKey));
             
-            // 获取编辑后的 URL 和摘要
             const url = this.getEditedUrl();
             const editedExcerpt = this.getEditedExcerpt();
-            const pageInfo = {
-                url: url,
-                title: title,
-                tags: tags,
+            const updates = {
+                url,
+                title,
+                tags,
                 excerpt: editedExcerpt,
                 savedAt: this.isEditMode ? this.editingBookmark.savedAt : Date.now(),
                 useCount: this.isEditMode ? this.editingBookmark.useCount : 1,
                 lastUsed: this.isEditMode ? this.editingBookmark.lastUsed : Date.now(),
             };
 
-            // 打印书签编辑信息
             logger.debug('书签编辑信息:', {
                 isEditMode: this.isEditMode,
                 before: this.isEditMode ? this.editingBookmark : null,
-                after: pageInfo
+                after: updates
             });
 
-            // 如果编辑模式下URL发生变化，则先删除旧书签
+            // 编辑改 URL 冲突：新 URL 已存在时提示合并确认
             if (this.isEditMode && this.editingBookmark.url !== url) {
-                await LocalStorageMgr.removeBookmark(this.editingBookmark.url);
+                const existing = await LocalStorageMgr.getBookmark(url, true);
+                if (existing) {
+                    const confirmed = await new Promise(resolve => {
+                        const bm = getBookmarkManager();
+                        if (!bm?.alertDialog) {
+                            resolve(true);
+                            return;
+                        }
+                        bm.alertDialog.show({
+                            title: i18n.getMessage('popup_confirm_delete_title'),
+                            message: i18n.getMessage('popup_url_merge_confirm'),
+                            primaryText: i18n.getMessage('popup_alert_confirm') || '确定',
+                            secondaryText: i18n.getMessage('ui_button_cancel'),
+                            onPrimary: () => resolve(true),
+                            onSecondary: () => resolve(false)
+                        });
+                    });
+                    if (!confirmed) {
+                        StatusManager.endOperation(i18n.getMessage('popup_status_cancel_save'), false);
+                        this.resetEditMode();
+                        return;
+                    }
+                }
             }
-                        
-            await updateBookmarksAndEmbedding(pageInfo);
+
+            // 统一使用 bookmarkOps 更新（extension + Chrome）
+            const bookmarkToUpdate = this.isEditMode ? this.editingBookmark : { url, title, tags: updates.tags, excerpt: updates.excerpt, savedAt: updates.savedAt, useCount: updates.useCount, lastUsed: updates.lastUsed, _presence: 'extension_only' };
+            const browserSave = await this.resolveBrowserBookmarkSaveForSubmit();
+            if (this.browserBookmarkSelector) {
+                this.browserBookmarkSelector.setValue(browserSave);
+            }
+            const bookmarkOperationResult = await bookmarkOps.updateBookmark(
+                bookmarkToUpdate,
+                updates,
+                this.isEditMode && this.editingBookmark.url !== url ? this.editingBookmark.url : null,
+                { browserSave }
+            );
+            if (BrowserBookmarkSelector.shouldPersistPreferenceAfterBookmarkSave({
+                isEditMode: this.isEditMode,
+                bookmarkOperationResult
+            })) {
+                await this.persistBrowserBookmarkPreference(browserSave);
+            }
 
             await refreshBookmarksInfo();
-            StatusManager.endOperation(this.isEditMode ? '书签更新成功' : '书签保存成功', false);
+            const successKey = this.isEditMode ? 'popup_status_update_success' : 'msg_status_save_success';
+            StatusManager.endOperation(i18n.getMessage(successKey), false);
+            this.resetEditMode();
+            return true;
         } catch (error) {
             logger.error('保存书签时出错:', error);
-            StatusManager.endOperation(this.isEditMode ? '书签更新失败' : '书签保存失败', true);
-        } finally {
+            const failKey = this.isEditMode ? 'popup_status_update_failed' : 'msg_error_save_failed';
+            StatusManager.endOperation(i18n.getMessage(failKey, [error.message]), true);
             this.resetEditMode();
-        }   
+            return false;
+        }
     }
 }
 
@@ -1401,11 +2171,9 @@ async function updateSearchResults() {
     if (searchInput.value) {
         logger.debug('更新搜索结果');
         const query = searchInput.value.trim();
-        const includeChromeBookmarks = await SettingsManager.get('display.showChromeBookmarks');
         const results = await searchBookmarksFromBackground(query, {
             debounce: false,
-            includeUrl: true,
-            includeChromeBookmarks: includeChromeBookmarks
+            includeUrl: true
         });
         displaySearchResults(results, query);
     }
@@ -1430,12 +2198,13 @@ function displaySearchResults(results, query) {
                     </svg>
                 </div>
                 <div class="empty-message">
-                    <div class="empty-title">未找到相关书签</div>
-                    <div class="empty-detail">没有找到与"${query}"相关的书签</div>
-                    <div class="empty-suggestion">建议尝试其他关键词</div>
+                    <div class="empty-title" data-i18n="popup_search_no_results_title"></div>
+                    <div class="empty-detail">${i18n.getMessage('popup_search_no_results_detail', [query])}</div>
+                    <div class="empty-suggestion" data-i18n="popup_search_no_results_suggestion"></div>
                 </div>
             </div>
         `;
+        i18n.updateNodeText(resultsContainer);
         return;
     }
 
@@ -1463,16 +2232,15 @@ function displaySearchResults(results, query) {
             return text.length > 100 ? text.slice(0, 100) + '...' : text;
         };
 
-        const tags = result.tags.map(tag => 
-            result.source === BookmarkSource.CHROME ? 
-            `<span class="tag folder-tag">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12">
-                    <path fill="currentColor" d="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z"/>
-                </svg>
-                ${tag}
-            </span>` :
-            `<span class="tag">${tag}</span>`
-        ).join('');
+        const firstTag = result.tags.length > 0 ? (
+            result.source === BookmarkSource.CHROME
+                ? `<span class="tag folder-tag">${result.tags[0]}</span>`
+                : `<span class="tag">${result.tags[0]}</span>`
+        ) : '';
+        const restCount = result.tags.length - 1;
+        const tagsHtml = firstTag + (restCount > 0
+            ? `<span class="tag-overflow-count" title="${result.tags.slice(1).join(', ')}">+${restCount}</span>`
+            : '');
 
         const preview = truncateExcerpt(result.excerpt || '');
 
@@ -1514,20 +2282,32 @@ function displaySearchResults(results, query) {
             </div>`;
         };
 
-        const editBtnHtml = result.source !== BookmarkSource.EXTENSION ? '' : `
-            <button class="action-btn edit-btn" title="编辑">
+        const editTitle = i18n.getMessage('action_edit_bookmark');
+        const editBtnHtml = (result.source === BookmarkSource.EXTENSION || result.source === BookmarkSource.CHROME) ? `
+            <button class="action-btn edit-btn" data-i18n-title="action_edit_bookmark" title="${editTitle}">
                 <svg viewBox="0 0 24 24" width="20" height="20">
                     <path fill="currentColor" d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" />
                 </svg>
             </button>
-        `;
+        ` : '';
         
-        const formattedDate = result.savedAt ? new Date(result.savedAt).toLocaleDateString(navigator.language, {year: 'numeric', month: 'long', day: 'numeric'}) : '未知时间';
+        const unknownTime = i18n.getMessage('popup_time_unknown');
+        const formattedDate = result.savedAt ? new Date(result.savedAt).toLocaleDateString(navigator.language, {year: 'numeric', month: 'long', day: 'numeric'}) : unknownTime;
+
+        const folderPathText = !bookmarkOps.isExtensionOnly(result) ? formatBookmarkFolderPath(result.folderTags) : '';
+        const folderPathSlot = folderPathText
+            ? `<div class="result-folder-path">
+                <svg class="result-folder-path-icon" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                    <path fill="currentColor" d="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z"/>
+                </svg>
+                <span class="result-folder-path-text"></span>
+            </div>`
+            : '';
 
         // 添加选择复选框
         li.innerHTML = `
             <div class="bookmark-checkbox">
-                <input type="checkbox" title="选择此书签">
+                <input type="checkbox" data-i18n-title="popup_select_bookmark" title="">
             </div>
             <a href="${result.url}" class="result-link" target="_blank">
                 <div class="result-header">
@@ -1541,20 +2321,16 @@ function displaySearchResults(results, query) {
                 </div>
                 <div class="result-url" title="${result.url}">${result.url}</div>
                 <div class="result-preview" title="${result.excerpt || ''}">${preview}</div>
-                <div class="result-tags">${tags}</div>
-                <!-- 书签底部信息栏 -->
-                <div class="result-metadata">
-                    <div class="result-saved-time" title="收藏于 ${formattedDate}">
-                        <svg viewBox="0 0 24 24" width="14" height="14">
-                            <path fill="currentColor" d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z" />
-                        </svg>
-                        <span>${formattedDate}</span>
+                ${(tagsHtml || folderPathSlot) ? `<div class="result-footer">
+                    <div class="result-tags">${tagsHtml}</div>
+                    <div class="result-metadata">
+                        ${folderPathSlot}
                     </div>
-                </div>
+                </div>` : ''}
             </a>
             
             <!-- 添加三点菜单按钮 -->
-            <div class="more-actions-btn" title="更多操作">
+            <div class="more-actions-btn" data-i18n-title="popup_more_actions" title="">
                 <svg viewBox="0 0 24 24" width="16" height="16">
                     <circle cx="12" cy="5" r="2.2" fill="currentColor" />
                     <circle cx="12" cy="12" r="2.2" fill="currentColor" />
@@ -1566,14 +2342,14 @@ function displaySearchResults(results, query) {
             <div class="actions-menu">
                 <div class="actions-menu-content">
                     ${editBtnHtml}
-                    <button class="action-btn delete-btn" title="删除">
+                    <button class="action-btn delete-btn" data-i18n-title="action_delete_bookmark" title="">
                         <svg viewBox="0 0 24 24" width="20" height="20">
                         <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
                         </svg>
                     </button>
                 </div>
                 <div class="actions-menu-header">
-                    <button class="close-menu-btn" title="关闭">
+                    <button class="close-menu-btn" data-i18n-title="ui_button_close" title="">
                         <svg viewBox="0 0 24 24" width="20" height="20">
                             <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"></path>
                         </svg>
@@ -1581,6 +2357,15 @@ function displaySearchResults(results, query) {
                 </div>
             </div>
         `;
+
+        if (folderPathText) {
+            const folderWrap = li.querySelector('.result-folder-path');
+            const folderTextEl = folderWrap?.querySelector('.result-folder-path-text');
+            if (folderWrap && folderTextEl) {
+                folderTextEl.textContent = folderPathText;
+                folderWrap.title = folderPathText;
+            }
+        }
 
         // 为图标添加错误处理
         const img = li.querySelector('.result-favicon img');
@@ -1595,10 +2380,10 @@ function displaySearchResults(results, query) {
             if (isNonMarkableUrl(result.url)) {
                 e.preventDefault();
                 // 显示提示并提供复制链接选项
-                const copyConfirm = confirm('此页面无法直接打开。是否复制链接到剪贴板？');
+                const copyConfirm = confirm(i18n.getMessage('popup_copy_link_confirm'));
                 if (copyConfirm) {
                     await navigator.clipboard.writeText(result.url);
-                    updateStatus('链接已复制到剪贴板');
+                    updateStatus(i18n.getMessage('popup_link_copied'), false);
                 }
             } else {
                 // 获取用户的打开方式配置
@@ -1725,6 +2510,9 @@ function displaySearchResults(results, query) {
             });
         }
 
+        // 更新国际化文本
+        i18n.updateNodeText(li);
+
         return li;
     };
 
@@ -1744,27 +2532,20 @@ async function deleteBookmark(bookmark) {
         }
 
         bookmarkManager.alertDialog.show({
-            title: '确认删除',
-            message: '确定要删除此书签吗？',
-            primaryText: '删除',
-            secondaryText: '取消',
+            title: i18n.getMessage('popup_confirm_delete_title'),
+            message: i18n.getMessage('msg_confirm_delete_bookmark'),
+            primaryText: i18n.getMessage('action_delete_bookmark'),
+            secondaryText: i18n.getMessage('ui_button_cancel'),
             onPrimary: async () => {
-                // 先删除书签
-                if (bookmark.source === BookmarkSource.EXTENSION) {
-                    await LocalStorageMgr.removeBookmark(bookmark.url);
-                } else {
-                    await chrome.bookmarks.remove(bookmark.chromeId);
-                }
-                
-                // 并行执行所有UI更新
-                await refreshBookmarksInfo();
+                await bookmarkOps.deleteBookmark(bookmark);
 
-                updateStatus('书签已成功删除', false);
+                await refreshBookmarksInfo();
+                updateStatus(i18n.getMessage('popup_bookmark_deleted_success'), false);
             }
         });
     } catch (error) {
         logger.error('删除书签时出错:', error);
-        updateStatus('删除失败: ' + error.message, true);
+        updateStatus(i18n.getMessage('popup_bookmark_delete_failed', [error.message]), true);
     }
 }
 
@@ -1835,7 +2616,7 @@ function updateStatus(message, isError = false) {
 }
 
 function onSyncError(errorMessage) {
-    updateStatus('同步失败: ' + errorMessage, true);
+    updateStatus(i18n.getMessage('popup_sync_failed_with_error', [errorMessage]), true);
 }
 
 // 监听来自 background 的消息
@@ -1942,10 +2723,14 @@ function updateSaveButtonState(isSaved) {
     
     if (isSaved) {
         saveButton.classList.add('editing');
-        saveButton.title = `编辑书签 ${quickSaveKey}`;
+        const editTitle = i18n.getMessage('popup_toolbar_button_edit_title');
+        saveButton.setAttribute('data-i18n-title', 'popup_toolbar_button_edit_title');
+        saveButton.title = `${editTitle} ${quickSaveKey}`;
     } else {
         saveButton.classList.remove('editing');
-        saveButton.title = `为此页面添加书签 ${quickSaveKey}`;
+        const saveTitle = i18n.getMessage('popup_toolbar_button_save_title');
+        saveButton.setAttribute('data-i18n-title', 'popup_toolbar_button_save_title');
+        saveButton.title = `${saveTitle} ${quickSaveKey}`;
     }
 }
 
@@ -1956,7 +2741,8 @@ async function updateBookmarkCount() {
         const count = Object.keys(allBookmarks).length;
         const bookmarkCount = document.getElementById('bookmark-count');
         bookmarkCount.setAttribute('data-count', count);
-        bookmarkCount.textContent = '书签';
+        bookmarkCount.setAttribute('data-i18n', 'popup_toolbar_bookmark_count');
+        bookmarkCount.textContent = i18n.getMessage('popup_toolbar_bookmark_count');
     } catch (error) {
         logger.error('获取收藏数量失败:', error);
     }
@@ -1965,7 +2751,29 @@ async function updateBookmarkCount() {
 // 保存当前渲染器实例的引用
 let currentRenderer = null;
 
-// 修改渲染书签列表函数
+/** 按排序字段对书签数组就地排序 */
+function sortBookmarks(bookmarks, sortBy) {
+    const [sortField, sortOrder] = sortBy.split('_');
+    const isAsc = sortOrder === 'asc';
+    bookmarks.sort((a, b) => {
+        let comparison = 0;
+        switch (sortField) {
+            case 'savedAt':
+                comparison = (b.savedAt || 0) - (a.savedAt || 0);
+                break;
+            case 'useCount':
+                comparison = (b.useCount || 0) - (a.useCount || 0);
+                if (comparison === 0) comparison = (b.savedAt || 0) - (a.savedAt || 0);
+                break;
+            case 'lastUsed':
+                comparison = (b.lastUsed || 0) - (a.lastUsed || 0);
+                if (comparison === 0) comparison = (b.savedAt || 0) - (a.savedAt || 0);
+                break;
+        }
+        return isAsc ? -comparison : comparison;
+    });
+}
+
 async function renderBookmarksList() {
     logger.debug('renderBookmarksList 开始');
     const bookmarksList = document.getElementById('bookmarks-list');
@@ -1990,26 +2798,40 @@ async function renderBookmarksList() {
         bookmarksList.innerHTML = `
             <li class="loading-state">
                 <div class="loading-spinner"></div>
-                <div class="loading-text">正在加载书签...</div>
+                <div class="loading-text" data-i18n="popup_status_loading"></div>
             </li>`;
+        i18n.updateNodeText(bookmarksList);
 
         const settings = await SettingsManager.getAll();
         const viewMode = settings.display.viewMode;
         const sortBy = settings.sort.bookmarks;
 
-        const data = viewMode === 'group'
-            ? Object.values(await getDisplayedBookmarks())
-            : await filterManager.getFilteredBookmarks();
+        let data;
+        if (viewMode === 'directory') {
+            data = await getBookmarksForDirectoryView();
+        } else if (viewMode === 'group') {
+            data = Object.values(await getDisplayedBookmarks());
+        } else {
+            data = await filterManager.getFilteredBookmarks();
+        }
 
-        let bookmarks = data.map((item) => ({
+        let bookmarks;
+        if (viewMode === 'directory') {
+            bookmarks = null;
+        } else {
+            bookmarks = data.map((item) => ({
                 ...item,
-                // 统一使用时间戳进行比较
                 savedAt: item.savedAt ? getDateTimestamp(item.savedAt) || 0 : 0,
                 useCount: calculateWeightedScore(item.useCount, item.lastUsed),
                 lastUsed: item.lastUsed ? getDateTimestamp(item.lastUsed) || 0 : 0
             }));
+        }
+
         // 添加空状态处理
-        if (bookmarks.length === 0) {
+        const isEmpty = viewMode === 'directory'
+            ? !data.facets || data.facets.size === 0
+            : bookmarks.length === 0;
+        if (isEmpty) {
             bookmarksList.innerHTML = `
                 <li class="empty-state">
                     <div class="empty-message">
@@ -2018,69 +2840,27 @@ async function renderBookmarksList() {
                                 <path fill="currentColor" d="M17,3H7A2,2 0 0,0 5,5V21L12,18L19,21V5A2,2 0 0,0 17,3M12,7A2,2 0 0,1 14,9A2,2 0 0,1 12,11A2,2 0 0,1 10,9A2,2 0 0,1 12,7Z" />
                             </svg>
                         </div>
-                        <div class="empty-title">还没有保存任何书签</div>
+                        <div class="empty-title" data-i18n="popup_no_bookmarks_yet"></div>
                         <div class="empty-actions">
                             <div class="action-item">
-                                <svg viewBox="0 0 24 24" width="16" height="16">
-                                    <path fill="currentColor" d="M17,3H7A2,2 0 0,0 5,5V21L12,18L19,21V5A2,2 0 0,0 17,3M12,7A2,2 0 0,1 14,9A2,2 0 0,1 12,11A2,2 0 0,1 10,9A2,2 0 0,1 12,7Z" />
-                                </svg>
-                                点击左上角的收藏图标开始收藏
-                            </div>
-                            <div class="action-item import-action">
-                                <svg viewBox="0 0 24 24" width="16" height="16">
-                                    <path fill="currentColor" d="M14,12L10,8V11H2V13H10V16M20,18V6C20,4.89 19.1,4 18,4H6A2,2 0 0,0 4,6V9H6V6H18V18H6V15H4V18A2,2 0 0,0 6,20H18A2,2 0 0,0 20,18Z" />
-                                </svg>
-                                <a href="#" class="import-link">导入浏览器书签</a>
+                                <span data-i18n="popup_empty_start_bookmark"></span>
                             </div>
                         </div>
                     </div>
                 </li>`;
-
-            // 为导入链接添加点击事件
-            const importLink = bookmarksList.querySelector('.import-link');
-            if (importLink) {
-                importLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    openOptionsPage('import-export');
-                });
-            }
+            i18n.updateNodeText(bookmarksList);
             return;
         }
 
-        // 根据选择的排序方式进行排序
-        const [sortField, sortOrder] = sortBy.split('_');
-        const isAsc = sortOrder === 'asc';
-        
-        bookmarks.sort((a, b) => {
-            let comparison = 0;
-            
-            switch (sortField) {
-                case 'savedAt':
-                    comparison = (b.savedAt || 0) - (a.savedAt || 0);
-                    break;
-                    
-                case 'useCount':
-                    comparison = (b.useCount || 0) - (a.useCount || 0);
-                    if (comparison === 0) {
-                        // 使用次数相同时，按保存时间排序
-                        comparison = (b.savedAt || 0) - (a.savedAt || 0);
-                    }
-                    break;
-                    
-                case 'lastUsed':
-                    comparison = (b.lastUsed || 0) - (a.lastUsed || 0);
-                    if (comparison === 0) {
-                        // 最后使用时间相同时，按保存时间排序
-                        comparison = (b.savedAt || 0) - (a.savedAt || 0);
-                    }
-                    break;
-            }
-            
-            return isAsc ? -comparison : comparison;
-        });
+        if (viewMode !== 'directory') {
+            sortBookmarks(bookmarks, sortBy);
+        }
 
         // 根据视图模式选择渲染器
-        if (viewMode === 'group') {
+        if (viewMode === 'directory') {
+            const tree = buildDirectoryViewTree(data);
+            currentRenderer = new DirectoryBookmarkRenderer(bookmarksList, tree);
+        } else if (viewMode === 'group') {
             currentRenderer = new GroupedBookmarkRenderer(bookmarksList, bookmarks);
         } else {
             currentRenderer = new BookmarkRenderer(bookmarksList, bookmarks);
@@ -2090,54 +2870,144 @@ async function renderBookmarksList() {
     } catch (error) {
         logger.error('渲染书签列表失败:', error);
         // 显示错误状态
+        const errorMessage = i18n.getMessage('popup_load_bookmarks_failed', [error.message]);
         bookmarksList.innerHTML = `
             <li class="error-state">
                 <div class="error-message">
-                    加载书签失败
-                    <br>
-                    ${error.message}
+                    ${errorMessage}
                 </div>
             </li>`;
-        updateStatus('加载书签失败: ' + error.message, true);
+        updateStatus(i18n.getMessage('popup_load_bookmarks_failed', [error.message]), true);
     }
 }
 
 async function refreshBookmarksInfo() {
-    await renderBookmarksList();
     await Promise.all([
         updateBookmarkCount(),
         updateTabState(),
         updateSearchResults(),
     ]);
+    await renderBookmarksList();
 }
 
-// 修改视图模式切换事件处理
-async function initializeViewModeSwitch() {
-    const viewButtons = document.querySelectorAll('.view-mode-button');
-    
-    // 初始化时设置保存的视图模式
-    const savedViewMode = await SettingsManager.get('display.viewMode');
-    viewButtons.forEach(button => {
-        if (button.dataset.mode === savedViewMode) {
-            button.classList.add('active');
-        } else {
-            button.classList.remove('active');
-        }
-    });
-    // 判断如果没有active的按钮，则设置为list
-    if (!Array.from(viewButtons).some(button => button.classList.contains('active'))) {
-        viewButtons[0].classList.add('active');
+// 视图模式切换：更新触发按钮显示和下拉选项选中状态
+function updateViewModeTriggerDisplay(mode) {
+    const trigger = document.getElementById('view-mode-trigger');
+    const listIcon = trigger?.querySelector('.view-mode-list-icon');
+    const groupIcon = trigger?.querySelector('.view-mode-group-icon');
+    const directoryIcon = trigger?.querySelector('.view-mode-directory-icon');
+    const options = document.querySelectorAll('.view-mode-option');
+
+    const titleKeys = {
+        list: 'popup_view_mode_list_title',
+        group: 'popup_view_mode_group_title',
+        directory: 'popup_view_mode_directory_title'
+    };
+    if (trigger) {
+        trigger.dataset.mode = mode;
+        const titleKey = titleKeys[mode] || titleKeys.list;
+        trigger.setAttribute('data-i18n-title', titleKey);
+        trigger.title = i18n.getMessage(titleKey);
+        if (listIcon) listIcon.style.display = mode === 'list' ? '' : 'none';
+        if (groupIcon) groupIcon.style.display = mode === 'group' ? '' : 'none';
+        if (directoryIcon) directoryIcon.style.display = mode === 'directory' ? '' : 'none';
     }
+    options.forEach(opt => {
+        opt.classList.toggle('selected', opt.dataset.mode === mode);
+    });
+}
+
+/** 列表视图显示全局排序；目录/分组视图隐藏（分组视图使用分组级排序） */
+function updateSortContainerVisibility(viewMode) {
+    const sortContainer = document.querySelector('.sort-container');
+    if (!sortContainer) return;
+    if (viewMode === 'list') {
+        sortContainer.style.display = '';
+    } else {
+        sortContainer.style.display = 'none';
+        document.getElementById('sort-dropdown')?.classList.remove('show');
+    }
+}
+
+/** 目录视图下显示操作栏（展开/收起/定位），非目录视图隐藏 */
+function updateDirectoryActionsVisibility(viewMode) {
+    const container = document.getElementById('directory-actions-container');
+    if (!container) return;
+    container.style.display = viewMode === 'directory' ? '' : 'none';
+}
+
+function updateGroupActionsVisibility(viewMode) {
+    const container = document.getElementById('group-actions-container');
+    if (!container) return;
+    container.style.display = viewMode === 'group' ? '' : 'none';
+}
+
+function initializeGroupActions() {
+    const manageBtn = document.getElementById('group-manage-btn');
+    if (!manageBtn) return;
+    manageBtn.title = i18n.getMessage('popup_manage_group');
+    manageBtn.addEventListener('click', () => {
+        openOptionsPage('filters');
+    });
+}
+
+function initializeDirectoryActions() {
+    const expandBtn = document.getElementById('directory-expand-all');
+    const collapseBtn = document.getElementById('directory-collapse-all');
+    const locateBtn = document.getElementById('directory-locate-current');
+    if (!expandBtn || !collapseBtn || !locateBtn) return;
+
+    expandBtn.title = i18n.getMessage('popup_directory_expand_all');
+    collapseBtn.title = i18n.getMessage('popup_directory_collapse_all');
+    locateBtn.title = i18n.getMessage('popup_directory_locate_current');
+
+    expandBtn.addEventListener('click', async () => {
+        if (currentRenderer?.rendererType !== 'directory') return;
+        await currentRenderer.expandAll();
+    });
+    collapseBtn.addEventListener('click', async () => {
+        if (currentRenderer?.rendererType !== 'directory') return;
+        await currentRenderer.collapseAll();
+    });
+    locateBtn.addEventListener('click', async () => {
+        const showNotFoundStatus = () => {
+            updateStatus(i18n.getMessage('popup_directory_locate_not_in_bookmarks'), false);
+        };
+        if (currentRenderer?.rendererType !== 'directory') {
+            showNotFoundStatus();
+            return;
+        }
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (!tab?.url) return;
+        const ok = await currentRenderer.revealBookmarkByUrl(tab.url);
+        if (!ok) showNotFoundStatus();
+    });
+}
+
+// 视图模式切换事件处理（下拉菜单样式，鼠标悬浮显示，点击后隐藏）
+async function initializeViewModeSwitch() {
+    const container = document.querySelector('.view-mode-container');
+    const options = document.querySelectorAll('.view-mode-option');
+
+    // 初始化时设置保存的视图模式
+    const savedViewMode = await SettingsManager.get('display.viewMode') || 'directory';
+    updateViewModeTriggerDisplay(savedViewMode);
     filterManager.toggleDisplayFilter(savedViewMode === 'list');
+    updateSortContainerVisibility(savedViewMode);
+    updateDirectoryActionsVisibility(savedViewMode);
+    updateGroupActionsVisibility(savedViewMode);
 
-    viewButtons.forEach(button => {
-        button.addEventListener('click', async () => {
-            const mode = button.dataset.mode;
-            if (button.classList.contains('active')) return;
+    // 移出容器时移除关闭状态，下次悬浮可再次显示
+    container.addEventListener('mouseleave', () => {
+        container.classList.remove('dropdown-closed');
+    });
 
-            // 更新按钮状态
-            viewButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
+    options.forEach(option => {
+        option.addEventListener('click', async () => {
+            const mode = option.dataset.mode;
+            if (option.classList.contains('selected')) return;
+
+            updateViewModeTriggerDisplay(mode);
 
             // 保存视图模式设置
             await updateSettingsWithSync({
@@ -2146,9 +3016,14 @@ async function initializeViewModeSwitch() {
                 }
             });
             filterManager.toggleDisplayFilter(mode === 'list');
+            updateSortContainerVisibility(mode);
+            updateDirectoryActionsVisibility(mode);
+            updateGroupActionsVisibility(mode);
 
-            // 切换视图模式
             await renderBookmarksList();
+
+            // 点击后隐藏下拉菜单
+            container.classList.add('dropdown-closed');
         });
     });
 }
@@ -2262,9 +3137,10 @@ class BookmarkRenderer {
         const li = document.createElement('li');
         li.className = 'bookmark-item';
         li.dataset.url = bookmark.url;
+        if (bookmark._nodeKey) li.dataset.nodeKey = bookmark._nodeKey;
 
-        const editBtn = bookmark.source === BookmarkSource.EXTENSION
-            ? `<button class="edit-btn" title="编辑">
+        const editBtn = (bookmark.source === BookmarkSource.EXTENSION || bookmark._presence === 'chrome_only')
+            ? `<button class="edit-btn" data-i18n-title="action_edit_bookmark" title="">
                     <svg viewBox="0 0 24 24" width="16" height="16">
                         <path fill="currentColor" d="M3,17.25V21H6.75L17.81,9.93L14.06,6.18M17.5,3C19.54,3 21.43,4.05 22.39,5.79L20.11,7.29C19.82,6.53 19.19,6 18.5,6A2.5,2.5 0 0,0 16,8.5V11H18V13H16V15H18V17.17L16.83,18H13V16H15V14H13V12H15V10H13V8.83"></path>
                     </svg>
@@ -2272,19 +3148,21 @@ class BookmarkRenderer {
             : '';
         
         li.innerHTML = `
-            <div class="bookmark-checkbox">
-                <input type="checkbox" title="选择此书签">
-            </div>
             <a href="${bookmark.url}" class="bookmark-link" target="_blank">
                 <div class="bookmark-info">
                     <div class="bookmark-main">
-                        <div class="bookmark-favicon">
-                            <img src="${await getFaviconUrl(bookmark.url)}" alt="" loading="lazy">
+                        <div class="bookmark-favicon-checkbox-wrap">
+                            <div class="bookmark-checkbox">
+                                <input type="checkbox" data-i18n-title="popup_select_bookmark" title="">
+                            </div>
+                            <div class="bookmark-favicon">
+                                <img src="${await getFaviconUrl(bookmark.url)}" alt="" loading="lazy">
+                            </div>
                         </div>
-                        <h3 class="bookmark-title"">${bookmark.title}</h3>
+                        <h3 class="bookmark-title">${bookmark.title}</h3>
                         <div class="bookmark-actions">
                             ${editBtn}
-                            <button class="delete-btn" title="删除">
+                            <button class="delete-btn" data-i18n-title="action_delete_bookmark" title="">
                                 <svg viewBox="0 0 24 24" width="16" height="16">
                                     <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
                                 </svg>
@@ -2294,6 +3172,9 @@ class BookmarkRenderer {
                 </div>
             </a>
         `;
+
+        // 更新国际化文本
+        i18n.updateNodeText(li);
 
         // 添加事件监听器
         this.setupBookmarkEvents(li, bookmark);
@@ -2383,6 +3264,11 @@ class BookmarkRenderer {
             });
         }
         
+        // 勾选框在 link 内，点击时阻止冒泡避免触发跳转
+        const checkboxWrap = li.querySelector('.bookmark-checkbox');
+        if (checkboxWrap) {
+            checkboxWrap.addEventListener('click', (e) => e.stopPropagation());
+        }
         // 添加复选框点击事件，进入编辑模式
         if (checkbox) {
             checkbox.addEventListener('change', async (e) => {
@@ -2490,12 +3376,15 @@ class GroupedBookmarkRenderer extends BookmarkRenderer {
             this.collapsedStates = new Map(Object.entries(groupCollapsedStates));
         }
 
-        // 获取所有自定义标签规则
-        const rules = customFilter.getRules();
+        const rules = customFilter.getVisibleRules();
+        const settings = await SettingsManager.getAll();
+        const globalSortBy = settings.sort.bookmarks;
+        this.groupSortSettings = settings.sort.groupSort || {};
         
-        // 按规则对书签进行分组
         for (const rule of rules) {
             const matchedBookmarks = await customFilter.filterBookmarks(this.allBookmarks, rule);
+            const sortBy = this.groupSortSettings[rule.id] || globalSortBy;
+            sortBookmarks(matchedBookmarks, sortBy);
             this.groups.push({
                 name: rule.name,
                 rule: rule,
@@ -2538,25 +3427,44 @@ class GroupedBookmarkRenderer extends BookmarkRenderer {
 
     async render() {
         this.container.innerHTML = '';
+        this._closeSortDropdown();
         
         for (const [index, group] of this.groups.entries()) {
             const groupElement = document.createElement('div');
             groupElement.className = 'bookmarks-group';
             
-            // 创建分组头部
             const header = document.createElement('div');
             header.className = 'group-header';
+            const rule = group.rule;
+            const groupColor = rule.color || '';
+            const colorStyle = groupColor ? ` style="color:${groupColor}"` : '';
+            
+            let groupIconHtml = '';
+            if (rule.icon) {
+                groupIconHtml = IconPicker.getIconSvg(rule.icon, 16, groupColor || null);
+            } else if (rule.color) {
+                groupIconHtml = IconPicker.getIconSvg(IconPicker.DEFAULT_ICON, 16, groupColor);
+            }
+            const iconSpan = groupIconHtml ? `<span class="group-icon">${groupIconHtml}</span>` : '';
+
+            const sortTitle = i18n.getMessage('popup_group_sort_title');
+            
             header.innerHTML = `
                 <svg class="group-toggle collapsed" viewBox="0 0 24 24" width="16" height="16">
                     <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"/>
                 </svg>
-                <span class="group-title">
+                <span class="group-title"${colorStyle}>
+                    ${iconSpan}
                     ${group.name}
                     <span class="group-count">${group.bookmarks.length}</span>
                 </span>
+                <button class="group-sort-button" data-group-id="${rule.id}" title="${sortTitle}">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/>
+                    </svg>
+                </button>
             `;
             
-            // 创建分组内容
             const content = document.createElement('div');
             content.className = 'group-content collapsed';
             
@@ -2571,21 +3479,28 @@ class GroupedBookmarkRenderer extends BookmarkRenderer {
                 
                 content.appendChild(bookmarksList);
             } else {
-                content.innerHTML = '<div class="group-empty">暂无书签</div>';
+                const emptyHtml = `<div class="group-empty" data-i18n="popup_group_empty"></div>`;
+                content.innerHTML = emptyHtml;
+                i18n.updateNodeText(content);
             }
+
+            // 排序按钮事件
+            const sortBtn = header.querySelector('.group-sort-button');
+            sortBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this._showSortDropdown(sortBtn, rule.id, group, content);
+            });
             
-            // 绑定折叠事件
-            header.addEventListener('click', () => {
+            // 折叠事件
+            header.addEventListener('click', (e) => {
+                if (e.target.closest('.group-sort-button')) return;
                 const toggle = header.querySelector('.group-toggle');
                 const isCollapsed = toggle.classList.toggle('collapsed');
                 content.classList.toggle('collapsed');
-                
-                // 更新并保存折叠状态
                 this.collapsedStates.set(group.rule.id, isCollapsed);
                 this.saveCollapsedStates();
             });
 
-            // 应用保存的折叠状态
             const isCollapsed = this.collapsedStates.get(group.rule.id);
             if (isCollapsed !== undefined) {
                 const toggle = header.querySelector('.group-toggle');
@@ -2597,7 +3512,6 @@ class GroupedBookmarkRenderer extends BookmarkRenderer {
                     content.classList.remove('collapsed');
                 }
             } else if (index === 0) {
-                // 如果是第一次打开，默认展开第一个分组
                 const toggle = header.querySelector('.group-toggle');
                 toggle.classList.remove('collapsed');
                 content.classList.remove('collapsed');
@@ -2609,29 +3523,1013 @@ class GroupedBookmarkRenderer extends BookmarkRenderer {
             groupElement.appendChild(content);
             this.container.appendChild(groupElement);
         }
-        
-        // 在所有分组之后添加"添加自定义书签"提示
-        const addCustomGroupTip = document.createElement('div');
-        addCustomGroupTip.className = 'add-custom-group-tip';
-        addCustomGroupTip.innerHTML = `
-            <div class="tip-content">
-                <svg viewBox="0 0 24 24" width="16" height="16">
-                    <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
-                </svg>
-                <span>添加分组</span>
-            </div>
-        `;
-        
-        // 添加点击事件，跳转到设置页面
-        addCustomGroupTip.addEventListener('click', () => {
-            openOptionsPage('filters');
-        });
-        
-        this.container.appendChild(addCustomGroupTip);
+    }
+
+    _closeSortDropdown() {
+        const existing = document.querySelector('.group-sort-dropdown');
+        if (existing) {
+            existing._anchorBtn?.classList.remove('active');
+            existing.remove();
+        }
+    }
+
+    _showSortDropdown(anchorBtn, ruleId, group, contentEl) {
+        const existing = document.querySelector('.group-sort-dropdown');
+        if (existing && existing._anchorBtn === anchorBtn) {
+            this._closeSortDropdown();
+            return;
+        }
+        this._closeSortDropdown();
+
+        const currentSort = this.groupSortSettings[ruleId] || 'savedAt_desc';
+        const options = [
+            { value: 'savedAt_desc', icon: 'icons/sort-saved-desc.svg', i18nKey: 'popup_sort_option_newest' },
+            { value: 'savedAt_asc', icon: 'icons/sort-saved-asc.svg', i18nKey: 'popup_sort_option_oldest' },
+            { value: 'useCount', icon: 'icons/sort-use-count.svg', i18nKey: 'popup_sort_option_most_used' },
+            { value: 'lastUsed', icon: 'icons/sort-latest.svg', i18nKey: 'popup_sort_option_recent_used' },
+        ];
+
+        const dropdown = document.createElement('div');
+        dropdown.className = 'group-sort-dropdown';
+        dropdown._anchorBtn = anchorBtn;
+
+        for (const opt of options) {
+            const item = document.createElement('div');
+            item.className = 'sort-option';
+            if (opt.value === currentSort) item.classList.add('selected');
+            item.innerHTML = `<img src="${opt.icon}" class="sort-icon"><span data-i18n="${opt.i18nKey}">${i18n.getMessage(opt.i18nKey)}</span>`;
+            item.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                this._closeSortDropdown();
+                if (opt.value === currentSort) return;
+
+                this.groupSortSettings[ruleId] = opt.value;
+                await updateSettingsWithSync({ sort: { groupSort: { ...this.groupSortSettings } } });
+
+                sortBookmarks(group.bookmarks, opt.value);
+                await this._rerenderGroupContent(contentEl, group.bookmarks);
+            });
+            dropdown.appendChild(item);
+        }
+
+        // 定位到按钮下方
+        const rect = anchorBtn.getBoundingClientRect();
+        dropdown.style.position = 'fixed';
+        dropdown.style.top = (rect.bottom + 4) + 'px';
+        dropdown.style.right = (window.innerWidth - rect.right) + 'px';
+        document.body.appendChild(dropdown);
+        anchorBtn.classList.add('active');
+
+        const closeOnClick = (e) => {
+            if (!dropdown.contains(e.target) && !anchorBtn.contains(e.target)) {
+                this._closeSortDropdown();
+                document.removeEventListener('click', closeOnClick);
+            }
+        };
+        setTimeout(() => document.addEventListener('click', closeOnClick), 0);
+    }
+
+    async _rerenderGroupContent(contentEl, bookmarks) {
+        contentEl.innerHTML = '';
+        if (bookmarks.length > 0) {
+            const bookmarksList = document.createElement('ul');
+            bookmarksList.className = 'bookmarks-list';
+            for (const bookmark of bookmarks) {
+                const el = await this.createBookmarkElement(bookmark);
+                bookmarksList.appendChild(el);
+            }
+            contentEl.appendChild(bookmarksList);
+        } else {
+            contentEl.innerHTML = `<div class="group-empty" data-i18n="popup_group_empty"></div>`;
+            i18n.updateNodeText(contentEl);
+        }
     }
 
     cleanup() {
         this.container.innerHTML = '';
+    }
+}
+
+/** 未归类文件夹书签数超过此值时默认折叠 */
+const UNCATEGORIZED_COLLAPSE_THRESHOLD = 100;
+
+function buildFolderTargetFromDirectoryNode(node) {
+    const target = {
+        kind: BrowserBookmarkTargetKind.FOLDER,
+        nodeId: node?.chromeId || '',
+        parentId: node?.parentId || '',
+        folderId: node?.chromeId || '',
+        placement: BrowserBookmarkPlacement.BOTTOM,
+        title: node?.title || '',
+        pathIds: Array.isArray(node?.pathIds) ? [...node.pathIds] : [],
+        pathTitles: Array.isArray(node?.pathTitles) ? [...node.pathTitles] : []
+    };
+
+    if (typeof BrowserBookmarkSelector?.normalizeTarget === 'function') {
+        return BrowserBookmarkSelector.normalizeTarget(target);
+    }
+
+    return target;
+}
+
+class FolderInputDialog {
+    constructor(elements = {}) {
+        this.dialog = elements.dialog || document.getElementById('folder-input-dialog');
+        this.title = elements.title || document.getElementById('folder-input-dialog-title');
+        this.input = elements.input || document.getElementById('folder-input-field');
+        this.confirm = elements.confirm || document.getElementById('folder-input-confirm-btn');
+        this.cancel = elements.cancel || document.getElementById('folder-input-cancel-btn');
+        this.content = elements.content || this.dialog?.querySelector?.('.dialog-content') || null;
+        this.onSubmit = async () => {};
+        this.submitting = false;
+
+        this.handleBackdropClick = this.handleBackdropClick.bind(this);
+        this.handleConfirmClick = this.handleConfirmClick.bind(this);
+        this.handleCancelClick = this.handleCancelClick.bind(this);
+        this.handleInputKeydown = this.handleInputKeydown.bind(this);
+        this.handleDocumentKeydown = this.handleDocumentKeydown.bind(this);
+
+        this.bindEvents();
+    }
+
+    bindEvents() {
+        this.dialog?.addEventListener?.('click', this.handleBackdropClick);
+        this.confirm?.addEventListener?.('click', this.handleConfirmClick);
+        this.cancel?.addEventListener?.('click', this.handleCancelClick);
+        this.input?.addEventListener?.('keydown', this.handleInputKeydown);
+        this.content?.addEventListener?.('click', (event) => {
+            event.stopPropagation();
+        });
+        document.addEventListener?.('keydown', this.handleDocumentKeydown, true);
+    }
+
+    open({ title = '', confirmText = '', initialValue = '', onSubmit = async () => {} } = {}) {
+        this.onSubmit = typeof onSubmit === 'function' ? onSubmit : async () => {};
+        this.submitting = false;
+        if (this.title) {
+            this.title.textContent = title;
+        }
+        if (this.confirm) {
+            this.confirm.textContent = confirmText;
+            this.confirm.disabled = false;
+        }
+        if (this.input) {
+            this.input.value = initialValue || '';
+        }
+        this.dialog?.classList?.add('show');
+        this.input?.focus?.();
+        this.input?.select?.();
+    }
+
+    close() {
+        this.dialog?.classList?.remove('show');
+        this.submitting = false;
+        this.onSubmit = async () => {};
+        if (this.confirm) {
+            this.confirm.disabled = false;
+        }
+    }
+
+    isOpen() {
+        return Boolean(this.dialog?.classList?.contains('show'));
+    }
+
+    handleBackdropClick(event) {
+        if (event?.target === this.dialog) {
+            this.close();
+        }
+    }
+
+    handleConfirmClick(event) {
+        event?.preventDefault?.();
+        void this.submit();
+    }
+
+    handleCancelClick(event) {
+        event?.preventDefault?.();
+        this.close();
+    }
+
+    handleInputKeydown(event) {
+        if (event?.key !== 'Enter') {
+            return;
+        }
+        event.preventDefault?.();
+        event.stopPropagation?.();
+        void this.submit();
+    }
+
+    handleDocumentKeydown(event) {
+        this.handleEscape(event);
+    }
+
+    handleEscape(event) {
+        if (event?.key !== 'Escape' || !this.isOpen()) {
+            return false;
+        }
+
+        event.preventDefault?.();
+        event.stopPropagation?.();
+        event.stopImmediatePropagation?.();
+        this.close();
+        return true;
+    }
+
+    async submit() {
+        if (!this.isOpen() || this.submitting) {
+            return false;
+        }
+
+        const value = this.input?.value?.trim?.() || '';
+        if (!value) {
+            updateStatus(i18n.getMessage('popup_directory_folder_name_required'), true);
+            this.input?.focus?.();
+            return false;
+        }
+
+        this.submitting = true;
+        if (this.confirm) {
+            this.confirm.disabled = true;
+        }
+
+        try {
+            await this.onSubmit(value);
+            this.close();
+            return true;
+        } catch (error) {
+            logger.error('目录输入弹窗提交失败:', error);
+            this.submitting = false;
+            if (this.confirm) {
+                this.confirm.disabled = false;
+            }
+            return false;
+        }
+    }
+}
+
+class DirectoryFolderActionsController {
+    constructor({ selector = null, folderDialog = null, alertDialog = null, onRefresh = async () => {} } = {}) {
+        this.selector = selector;
+        this.folderDialog = folderDialog;
+        this.alertDialog = alertDialog;
+        this.onRefresh = typeof onRefresh === 'function' ? onRefresh : async () => {};
+        this.currentMoveNode = null;
+        this.currentMoveAnchor = null;
+        this.suppressSelectorChange = false;
+
+        this.wrapSelectorClose();
+    }
+
+    wrapSelectorClose() {
+        if (!this.selector?.closePopover || this.selector.__directoryFolderActionsWrapped) {
+            return;
+        }
+
+        const originalClosePopover = this.selector.closePopover.bind(this.selector);
+        this.selector.closePopover = (...args) => {
+            const result = originalClosePopover(...args);
+            this.finishMoveSelection();
+            return result;
+        };
+        this.selector.__directoryFolderActionsWrapped = true;
+    }
+
+    setMoveAnchor(anchorElement) {
+        this.currentMoveAnchor?.classList?.remove?.('directory-tree-folder-actions-open');
+        this.currentMoveAnchor = anchorElement?.closest?.('.directory-tree-folder') || anchorElement || null;
+        this.currentMoveAnchor?.classList?.add?.('directory-tree-folder-actions-open');
+    }
+
+    finishMoveSelection() {
+        this.currentMoveAnchor?.classList?.remove?.('directory-tree-folder-actions-open');
+        this.currentMoveAnchor = null;
+        this.currentMoveNode = null;
+        this.suppressSelectorChange = false;
+        this.selector?.clearAnchorElement?.();
+    }
+
+    async openCreateDialog(node) {
+        if (!node?.chromeId || node?.isVirtual) {
+            return;
+        }
+
+        this.folderDialog?.open({
+            title: i18n.getMessage('popup_directory_folder_create_title'),
+            confirmText: i18n.getMessage('popup_directory_folder_create_confirm'),
+            initialValue: '',
+            onSubmit: async (title) => {
+                try {
+                    await bookmarkOps.createFolder({
+                        parentId: node.chromeId,
+                        title
+                    });
+                    await this.onRefresh();
+                    updateStatus(i18n.getMessage('popup_directory_folder_created_success'), false);
+                } catch (error) {
+                    logger.error('创建目录失败:', error);
+                    updateStatus(i18n.getMessage('popup_directory_folder_create_failed', [error.message || '']), true);
+                    throw error;
+                }
+            }
+        });
+    }
+
+    async openRenameDialog(node) {
+        if (!node?.chromeId || node?.isVirtual || node?.isRoot) {
+            return;
+        }
+
+        this.folderDialog?.open({
+            title: i18n.getMessage('popup_directory_folder_rename_title'),
+            confirmText: i18n.getMessage('popup_directory_folder_rename_confirm'),
+            initialValue: node.title || '',
+            onSubmit: async (title) => {
+                try {
+                    await bookmarkOps.renameFolder(node.chromeId, { title });
+                    await this.onRefresh();
+                    updateStatus(i18n.getMessage('popup_directory_folder_renamed_success'), false);
+                } catch (error) {
+                    logger.error('重命名目录失败:', error);
+                    updateStatus(i18n.getMessage('popup_directory_folder_rename_failed', [error.message || '']), true);
+                    throw error;
+                }
+            }
+        });
+    }
+
+    async openMoveSelector(node, anchorElement) {
+        if (!this.selector || !node?.chromeId || node?.isVirtual || node?.isRoot) {
+            return;
+        }
+
+        if (this.currentMoveNode && this.selector.closePopover) {
+            this.selector.closePopover();
+        }
+
+        this.currentMoveNode = node;
+        this.setMoveAnchor(anchorElement);
+        this.suppressSelectorChange = true;
+
+        try {
+            this.selector.setAnchorElement?.(anchorElement);
+            this.selector.setValue?.({
+                mode: BrowserBookmarkSaveMode.BROWSER,
+                target: buildFolderTargetFromDirectoryNode(node)
+            });
+            await this.selector.openPopover?.();
+        } finally {
+            this.suppressSelectorChange = false;
+        }
+    }
+
+    async handleMoveSelectorChange(value) {
+        if (this.suppressSelectorChange || !this.currentMoveNode) {
+            return;
+        }
+
+        const nextValue = value || this.selector?.getValue?.();
+        if (nextValue?.mode !== BrowserBookmarkSaveMode.BROWSER || !nextValue?.target) {
+            return;
+        }
+
+        if (nextValue.target.nodeId === this.currentMoveNode.chromeId) {
+            updateStatus(i18n.getMessage('popup_directory_folder_move_invalid_target'), true);
+            return;
+        }
+
+        try {
+            const { moved } = await bookmarkOps.moveFolder(this.currentMoveNode.chromeId, nextValue.target);
+            if (moved) {
+                await this.onRefresh();
+                updateStatus(i18n.getMessage('popup_directory_folder_moved_success'), false);
+            }
+        } catch (error) {
+            logger.error('移动目录失败:', error);
+            updateStatus(i18n.getMessage('popup_directory_folder_move_failed', [error.message || '']), true);
+        } finally {
+            this.finishMoveSelection();
+        }
+    }
+
+    async confirmDelete(node) {
+        if (!this.alertDialog || !node?.chromeId || node?.isVirtual || node?.isRoot) {
+            return;
+        }
+
+        this.alertDialog.show({
+            title: i18n.getMessage('popup_confirm_delete_title'),
+            message: i18n.getMessage('popup_directory_folder_delete_confirm_message', [
+                node.title || i18n.getMessage('bookmark_save_target_unnamed_folder')
+            ]),
+            primaryText: i18n.getMessage('popup_directory_folder_delete_confirm'),
+            secondaryText: i18n.getMessage('ui_button_cancel'),
+            onPrimary: async () => {
+                try {
+                    await bookmarkOps.removeFolderTree(node.chromeId);
+                    await this.onRefresh();
+                    updateStatus(i18n.getMessage('popup_directory_folder_deleted_success'), false);
+                } catch (error) {
+                    logger.error('删除目录失败:', error);
+                    updateStatus(i18n.getMessage('popup_directory_folder_delete_failed', [error.message || '']), true);
+                }
+            }
+        });
+    }
+
+    async sortChildren(node, sortMode) {
+        if (!node?.chromeId || node?.isVirtual) {
+            return;
+        }
+
+        try {
+            const children = await chrome.bookmarks.getChildren(node.chromeId);
+            if (!children || children.length < 2) return;
+
+            const folders = children.filter(c => !c.url);
+            const bookmarks = children.filter(c => c.url);
+
+            const collator = new Intl.Collator(undefined, { sensitivity: 'base', numeric: true });
+
+            const sortByTitle = (a, b) => collator.compare(a.title || '', b.title || '');
+
+            const sortByDateAdded = (a, b) => (a.dateAdded || 0) - (b.dateAdded || 0);
+
+            const getHostname = (url) => {
+                try { return new URL(url).hostname; } catch { return url || ''; }
+            };
+
+            switch (sortMode) {
+                case 'domain':
+                    folders.sort(sortByTitle);
+                    bookmarks.sort((a, b) => {
+                        const cmp = collator.compare(getHostname(a.url), getHostname(b.url));
+                        return cmp !== 0 ? cmp : sortByTitle(a, b);
+                    });
+                    break;
+                case 'dateAdded':
+                    folders.sort(sortByDateAdded);
+                    bookmarks.sort(sortByDateAdded);
+                    break;
+                case 'name':
+                    folders.sort(sortByTitle);
+                    bookmarks.sort(sortByTitle);
+                    break;
+                default:
+                    return;
+            }
+
+            const sorted = [...folders, ...bookmarks];
+            const originalIds = children.map(c => c.id);
+            const sortedIds = sorted.map(c => c.id);
+            const alreadySorted = sortedIds.every((id, i) => id === originalIds[i]);
+            if (alreadySorted) return;
+
+            for (let i = 0; i < sorted.length; i++) {
+                await bookmarkOps._proxyMove(sorted[i].id, {
+                    parentId: node.chromeId,
+                    index: i
+                });
+            }
+
+            await this.onRefresh();
+            updateStatus(i18n.getMessage('popup_directory_folder_sorted_success'), false);
+        } catch (error) {
+            logger.error('整理目录子项失败:', error);
+            updateStatus(i18n.getMessage('popup_directory_folder_sort_failed', [error.message || '']), true);
+        }
+    }
+}
+
+/**
+ * 目录视图渲染器
+ * 按需加载：折叠时不渲染子节点，展开时再渲染；折叠后仅隐藏不移除
+ */
+class DirectoryBookmarkRenderer extends BookmarkRenderer {
+    constructor(container, tree) {
+        super(container, []);
+        this.rendererType = 'directory';
+        this.tree = tree;
+        this.collapsedStates = new Map();
+        this.nodeMap = this._buildNodeMap(tree);
+        this.allBookmarks = this._flattenBookmarks(tree);
+    }
+
+    /** 一次遍历构建 nodeKey -> node 映射，O(1) 查找 */
+    _buildNodeMap(nodes, map = new Map()) {
+        for (const node of nodes || []) {
+            if (node.nodeKey) map.set(node.nodeKey, node);
+            if (node.children?.length) this._buildNodeMap(node.children, map);
+        }
+        return map;
+    }
+
+    /** 判断文件夹是否展开（含默认逻辑：无存储时顶层展开、其余折叠，未归类>100 默认折叠） */
+    _isFolderExpanded(nodeKey, node, depth) {
+        if (this.collapsedStates.has(nodeKey)) {
+            return !this.collapsedStates.get(nodeKey);
+        }
+        if (depth === 0) return true;
+        if (node.type === 'virtual-folder' && (node.children?.length || 0) > UNCATEGORIZED_COLLAPSE_THRESHOLD) {
+            return false;
+        }
+        return false;
+    }
+
+    _flattenBookmarks(nodes) {
+        const list = [];
+        for (const node of nodes || []) {
+            if (node.type === 'bookmark' && node.facet) {
+                list.push(this._nodeToBookmark(node));
+            }
+            if (node.children?.length) {
+                list.push(...this._flattenBookmarks(node.children));
+            }
+        }
+        return list;
+    }
+
+    _nodeToBookmark(node) {
+        const { facet, chromeId, title } = node;
+        const ext = facet.extension;
+        const chromeRef = facet.chromeRefs?.find(r => r.chromeId === chromeId) || facet.chromeRefs?.[0];
+        const url = facet.url;
+        const displayTitle = title || ext?.title || chromeRef?.title || url;
+        // chrome_only 默认无标签，不把目录路径作为标签
+        const tags = facet.presence === 'chrome_only' ? [] : (ext?.tags || []);
+        return {
+            url,
+            title: displayTitle,
+            source: ext ? BookmarkSource.EXTENSION : BookmarkSource.CHROME,
+            tags,
+            excerpt: ext?.excerpt || '',
+            chromeId,
+            savedAt: ext?.savedAt && chromeRef?.dateAdded ? Math.min(ext.savedAt, chromeRef.dateAdded) : (ext?.savedAt ?? chromeRef?.dateAdded),
+            useCount: ext?.useCount || 0,
+            lastUsed: ext?.lastUsed && chromeRef?.dateLastUsed ? Math.max(ext.lastUsed, chromeRef.dateLastUsed) : (ext?.lastUsed ?? chromeRef?.dateLastUsed),
+            _nodeKey: node.nodeKey,
+            _facet: facet,
+            _presence: facet.presence
+        };
+    }
+
+    getFolderActionState(node) {
+        if (!node || node.isVirtual || node.type === 'virtual-folder') {
+            return {
+                canCreate: false,
+                canRename: false,
+                canMove: false,
+                canDelete: false,
+                canSort: false,
+                hasActions: false
+            };
+        }
+
+        const canCreate = node.type === 'folder';
+        const canManage = canCreate && !node.isRoot;
+        const canSort = canCreate && (node.children || []).length > 1;
+        return {
+            canCreate,
+            canRename: canManage,
+            canMove: canManage,
+            canDelete: canManage,
+            canSort,
+            hasActions: canCreate || canManage || canSort
+        };
+    }
+
+    renderFolderActions(actionState) {
+        if (!actionState?.hasActions) {
+            return '';
+        }
+
+        const iconSize = 16;
+        const menuItems = [];
+
+        if (actionState.canCreate) {
+            menuItems.push(`
+                <div class="directory-folder-menu-item" data-folder-action="create">
+                    ${IconPicker.getIconSvg('FolderPlus', iconSize)}
+                    <span data-i18n="popup_directory_folder_create_title"></span>
+                </div>`);
+        }
+        if (actionState.canRename) {
+            menuItems.push(`
+                <div class="directory-folder-menu-item" data-folder-action="rename">
+                    ${IconPicker.getIconSvg('Pencil', iconSize)}
+                    <span data-i18n="popup_directory_folder_rename_title"></span>
+                </div>`);
+        }
+        if (actionState.canMove) {
+            menuItems.push(`
+                <div class="directory-folder-menu-item" data-folder-action="move">
+                    ${IconPicker.getIconSvg('FolderInput', iconSize)}
+                    <span data-i18n="popup_directory_folder_move_title"></span>
+                </div>`);
+        }
+        if (actionState.canSort) {
+            menuItems.push(`
+                <div class="directory-folder-menu-item directory-folder-menu-item-has-sub" data-folder-action="sort">
+                    ${IconPicker.getIconSvg('ArrowUpDown', iconSize)}
+                    <span data-i18n="popup_directory_folder_sort_title"></span>
+                    ${IconPicker.getIconSvg('ChevronRight', 14)}
+                    <div class="directory-folder-submenu">
+                        <div class="directory-folder-submenu-item" data-sort-mode="name">
+                            <span data-i18n="popup_directory_folder_sort_by_name"></span>
+                        </div>
+                        <div class="directory-folder-submenu-item" data-sort-mode="dateAdded">
+                            <span data-i18n="popup_directory_folder_sort_by_date"></span>
+                        </div>
+                        <div class="directory-folder-submenu-item" data-sort-mode="domain">
+                            <span data-i18n="popup_directory_folder_sort_by_domain"></span>
+                        </div>
+                    </div>
+                </div>`);
+        }
+        if (actionState.canDelete) {
+            menuItems.push(`
+                <div class="directory-folder-menu-item directory-folder-menu-item-danger" data-folder-action="delete">
+                    ${IconPicker.getIconSvg('Trash2', iconSize)}
+                    <span data-i18n="popup_directory_folder_delete_title"></span>
+                </div>`);
+        }
+
+        return `
+            <div class="directory-tree-row-actions">
+                <button type="button" class="directory-folder-more-btn" aria-label="More actions">
+                    ${IconPicker.getIconSvg('EllipsisVertical', 18)}
+                </button>
+                <div class="directory-folder-menu">
+                    ${menuItems.join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    setupFolderActionEvents(row, node) {
+        const controller = getBookmarkManager()?.directoryFolderActionsController;
+        if (!controller) {
+            return;
+        }
+
+        const moreBtn = row.querySelector('.directory-folder-more-btn');
+        const menu = row.querySelector('.directory-folder-menu');
+        if (!moreBtn || !menu) return;
+
+        const folderRow = row.closest('.directory-tree-folder') || row;
+
+        const closeMenu = () => {
+            menu.classList.remove('visible');
+            folderRow.classList.remove('directory-tree-folder-actions-open');
+        };
+
+        const positionMenu = () => {
+            const btnRect = moreBtn.getBoundingClientRect();
+            const menuHeight = menu.offsetHeight || 160;
+            const spaceBelow = window.innerHeight - btnRect.bottom;
+            menu.classList.toggle('directory-folder-menu-upward', spaceBelow < menuHeight + 8);
+        };
+
+        moreBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // 关闭其他已打开的目录菜单
+            document.querySelectorAll('.directory-folder-menu.visible').forEach(m => {
+                if (m !== menu) {
+                    m.classList.remove('visible');
+                    m.closest('.directory-tree-folder')?.classList.remove('directory-tree-folder-actions-open');
+                }
+            });
+
+            const willOpen = !menu.classList.contains('visible');
+            if (willOpen) {
+                menu.classList.add('visible');
+                folderRow.classList.add('directory-tree-folder-actions-open');
+                positionMenu();
+            } else {
+                closeMenu();
+            }
+        });
+
+        menu.querySelectorAll('[data-folder-action]').forEach((item) => {
+            if (item.dataset.folderAction === 'sort') return;
+            item.addEventListener('click', async (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                const action = item.dataset.folderAction;
+                closeMenu();
+
+                if (action === 'create') {
+                    await controller.openCreateDialog(node);
+                } else if (action === 'rename') {
+                    await controller.openRenameDialog(node);
+                } else if (action === 'move') {
+                    await controller.openMoveSelector(node, row);
+                } else if (action === 'delete') {
+                    await controller.confirmDelete(node);
+                }
+            });
+        });
+
+        // 排序子菜单：定位 + 点击事件
+        const sortItem = menu.querySelector('[data-folder-action="sort"]');
+        if (sortItem) {
+            const submenu = sortItem.querySelector('.directory-folder-submenu');
+            if (submenu) {
+                sortItem.addEventListener('mouseenter', () => {
+                    const rect = sortItem.getBoundingClientRect();
+                    const submenuWidth = submenu.offsetWidth || 140;
+                    const spaceRight = window.innerWidth - rect.right;
+                    submenu.classList.toggle('directory-folder-submenu-left', spaceRight < submenuWidth + 8);
+                });
+
+                submenu.querySelectorAll('[data-sort-mode]').forEach(sub => {
+                    sub.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        closeMenu();
+                        await controller.sortChildren(node, sub.dataset.sortMode);
+                    });
+                });
+            }
+        }
+
+        // 点击外部关闭
+        document.addEventListener('click', (e) => {
+            if (menu.classList.contains('visible') && !moreBtn.contains(e.target) && !menu.contains(e.target)) {
+                closeMenu();
+            }
+        });
+
+        // Escape 关闭
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && menu.classList.contains('visible')) {
+                closeMenu();
+            }
+        });
+    }
+
+    getRendererState() {
+        return {
+            rendererType: this.rendererType,
+            collapsedStates: new Map(this.collapsedStates)
+        };
+    }
+
+    async restoreRendererState(state) {
+        if (state?.rendererType !== this.rendererType) return;
+        if (state.collapsedStates instanceof Map) {
+            this.collapsedStates = state.collapsedStates;
+        }
+    }
+
+    async initialize(state = {}) {
+        this.cleanup();
+        await this.restoreRendererState(state);
+        if (this.collapsedStates.size === 0) {
+            const stored = await LocalStorageMgr.getDirectoryFolderCollapsedStates();
+            this.collapsedStates = new Map(Object.entries(stored || {}));
+        }
+        const bookmarkManager = getBookmarkManager();
+        if (bookmarkManager?.editManager) {
+            bookmarkManager.editManager.initialize(this.allBookmarks);
+        }
+        await this.render();
+    }
+
+    async saveCollapsedStates() {
+        // 仅保存当前树中存在的文件夹节点状态，避免无效 state 占用存储
+        const validFolderKeys = new Set();
+        for (const [nodeKey, node] of this.nodeMap) {
+            if ((node?.type === 'folder' || node?.type === 'virtual-folder') && nodeKey) {
+                validFolderKeys.add(nodeKey);
+            }
+        }
+        const states = {};
+        for (const [key, value] of this.collapsedStates) {
+            if (validFolderKeys.has(key) && typeof value === 'boolean') {
+                states[key] = value;
+            }
+        }
+        await LocalStorageMgr.setDirectoryFolderCollapsedStates(states);
+    }
+
+    /** 展开所有目录 */
+    async expandAll() {
+        for (const [nodeKey, node] of this.nodeMap) {
+            if ((node?.type === 'folder' || node?.type === 'virtual-folder') && nodeKey) {
+                this.collapsedStates.set(nodeKey, false);
+            }
+        }
+        await this.saveCollapsedStates();
+        await this.render();
+    }
+
+    /** 收起所有目录 */
+    async collapseAll() {
+        for (const [nodeKey, node] of this.nodeMap) {
+            if ((node?.type === 'folder' || node?.type === 'virtual-folder') && nodeKey) {
+                this.collapsedStates.set(nodeKey, true);
+            }
+        }
+        await this.saveCollapsedStates();
+        await this.render();
+    }
+
+    /**
+     * 在树中查找与 tabUrl 匹配的书签，返回从根到其父文件夹的 nodeKey 链（不含书签自身）
+     */
+    _findFolderKeysOnPathToUrl(nodes, targetUrl, ancestorKeys = []) {
+        for (const node of nodes || []) {
+            if (node.type === 'bookmark' && node.facet?.url) {
+                if (node.facet.url === targetUrl) {
+                    return [...ancestorKeys];
+                }
+            }
+            if ((node.type === 'folder' || node.type === 'virtual-folder') && node.children?.length) {
+                const found = this._findFolderKeysOnPathToUrl(
+                    node.children,
+                    targetUrl,
+                    [...ancestorKeys, node.nodeKey]
+                );
+                if (found !== null) return found;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 仅展开通往目标书签路径上的文件夹，渲染后滚动并高亮。未找到返回 false
+     */
+    async revealBookmarkByUrl(tabUrl) {
+        const folderKeys = this._findFolderKeysOnPathToUrl(this.tree, tabUrl);
+        if (!folderKeys) return false;
+        for (const key of folderKeys) {
+            this.collapsedStates.set(key, false);
+        }
+        await this.saveCollapsedStates();
+        await this.render();
+        const list = this.container;
+        const row = [...list.querySelectorAll('.directory-tree-bookmark')].find(
+            (li) => li.dataset.url === tabUrl
+        );
+        if (row) {
+            const scrollParent = row.closest('.bookmarks-container');
+            if (scrollParent) {
+                const top =
+                    row.getBoundingClientRect().top -
+                    scrollParent.getBoundingClientRect().top +
+                    scrollParent.scrollTop;
+                scrollParent.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+            } else {
+                row.scrollIntoView({ block: 'start', behavior: 'smooth' });
+            }
+            row.classList.add('directory-locate-highlight');
+            setTimeout(() => row.classList.remove('directory-locate-highlight'), 2000);
+        }
+        return true;
+    }
+
+    async render() {
+        this.container.innerHTML = '';
+        this.container.classList.add('directory-tree-view');
+        const uncategorizedTitle = i18n.getMessage('popup_directory_uncategorized') || '插件书签';
+        const fragment = document.createDocumentFragment();
+        for (const node of this.tree || []) {
+            await this._renderTreeRows(node, uncategorizedTitle, 0, fragment, true);
+        }
+        this.container.appendChild(fragment);
+    }
+
+    /**
+     * 按需渲染：仅当父级展开时渲染子节点
+     * @param {boolean} parentExpanded - 父级是否展开
+     */
+    async _renderTreeRows(node, uncategorizedTitle, depth, fragment, parentExpanded) {
+        if (node.type === 'folder' || node.type === 'virtual-folder') {
+            const title = node.type === 'virtual-folder' ? uncategorizedTitle : node.title;
+            const isExpanded = this._isFolderExpanded(node.nodeKey, node, depth);
+            const hasChildren = (node.children || []).length > 0;
+            const actionState = this.getFolderActionState(node);
+            const row = document.createElement('li');
+            row.className = 'directory-tree-row directory-tree-folder' + (node.type === 'virtual-folder' ? ' directory-tree-folder-extension' : '');
+            row.dataset.nodeKey = node.nodeKey;
+            row.dataset.chromeId = node.chromeId || '';
+            row.dataset.depth = depth;
+            row.style.setProperty('--tree-depth', depth);
+            const toggleSvg = hasChildren
+                ? `<svg class="directory-tree-toggle" viewBox="0 0 24 24" width="16" height="16">
+                    <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"/>
+                   </svg>`
+                : `<span class="directory-tree-toggle directory-tree-toggle-empty"></span>`;
+            row.innerHTML = `
+                <div class="directory-tree-row-inner">
+                    <div class="directory-tree-row-main">
+                        ${toggleSvg}
+                        <span class="directory-tree-icon directory-tree-icon-folder">
+                            <svg viewBox="0 0 24 24" width="18" height="18">
+                                <path fill="currentColor" d="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z"/>
+                            </svg>
+                        </span>
+                        <span class="directory-tree-label">${title}</span>
+                    </div>
+                    ${this.renderFolderActions(actionState)}
+                </div>
+            `;
+            i18n.updateNodeText(row);
+            this.setupFolderActionEvents(row, node);
+            const toggle = row.querySelector('.directory-tree-toggle');
+            if (toggle && hasChildren) {
+                if (!isExpanded) toggle.classList.add('collapsed');
+                row.addEventListener('click', (e) => {
+                    if (!e.target.closest('a') && !e.target.closest('.directory-tree-row-actions')) {
+                        this._handleFolderToggle(row, node, uncategorizedTitle, toggle);
+                    }
+                });
+            }
+            fragment.appendChild(row);
+            if (hasChildren && isExpanded) {
+                for (const child of node.children) {
+                    await this._renderTreeRows(child, uncategorizedTitle, depth + 1, fragment, true);
+                }
+                row.dataset.childrenRendered = 'true';
+            }
+        } else if (node.type === 'bookmark' && node.facet && parentExpanded) {
+            const bookmark = this._nodeToBookmark(node);
+            const li = await this.createBookmarkElement(bookmark);
+            li.classList.add('directory-tree-row', 'directory-tree-bookmark');
+            li.dataset.depth = depth;
+            li.style.setProperty('--tree-depth', depth);
+            const treePrefix = document.createElement('div');
+            treePrefix.className = 'directory-tree-bookmark-prefix';
+            treePrefix.innerHTML = '<span class="directory-tree-spacer"></span>';
+            li.insertBefore(treePrefix, li.firstChild);
+            fragment.appendChild(li);
+        }
+    }
+
+    async _handleFolderToggle(folderRow, node, uncategorizedTitle, toggle) {
+        const nodeKey = node.nodeKey;
+        const collapsed = toggle.classList.toggle('collapsed');
+        this.collapsedStates.set(nodeKey, collapsed);
+        this.saveCollapsedStates();
+        if (collapsed) {
+            this._setChildrenVisibility(folderRow, true);
+        } else {
+            const childrenRendered = folderRow.dataset.childrenRendered === 'true';
+            if (childrenRendered) {
+                this._setChildrenVisibility(folderRow, false);
+            } else {
+                await this._renderAndInsertChildren(folderRow, node, uncategorizedTitle);
+            }
+        }
+    }
+
+    /** 设置子节点 visibility（隐藏/显示），展开时跳过内层已折叠子文件夹的后代 */
+    _setChildrenVisibility(folderRow, hidden) {
+        const folderDepth = parseInt(folderRow.dataset.depth || '0', 10);
+        let skipUntilDepth = -1;
+        let next = folderRow.nextElementSibling;
+        while (next && next.classList.contains('directory-tree-row')) {
+            const depth = parseInt(next.dataset.depth || '0', 10);
+            if (depth <= folderDepth) break;
+            if (!hidden && skipUntilDepth >= 0) {
+                if (depth > skipUntilDepth) {
+                    next = next.nextElementSibling;
+                    continue;
+                }
+                skipUntilDepth = -1;
+            }
+            next.classList.toggle('directory-tree-hidden', hidden);
+            if (!hidden && next.classList.contains('directory-tree-folder')) {
+                const toggle = next.querySelector('.directory-tree-toggle');
+                if (toggle?.classList.contains('collapsed')) {
+                    skipUntilDepth = depth;
+                }
+            }
+            next = next.nextElementSibling;
+        }
+    }
+
+    /** 渲染并插入子节点（首次展开时调用） */
+    async _renderAndInsertChildren(folderRow, node, uncategorizedTitle) {
+        const depth = parseInt(folderRow.dataset.depth || '0', 10) + 1;
+        const fragment = document.createDocumentFragment();
+        for (const child of node.children || []) {
+            await this._renderTreeRows(child, uncategorizedTitle, depth, fragment, true);
+        }
+        let insertBeforeRef = folderRow.nextSibling;
+        while (fragment.firstChild) {
+            const child = fragment.firstChild;
+            folderRow.parentNode.insertBefore(child, insertBeforeRef);
+            insertBeforeRef = child.nextSibling;
+        }
+        folderRow.dataset.childrenRendered = 'true';
+    }
+
+    cleanup() {
+        this.container.innerHTML = '';
+        this.container.classList.remove('directory-tree-view');
     }
 }
 
@@ -2641,10 +4539,10 @@ class SettingsDialog {
         this.elements = {
             openBtn: document.getElementById('open-settings'),
             closeBtn: this.dialog.querySelector('.close-dialog-btn'),
-            showChromeBookmarks: document.getElementById('show-chrome-bookmarks'),
             autoFocusSearch: document.getElementById('auto-focus-search'),
             openInNewTab: document.getElementById('open-in-new-tab'), // 添加新元素引用
             themeOptions: document.querySelectorAll('.theme-option-popup'),
+            aiTargetLanguage: document.getElementById('popup-ai-target-language'),
             autoPrivacySwitch: document.getElementById('auto-privacy-mode'),
             manualPrivacySwitch: document.getElementById('manual-privacy-mode'),
             manualPrivacyContainer: document.getElementById('manual-privacy-container'),
@@ -2656,12 +4554,19 @@ class SettingsDialog {
             showUpdateLogBtn: document.getElementById('show-update-log'),
             closeUpdateNotification: document.getElementById('close-update-notification'),
             viewAllUpdatesLink: document.getElementById('view-all-updates'),
+            modelSelectorContainer: document.getElementById('popup-model-selector'),
+            chatServiceSelect: document.getElementById('popup-chat-service-select'),
+            embeddingServiceSelect: document.getElementById('popup-embedding-service-select'),
         };
     }
 
     async initialize() {
         // 绑定基本事件
         this.setupEventListeners();
+        // 初始化AI语言设置
+        this.initializeAILanguageSettings();
+        // 初始化服务选择器
+        await this.initializeServiceSelector();
         // 初始化设置状态
         await this.loadSettings();
         // 设置项隐藏
@@ -2678,17 +4583,10 @@ class SettingsDialog {
         
         // ESC键关闭
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.dialog.classList.contains('show')) {
-                this.close();
-            }
-        });
+            this.handleDialogEscape(e);
+        }, true);
 
         // 设置变更事件
-        this.elements.showChromeBookmarks.addEventListener('change', async (e) => 
-            await this.handleSettingChange('display.showChromeBookmarks', e.target.checked, async () => {
-                await refreshBookmarksInfo();
-            }));
-
         this.elements.autoFocusSearch.addEventListener('change', async (e) =>
             await this.handleSettingChange('display.autoFocusSearch', e.target.checked));
             
@@ -2703,6 +4601,20 @@ class SettingsDialog {
                 await this.handleThemeChange(theme);
             });
         });
+
+        // 目标语言变更事件
+        if (this.elements.aiTargetLanguage) {
+            this.elements.aiTargetLanguage.addEventListener('change', async (e) => {
+                const newLanguage = e.target.value;
+                try {
+                    await this.handleSettingChange('ai.targetLanguage', newLanguage);
+                    updateStatus(i18n.getMessage('popup_settings_target_language_updated'), false);
+                } catch (error) {
+                    logger.error('更新目标语言设置失败:', error);
+                    updateStatus(i18n.getMessage('popup_settings_target_language_update_failed'), true);
+                }
+            });
+        }
 
         this.elements.autoPrivacySwitch.addEventListener('change', async (e) => {
             const isAutoDetect = e.target.checked;
@@ -2747,35 +4659,14 @@ class SettingsDialog {
         
         // 添加商店评价按钮点击事件
         this.elements.storeReviewButton.addEventListener('click', () => {
-            // 获取扩展ID
-            const extensionId = chrome.runtime.id;
-            
-            // 判断浏览器类型并选择对应的商店链接
-            const userAgent = navigator.userAgent;
-            // Edge 的 userAgent 包含 "Edg"，Chrome 的 userAgent 包含 "Chrome" 但不包含 "Edg"
-            const isEdge = userAgent.indexOf('Edg') !== -1;
-            const isChrome = userAgent.indexOf('Chrome') !== -1 && !isEdge;
-            
-            let storeUrl;
-            if (isEdge) {
-                // Edge 商店链接
-                storeUrl = `https://microsoftedge.microsoft.com/addons/detail/${extensionId}`;
-            } else if (isChrome) {
-                // Chrome 商店链接
-                storeUrl = `https://chrome.google.com/webstore/detail/${extensionId}`;
-            } else {
-                // 默认使用 Chrome 商店链接（兼容其他基于 Chromium 的浏览器）
-                storeUrl = `https://chrome.google.com/webstore/detail/nlboajobccgidfcdoedphgfaklelifoa`;
-            }
-            
-            chrome.tabs.create({ url: storeUrl });
+            chrome.tabs.create({ url: getExtensionStoreReviewUrl() });
             this.close();
         });
 
         // 添加捐赠按钮点击事件
         this.elements.donateButton.addEventListener('click', () => {
             chrome.tabs.create({
-                url: 'https://howoii.github.io/smartbookmark-support/donate.html'
+                url: getSupportPageUrl('donate')
             });
             this.close();
         });
@@ -2800,7 +4691,7 @@ class SettingsDialog {
         this.elements.viewAllUpdatesLink.addEventListener('click', (e) => {
             e.preventDefault();
             // 打开更新日志页面
-            chrome.tabs.create({ url: `https://howoii.github.io/smartbookmark-support/changelog.html`});
+            chrome.tabs.create({ url: getSupportPageUrl('changelog') });
         });
 
         // 添加点击背景关闭功能
@@ -2825,12 +4716,90 @@ class SettingsDialog {
         }
     }
 
+    async initializeServiceSelector() {
+        if (!this.elements.chatServiceSelect || !this.elements.embeddingServiceSelect) return;
+
+        this.elements.chatServiceSelect.addEventListener('change', async (e) => {
+            const result = await ConfigManager.setServiceType('chat', e.target.value);
+            if (!result) await this.refreshServiceSelector();
+        });
+
+        this.elements.embeddingServiceSelect.addEventListener('change', async (e) => {
+            const result = await ConfigManager.setServiceType('embedding', e.target.value);
+            if (!result) await this.refreshServiceSelector();
+        });
+
+        await this.refreshServiceSelector();
+    }
+
+    async refreshServiceSelector() {
+        if (!this.elements.chatServiceSelect || !this.elements.embeddingServiceSelect) return;
+
+        const chatServices = [];
+        const embeddingServices = [];
+
+        for (const service of Object.values(API_SERVICES)) {
+            const fullService = await ConfigManager.findServiceById(service.id);
+            if (!fullService?.apiKey) continue;
+            const svc = { id: fullService.id, name: fullService.name };
+            if (fullService.chatModel) chatServices.push(svc);
+            if (fullService.embedModel) embeddingServices.push(svc);
+        }
+
+        const customServices = await ConfigManager.getCustomServices();
+        for (const service of Object.values(customServices)) {
+            if (!service.apiKey) continue;
+            const svc = { id: service.id, name: service.name };
+            if (service.chatModel) chatServices.push(svc);
+            if (service.embedModel) embeddingServices.push(svc);
+        }
+
+        if (chatServices.length === 0 && embeddingServices.length === 0) {
+            this.elements.modelSelectorContainer.style.display = 'none';
+            return;
+        }
+
+        this.elements.modelSelectorContainer.style.display = '';
+
+        const chatService = await ConfigManager.getChatService();
+        const embeddingService = await ConfigManager.getEmbeddingService();
+
+        this.elements.chatServiceSelect.innerHTML = '';
+        this.elements.embeddingServiceSelect.innerHTML = '';
+
+        const notConfiguredLabel = i18n.getMessage('settings_services_not_configured');
+        this._appendServiceOptions(
+            this.elements.chatServiceSelect, chatServices, chatService, notConfiguredLabel
+        );
+        this._appendServiceOptions(
+            this.elements.embeddingServiceSelect, embeddingServices, embeddingService, notConfiguredLabel
+        );
+    }
+
+    _appendServiceOptions(selectEl, services, activeService, notConfiguredLabel) {
+        const isActiveInList = services.some(svc => svc.id === activeService.id);
+        if (!isActiveInList) {
+            const opt = document.createElement('option');
+            opt.value = activeService.id;
+            opt.textContent = `${activeService.name}(${notConfiguredLabel})`;
+            opt.selected = true;
+            opt.disabled = true;
+            selectEl.appendChild(opt);
+        }
+        for (const svc of services) {
+            const opt = document.createElement('option');
+            opt.value = svc.id;
+            opt.textContent = svc.name;
+            opt.selected = svc.id === activeService.id;
+            selectEl.appendChild(opt);
+        }
+    }
+
     async loadSettings() {
         try {
             const settings = await SettingsManager.getAll();
             const {
                 display: { 
-                    showChromeBookmarks, 
                     autoFocusSearch, 
                     openInNewTab,
                     theme: themeSettings,
@@ -2838,13 +4807,15 @@ class SettingsDialog {
                 privacy: { 
                     autoDetect: autoPrivacyMode, 
                     enabled: manualPrivacyMode 
+                } = {},
+                ai: {
+                    targetLanguage
                 } = {}
             } = settings;
 
             // 初始化开关状态
-            this.elements.showChromeBookmarks.checked = showChromeBookmarks;
             this.elements.autoFocusSearch.checked = autoFocusSearch;
-            this.elements.openInNewTab.checked = openInNewTab; // 初始化打开方式开关状态
+            this.elements.openInNewTab.checked = openInNewTab;
             this.elements.autoPrivacySwitch.checked = autoPrivacyMode;
             this.elements.manualPrivacySwitch.checked = manualPrivacyMode;
             this.elements.manualPrivacyContainer.classList.toggle('show', !autoPrivacyMode);
@@ -2853,9 +4824,18 @@ class SettingsDialog {
             const currentTheme = themeSettings?.mode || 'system';
             this.updateThemeUI(currentTheme);
 
+            // 初始化目标语言设置
+            const currentTargetLanguage = targetLanguage || AI_DEFAULT_TARGET_LANGUAGE;
+            if (this.elements.aiTargetLanguage) {
+                this.elements.aiTargetLanguage.value = currentTargetLanguage;
+            }
+
+            // 刷新服务选择器（可能在设置页面新增了服务配置）
+            await this.refreshServiceSelector();
+
         } catch (error) {
             logger.error('加载设置失败:', error);
-            updateStatus('加载设置失败', true);
+            updateStatus(i18n.getMessage('popup_settings_load_failed'), true);
         }
     }
 
@@ -2881,12 +4861,28 @@ class SettingsDialog {
             }
         } catch (error) {
             logger.error(`更新设置失败 (${settingPath}):`, error);
-            updateStatus('设置更新失败', true);
+            updateStatus(i18n.getMessage('popup_settings_update_failed'), true);
         }
     }
 
     open() {
         this.dialog.classList.add('show');
+    }
+
+    handleDialogEscape(event) {
+        if (window.bookmarkManagerInstance?.browserBookmarkSelector?.consumeEscapeKey?.(event)) {
+            return true;
+        }
+
+        if (event.key !== 'Escape' || !this.dialog.classList.contains('show')) {
+            return false;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        this.close();
+        return true;
     }
 
     close() {
@@ -2920,7 +4916,25 @@ class SettingsDialog {
             // 主题切换后立即生效，不需要额外操作，themeManager 会自动应用
         } catch (error) {
             logger.error('更新主题失败:', error);
-            updateStatus('主题设置更新失败', true);
+            updateStatus(i18n.getMessage('popup_settings_theme_update_failed'), true);
+        }
+    }
+
+    /**
+     * 初始化AI目标语言设置
+     */
+    initializeAILanguageSettings() {
+        const targetLanguageSelect = this.elements.aiTargetLanguage;
+        if (!targetLanguageSelect) return;
+
+        // 动态生成语言选项，使用对应语言本身来显示
+        targetLanguageSelect.innerHTML = '';
+        for (const [code, name] of Object.entries(AI_SUPPORTED_LANGUAGES)) {
+            const option = document.createElement('option');
+            option.value = code;
+            // 使用对应语言本身来显示，如果AI_LANGUAGE_DISPLAY_NAMES中没有则使用原来的名称
+            option.textContent = AI_LANGUAGE_DISPLAY_NAMES[code] || name;
+            targetLanguageSelect.appendChild(option);
         }
     }
 }
@@ -2930,6 +4944,8 @@ class AlertDialog {
         this.dialog = document.getElementById('alert-dialog');
         this.title = this.dialog.querySelector('.alert-title');
         this.message = this.dialog.querySelector('.alert-message');
+        this.extraContainer = this.dialog.querySelector('.alert-extra');
+        this.buttonsLeftContainer = this.dialog.querySelector('.alert-buttons-left');
         this.primaryBtn = document.getElementById('alert-primary-btn');
         this.secondaryBtn = document.getElementById('alert-secondary-btn');
         this.onPrimary = () => {};
@@ -2948,10 +4964,9 @@ class AlertDialog {
         // 点击背景关闭
         this.dialog.addEventListener('click', (e) => {
             if (e.target === this.dialog) this.hide();
-        }); 
+        });
     }
 
-    // 将事件处理逻辑抽离为单独的方法
     handlePrimaryClick() {
         this.onPrimary();
         this.hide();
@@ -2968,6 +4983,7 @@ class AlertDialog {
         primaryText = '确定',
         secondaryText = '取消',
         showSecondary = true,
+        customContent = null,
         onPrimary = () => {},
         onSecondary = () => {},
     }) {
@@ -2977,6 +4993,24 @@ class AlertDialog {
 
         this.title.textContent = title;
         this.message.textContent = message;
+        this.message.style.display = message ? 'block' : 'none';
+        // customContent 渲染到按钮行左侧（方案一布局）
+        const left = this.buttonsLeftContainer || this.dialog?.querySelector('.alert-buttons-left');
+        if (left) {
+            left.innerHTML = '';
+            if (customContent) {
+                if (typeof customContent === 'string') {
+                    left.innerHTML = customContent;
+                } else if (customContent instanceof Node) {
+                    left.appendChild(customContent);
+                }
+                i18n.updateNodeText(left);
+            }
+        }
+        // 清空 alert-extra，当前仅使用按钮行左侧
+        if (this.extraContainer) {
+            this.extraContainer.innerHTML = '';
+        }
         this.primaryBtn.textContent = primaryText;
         this.secondaryBtn.textContent = secondaryText;
         this.onPrimary = onPrimary;
@@ -2989,6 +5023,8 @@ class AlertDialog {
 
     hide() {
         this.dialog.classList.remove('show');
+        if (this.extraContainer) this.extraContainer.innerHTML = '';
+        if (this.buttonsLeftContainer) this.buttonsLeftContainer.innerHTML = '';
         this.onPrimary = () => {};
         this.onSecondary = () => {};
     }
@@ -3014,20 +5050,19 @@ async function handleSearch() {
         searchResults.innerHTML = `
             <div class="loading-state">
                 <div class="loading-spinner"></div>
-                <div class="loading-text">正在搜索...</div>
+                <div class="loading-text" data-i18n="popup_status_searching"></div>
             </div>
         `;
-        
-        const includeChromeBookmarks = await SettingsManager.get('display.showChromeBookmarks');
+        i18n.updateNodeText(searchResults);
+
         const results = await searchBookmarksFromBackground(query, {
             debounce: false,
-            includeUrl: true,
-            includeChromeBookmarks: includeChromeBookmarks
+            includeUrl: true
         });
         displaySearchResults(results, query);
     } catch (error) {
         logger.error('搜索失败:', error);
-        StatusManager.endOperation('搜索失败: ' + error.message, true);
+        StatusManager.endOperation(i18n.getMessage('popup_search_failed', [error.message]), true);
     }
 }
 
@@ -3112,7 +5147,9 @@ async function initializeSortDropdown() {
         sortButton.appendChild(icon);
         
         // 添加提示文本
-        sortButton.title = `当前排序：${text}`;
+        const sortTitle = i18n.getMessage('popup_sort_current', [text]);
+        sortButton.setAttribute('data-i18n-title', 'popup_sort_current');
+        sortButton.title = sortTitle;
         
         // 添加排序指示器
         const indicator = document.createElement('div');
@@ -3189,8 +5226,12 @@ async function initializeSearch() {
     toggleSearch?.addEventListener('click', () => openSearching(false));
     closeSearch?.addEventListener('click', closeSearching);
 
-    toggleSearch.title = `搜索书签 ${quickSearchKey}`;
-    searchInput.placeholder = `搜索书签 ${quickSearchKey}`;
+    const searchTitle = i18n.getMessage('popup_toolbar_button_search_title');
+    const searchPlaceholder = i18n.getMessage('popup_search_input_placeholder');
+    toggleSearch.setAttribute('data-i18n-title', 'popup_toolbar_button_search_title');
+    toggleSearch.title = `${searchTitle} ${quickSearchKey}`;
+    searchInput.setAttribute('data-i18n', 'popup_search_input_placeholder');
+    searchInput.placeholder = `${searchPlaceholder} ${quickSearchKey}`;
     
     let isMouseInSearchHistory = false;
     
@@ -3228,6 +5269,11 @@ async function initializeSearch() {
 
     // ESC 键关闭搜索
     document.addEventListener('keydown', (e) => {
+        const bookmarkManager = getBookmarkManager();
+        if (bookmarkManager?.searchEditManager?.isInEditMode()) {
+            return;
+        }
+
         if (e.key === 'Escape' && toolbar?.classList.contains('searching')) {
             closeSearching();
         }
@@ -3458,7 +5504,7 @@ function getUpdateContent(version) {
     // 这里可以根据不同版本返回不同的更新内容
     const updateNotes = {
         '1.2.4': {
-            title: `v${version} 版本更新内容`,
+            title: i18n.getMessage('popup_update_version_title', [version]),
             content: `
                 <ul>
                     <li>优化了同步功能，支持<a href="settings.html#sync">WebDAV同步</a></li>
@@ -3472,32 +5518,6 @@ function getUpdateContent(version) {
     return updateNotes[version];
 }
 
-// 初始化与书签向量无关的部分
-async function initPopupFastPass() {
-    logger.debug('initPopupFastPass 开始');
-    // 初始化必需的管理器
-    await Promise.all([
-        LocalStorageMgr.init(),
-        SettingsManager.init(),
-        SyncSettingsManager.init(),
-    ]);
-
-    // 初始化中间数据层
-    await filterManager.init();
-
-    // 使用缓存书签先渲染一次书签列表
-    await Promise.all([
-        initializeViewModeSwitch(),
-        initializeSearch(),
-        initializeSortDropdown(),
-        window.settingsDialog.initialize(),
-        refreshBookmarksInfo(),
-        initializeGlobalTooltip(),
-    ]);
-
-    logger.debug('initPopupFastPass 结束');
-}
-
 // 主初始化函数
 async function initializePopup() {
     logger.info(`当前环境: ${ENV.current}, SERVER_URL: ${SERVER_URL}`);
@@ -3505,28 +5525,49 @@ async function initializePopup() {
         // 初始化UI组件
         const settingsDialog = new SettingsDialog();
         window.settingsDialog = settingsDialog;
+        initializeGlobalTooltip();
         const bookmarkManager = getBookmarkManager();
         
-        // 先初始化一部分，减少初始化时间
-        await initPopupFastPass();
-
-        // 初始化UI状态 (并行执行以提高性能)
+        // 初始化必需的管理器
         await Promise.all([
+            SettingsManager.init(),
+            SyncSettingsManager.init(),
+        ]);
+        
+        // 先刷新视图模式与工具栏状态（filter、隐私图标），避免书签加载完成后才隐藏导致 UI 跳动
+        await Promise.all([
+            initializeViewModeSwitch(),
+            updateTabState(),
+            initializeSearch(),
+            initializeSortDropdown(),
+            window.settingsDialog.initialize(),
+        ]);
+        initializeDirectoryActions();
+        initializeGroupActions();
+
+        // 初始化中间数据层
+        await LocalStorageMgr.init();
+        await filterManager.init();
+
+        // 再加载书签列表及其他初始化
+        await Promise.all([
+            refreshBookmarksInfo(),
             bookmarkManager.initialize(),
         ]);
 
         logger.info('弹出窗口初始化完成');
     } catch (error) {
         logger.error('初始化失败:', error);
-        updateStatus('初始化失败: ' + error.message, true);
+        updateStatus(i18n.getMessage('msg_error_init_failed', [error.message]), true);
     }
 }
 
 // 初始化设置对话框
 document.addEventListener('DOMContentLoaded', async () => {
+    i18n.initializeI18n();
     await initShortcutKey();
     initializePopup().catch(error => {
         logger.error('初始化过程中发生错误:', error);
-        updateStatus('初始化失败，请刷新页面重试', true);
+        updateStatus(i18n.getMessage('popup_init_failed_retry'), true);
     });
 });

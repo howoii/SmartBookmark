@@ -63,6 +63,14 @@ class LocalStorageMgr {
         }
     }
 
+    static scheduleBookmarkSync(options = {}) {
+        if (options.noSync) {
+            return;
+        }
+        // 自动同步只是一条后置副作用，不应阻塞本地删除/重命名等写操作返回。
+        void this.notifyBookmarkSync();
+    }
+
     static setupListener() {
         chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             logger.debug('local storage manager 收到消息', { message: message });
@@ -189,21 +197,46 @@ class LocalStorageMgr {
         }
     }
 
+    /**
+     * 写入 chrome.storage.local 前过滤纯运行时字段（UI 展示用的 _presence、_nodeKey、_facet 等）。
+     * 保留 _embeddingPendingRefresh 等需要持久化到存储的状态标记。
+     */
+    static sanitizeBookmarkForStorage(bookmark) {
+        if (!bookmark || typeof bookmark !== 'object') return bookmark;
+        const sanitized = { ...bookmark };
+        const runtimeKeys = ['_presence', '_nodeKey', '_facet'];
+        for (const k of runtimeKeys) {
+            delete sanitized[k];
+        }
+        return sanitized;
+    }
+
+    /**
+     * 导出/同步场景：在 sanitizeBookmarkForStorage 基础上进一步删除所有 _ 前缀字段，
+     * 确保 _embeddingPendingRefresh 等内部状态标记不会进入导出文件或远程同步数据。
+     */
+    static sanitizeBookmarkForExport(bookmark) {
+        const sanitized = this.sanitizeBookmarkForStorage(bookmark);
+        Object.keys(sanitized).forEach(k => {
+            if (k.startsWith('_')) delete sanitized[k];
+        });
+        return sanitized;
+    }
+
     static async setBookmark(url, bookmark, options = {}) {
         if (EnvIdentifier !== "background") {
-            return await setBookmarksToBackground([bookmark], options);
+            return await setBookmarksToBackground([this.sanitizeBookmarkForStorage(bookmark)], options);
         }
         const key = this.getBookmarkKey(url);
-        await this.set(key, bookmark);
+        const sanitized = this.sanitizeBookmarkForStorage(bookmark);
+        await this.set(key, sanitized);
         // 更新缓存
         if (this._bookmarksCache) {
-            this._bookmarksCache[key] = bookmark;
+            this._bookmarksCache[key] = sanitized;
         }
         const bookmarksMap = await this.triggerBookmarkCacheUpdate();
         await this.notifyBookmarkCacheChange(bookmarksMap);
-        if (!options.noSync) {
-            await this.notifyBookmarkSync();
-        }
+        this.scheduleBookmarkSync(options);
         if (!options.noUpdateEmbedding) {
             this.scheduleUpdateEmbedding();
         }
@@ -211,13 +244,16 @@ class LocalStorageMgr {
 
     static async setBookmarks(bookmarks, options = {}) {
         if (EnvIdentifier !== "background") {
-            return await setBookmarksToBackground(bookmarks, options);
+            const sanitized = bookmarks.map(b => this.sanitizeBookmarkForStorage(b));
+            return await setBookmarksToBackground(sanitized, options);
         }
         if (bookmarks.length === 0) {
             return;
         }
-        // 过滤掉非法书签
-        bookmarks = bookmarks.filter(bookmark => bookmark && bookmark.url && bookmark.url.length > 0);
+        // 过滤掉非法书签并去除内部字段
+        bookmarks = bookmarks
+            .filter(bookmark => bookmark && bookmark.url && bookmark.url.length > 0)
+            .map(b => this.sanitizeBookmarkForStorage(b));
         // 将书签数组转换为对象
         const bookmarksObject = bookmarks.reduce((obj, bookmark) => {
             obj[this.getBookmarkKey(bookmark.url)] = bookmark;
@@ -232,9 +268,7 @@ class LocalStorageMgr {
         }
         const bookmarksMap = await this.triggerBookmarkCacheUpdate();
         await this.notifyBookmarkCacheChange(bookmarksMap);
-        if (!options.noSync) {
-            await this.notifyBookmarkSync();
-        }
+        this.scheduleBookmarkSync(options);
         if (!options.noUpdateEmbedding) {
             this.scheduleUpdateEmbedding();
         }
@@ -252,9 +286,7 @@ class LocalStorageMgr {
         }
         const bookmarksMap = await this.triggerBookmarkCacheUpdate();
         await this.notifyBookmarkCacheChange(bookmarksMap);
-        if (!options.noSync) {
-            await this.notifyBookmarkSync();
-        }
+        this.scheduleBookmarkSync(options);
     }
 
     static async removeBookmarks(urls, options = {}) {
@@ -271,9 +303,7 @@ class LocalStorageMgr {
         }
         const bookmarksMap = await this.triggerBookmarkCacheUpdate();
         await this.notifyBookmarkCacheChange(bookmarksMap);
-        if (!options.noSync) {
-            await this.notifyBookmarkSync();
-        }
+        this.scheduleBookmarkSync(options);
     }
 
     static async clearBookmarks(options = {}) {
@@ -286,12 +316,11 @@ class LocalStorageMgr {
         }
         const bookmarksMap = await this.triggerBookmarkCacheUpdate();
         await this.notifyBookmarkCacheChange(bookmarksMap);
-        if (!options.noSync) {
-            await this.notifyBookmarkSync();
-        }
+        this.scheduleBookmarkSync(options);
     }
 
     // 更新书签并检查是否更新嵌入向量, background调用
+    // 当书签内容变化需要更新embedding时，临时保留旧embedding以支持搜索，避免在UPDATE_EMBEDDING_DELAY期间搜索不到
     static async updateBookmarksAndEmbedding(bookmarks, options = {}) {
         if (EnvIdentifier !== "background") {
             return;
@@ -299,13 +328,20 @@ class LocalStorageMgr {
         for (const bookmark of bookmarks) {
             if (!bookmark.embedding) { // 如果书签没有嵌入向量，则检查是否可以保留本地的向量数据
                 const oldBookmark = await this.getBookmark(bookmark.url);
-                if (oldBookmark) {
+                if (oldBookmark && oldBookmark.embedding) {
                     const oldEmbeddingText = makeEmbeddingText(oldBookmark);
                     const newEmbeddingText = makeEmbeddingText(bookmark);
-                    if (oldBookmark && oldEmbeddingText === newEmbeddingText) {
+                    if (oldEmbeddingText === newEmbeddingText) {
+                        // 内容未变化，直接复用旧embedding
                         bookmark.apiService = oldBookmark.apiService;
                         bookmark.embedModel = oldBookmark.embedModel;
                         bookmark.embedding = oldBookmark.embedding;
+                    } else {
+                        // 内容已变化，临时保留旧embedding以支持搜索，标记待刷新，scanAndUpdateEmbedding会更新
+                        bookmark.apiService = oldBookmark.apiService;
+                        bookmark.embedModel = oldBookmark.embedModel;
+                        bookmark.embedding = oldBookmark.embedding;
+                        bookmark._embeddingPendingRefresh = true;
                     }
                 }
             }
@@ -350,12 +386,6 @@ class LocalStorageMgr {
         // 设置更新标志，防止重复触发
         this._isUpdatingEmbedding = true;
         
-        // 写入状态标记到storage，通知popup等页面，同时记录时间戳
-        await this.set('isRegeneratingEmbeddings', {
-            isRegenerating: true,
-            timestamp: Date.now()
-        });
-        
         try {
             logger.info('开始扫描并更新向量');
             
@@ -370,6 +400,7 @@ class LocalStorageMgr {
             }
             
             const needUpdateBookmarks = bookmarks.filter(bookmark => 
+                bookmark._embeddingPendingRefresh === true ||
                 ConfigManager.isNeedUpdateEmbedding(bookmark, embeddingService)
             );
             
@@ -379,6 +410,12 @@ class LocalStorageMgr {
             }
             
             logger.info(`需要更新向量的书签数量: ${needUpdateBookmarks.length}`);
+
+            // 写入重新生成向量状态标记到storage，通知popup等页面，同时记录时间戳
+            await this.set('isRegeneratingEmbeddings', {
+                isRegenerating: true,
+                timestamp: Date.now()
+            });
             
             // 调用批量更新函数
             await this.batchUpdateEmbeddings(needUpdateBookmarks, embeddingService);
@@ -453,9 +490,10 @@ class LocalStorageMgr {
                     const bookmark = batchBookmarks[j];
                     
                     if (result.embedding) {
-                        // 更新书签的 embedding 信息
+                        // 更新书签的 embedding 信息，移除临时标记
+                        const { _embeddingPendingRefresh, ...restBookmark } = bookmark;
                         const updatedBookmark = {
-                            ...bookmark,
+                            ...restBookmark,
                             embedding: result.embedding,
                             apiService: embeddingService.id,
                             embedModel: embeddingService.embedModel
@@ -507,6 +545,22 @@ class LocalStorageMgr {
             logger.debug('获取本地书签缓存完成，缓存命中');
             return this._bookmarksLocalCache;
         }
+        // 非 background 时，从 background 获取缓存，确保拿到最新数据（含刚更新后未 flush 到 storage 的）
+        if (EnvIdentifier !== "background") {
+            try {
+                const response = await chrome.runtime.sendMessage({
+                    type: MessageType.GET_BOOKMARKS_LOCAL_CACHE
+                });
+                if (response && response.success && response.bookmarksMap) {
+                    this._bookmarksLocalCache = response.bookmarksMap;
+                    logger.debug('从 background 获取书签缓存完成');
+                    return this._bookmarksLocalCache;
+                }
+            } catch (error) {
+                logger.debug('从 background 获取书签缓存失败，回退到 storage:', error);
+            }
+        }
+        // background 或消息失败时，从 storage 读取
         const bookmarks = await this.get(this.Namespace.BOOKMARK_CACHE);
         // 转成map
         if (!bookmarks || !Array.isArray(bookmarks)) {
@@ -618,4 +672,22 @@ class LocalStorageMgr {
         this._commonCache[key] = states;
     }
     // 自定义分组折叠状态结束
+
+    // 目录视图文件夹折叠状态
+    static async getDirectoryFolderCollapsedStates() {
+        const key = this.Namespace.CACHE + 'directory_folder_collapsed_states';
+        if (this._commonCache[key]) {
+            return this._commonCache[key];
+        }
+        const states = await this.get(key);
+        this._commonCache[key] = states;
+        return states || {};
+    }
+
+    static async setDirectoryFolderCollapsedStates(states) {
+        const key = this.Namespace.CACHE + 'directory_folder_collapsed_states';
+        await this.set(key, states);
+        this._commonCache[key] = states;
+    }
+
 }

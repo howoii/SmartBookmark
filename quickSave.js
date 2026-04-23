@@ -13,13 +13,14 @@ class QuickSaveManager {
             saveTagsBtn: document.getElementById('save-tags-btn'),
             cancelTagsBtn: document.getElementById('cancel-tags-btn'),
             deleteBookmarkBtn: document.getElementById('delete-bookmark-btn'),
-            recommendedTags: document.querySelector('.recommended-tags'),
-            recommendedTagsList: document.querySelector('.recommended-tags-list'),
             status: document.getElementById('status'),
             dialogContent: document.querySelector('.dialog-content'),
             charCount: document.getElementById('char-count'),
             charCounter: document.querySelector('.char-counter'),
-            generateExcerptBtn: document.getElementById('generate-excerpt-btn')
+            generateTagsBtn: document.getElementById('generate-tags-btn'),
+            generateExcerptBtn: document.getElementById('generate-excerpt-btn'),
+            translateTitleBtn: document.getElementById('translate-title-btn'),
+            browserBookmarkSelector: document.getElementById('browser-bookmark-selector')
         };
 
         this.currentTab = null;
@@ -28,7 +29,13 @@ class QuickSaveManager {
         this.editingBookmark = null;
         this.statusTimeout = null;
         this.originalUrl = null;
+        this.tagRequest = null;
         this.excerptRequest = null;
+        this.translateRequest = null;
+        this.originalTitle = null; // 保存原始标题
+        this.hasTranslated = false; // 标记是否已翻译
+        this.browserBookmarkSavePreference = BrowserBookmarkSelector.normalizePreference({}, { directoryOnly: true });
+        this.browserBookmarkSelector = null;
 
         this.init();
     }
@@ -64,6 +71,8 @@ class QuickSaveManager {
             // 设置基本页面信息
             await this.setupPageInfo();
 
+            await this.setupBrowserBookmarkSelector();
+
             // 先检查是否已保存，这会设置 isEditMode
             await this.checkSavedState();
             
@@ -72,11 +81,125 @@ class QuickSaveManager {
             
             // 设置事件监听
             this.setupEventListeners();
+            if (!this.isEditMode) {
+                void this.browserBookmarkSelector?.autoRecommend();
+            }
         } catch (error) {
             logger.error('初始化失败:', error);
             this.showStatus(i18n.M('msg_error_init_failed', [error.message]), 'error', true);
             this.hideMainContent();
         }
+    }
+
+    async setupBrowserBookmarkSelector() {
+        const savedPreference = await SettingsManager.get('display.browserBookmarkSave');
+        const preference = await BrowserBookmarkSelector.resolvePreferenceInCurrentBrowser(savedPreference || {}, {
+            directoryOnly: true
+        });
+
+        this.browserBookmarkSavePreference = preference;
+
+        this.browserBookmarkSelector = new BrowserBookmarkSelector({
+            root: this.elements.browserBookmarkSelector,
+            directoryOnly: true,
+            recommendationProvider: () => this.getRecommendedFolders(),
+            ...this.browserBookmarkSavePreference
+        });
+    }
+
+    async getRecommendedFolders() {
+        if (this.editingBookmark?.chromeId) return [];
+
+        try {
+            const url = this.getEditedUrl();
+            let embedding = null;
+            if (url) {
+                const stored = await LocalStorageMgr.getBookmark(url, true);
+                embedding = stored?.embedding || null;
+            }
+            const bookmarkInfo = {
+                url,
+                title: this.elements.pageTitle.textContent.trim(),
+                tags: this.getCurrentTags(),
+                excerpt: this.getEditedExcerpt(),
+                embedding,
+            };
+            return await FolderRecommender.recommend(bookmarkInfo);
+        } catch (error) {
+            logger.error('获取推荐目录失败:', error);
+            return [];
+        }
+    }
+
+    async resolveChromeBookmarkTarget(chromeId) {
+        if (!chromeId) return null;
+
+        const [node] = await chrome.bookmarks.get(chromeId);
+        if (!node) return null;
+        return BrowserBookmarkSelector.buildTargetFromBookmarkNode(node);
+    }
+
+    async syncBrowserBookmarkSelectorState() {
+        if (!this.browserBookmarkSelector) return;
+
+        if (this.editingBookmark?.chromeId) {
+            const lockedTarget = await this.resolveChromeBookmarkTarget(this.editingBookmark.chromeId);
+            this.browserBookmarkSelector.setValue({
+                mode: BrowserBookmarkSaveMode.BROWSER,
+                target: lockedTarget
+            });
+            this.browserBookmarkSelector.setLockMode(true, '');
+            return;
+        }
+
+        this.browserBookmarkSelector.setLockMode(false, '');
+        this.browserBookmarkSelector.setValue(this.browserBookmarkSavePreference);
+    }
+
+    async persistBrowserBookmarkPreference(preferredValue = null) {
+        if (!this.browserBookmarkSelector) {
+            return;
+        }
+
+        const sourceValue = preferredValue ?? this.browserBookmarkSelector.getValue();
+        const value = await BrowserBookmarkSelector.resolvePreferenceInCurrentBrowser(
+            sourceValue,
+            { directoryOnly: true }
+        );
+        this.browserBookmarkSelector.setValue(value);
+        await BrowserBookmarkSelector.savePreference(value);
+        this.browserBookmarkSavePreference = BrowserBookmarkSelector.normalizePreference(value, {
+            directoryOnly: true
+        });
+    }
+
+    async resolveBrowserBookmarkSaveForSubmit() {
+        if (!this.browserBookmarkSelector) {
+            return BrowserBookmarkSelector.buildPreferencePayload(BrowserBookmarkSaveMode.NONE, null);
+        }
+
+        const preference = await BrowserBookmarkSelector.resolvePreferenceInCurrentBrowser(
+            this.browserBookmarkSelector.getValue(),
+            { directoryOnly: true }
+        );
+
+        if (
+            this.isEditMode &&
+            this.editingBookmark?.chromeId &&
+            this.browserBookmarkSelector.directoryOnly &&
+            this.browserBookmarkSelector.lockMode
+        ) {
+            const lockedTarget = await this.resolveChromeBookmarkTarget(this.editingBookmark.chromeId);
+            if (lockedTarget?.folderId !== preference.target?.folderId) {
+                return preference;
+            }
+            return await BrowserBookmarkSelector.resolvePreferenceInCurrentBrowser({
+                mode: BrowserBookmarkSaveMode.BROWSER,
+                target: lockedTarget
+            });
+        }
+
+        return preference;
     }
 
     showStatus(message, type = 'error', showClose = false) {
@@ -95,7 +218,8 @@ class QuickSaveManager {
         status.classList.add('show', type);
         
         // 构建状态消息HTML
-        let html = message;
+        // 将文字内容包裹在 span 中，以便 CSS 选择器正确匹配
+        let html = `<span class="status-text">${message}</span>`;
         if (showClose) {
             html += `
                 <button class="close-status" data-i18n-title="ui_button_close">
@@ -108,11 +232,11 @@ class QuickSaveManager {
         status.innerHTML = html;
         i18n.updateNodeText(status);
 
-        // 如果不显示关闭按钮，3秒后自动隐藏
+        // 如果不显示关闭按钮，1秒后自动隐藏
         if (!showClose) {
             this.statusTimeout = setTimeout(() => {
                 this.hideStatus();
-            }, 3000);
+            }, 1000);
         }
 
         // 添加关闭按钮事件
@@ -147,6 +271,10 @@ class QuickSaveManager {
         const { pageTitle, pageUrl, pageFavicon } = this.elements;
         const { title, url } = this.currentTab;
 
+        // 保存原始标题
+        this.originalTitle = title || '';
+        this.hasTranslated = false; // 重置翻译标记
+
         // 设置页面信息
         pageTitle.textContent = title || '';
         pageTitle.title = title || '';
@@ -177,6 +305,89 @@ class QuickSaveManager {
         tagsList.innerHTML = '';
     }
 
+    setGenerateTagsButtonLoading(isLoading) {
+        const { generateTagsBtn } = this.elements;
+        if (!generateTagsBtn) return;
+
+        generateTagsBtn.classList.toggle('loading', isLoading);
+        generateTagsBtn.title = i18n.getMessage(isLoading ? 'quicksave_cancel_generate' : 'quicksave_generate_tags_title');
+    }
+
+    async generateTagsForCurrentPage({ useCache = false, interactive = false } = {}) {
+        if (!this.currentTab) return;
+
+        if (!interactive) {
+            const autoGenerate = await SettingsManager.get('ai.autoGenerateTags');
+            if (autoGenerate === false) {
+                this.renderTags([]);
+                return;
+            }
+        }
+
+        const unclassifiedTag = i18n.M('ui_tag_unclassified');
+        const previousTags = this.getCurrentTags();
+
+        if (useCache) {
+            const cachedTags = await LocalStorageMgr.getTags(this.currentTab.url);
+            if (cachedTags && cachedTags.length > 0) {
+                logger.debug('使用缓存的标签:', cachedTags);
+                this.renderTags(cachedTags);
+                return;
+            }
+        }
+
+        // 手动生成：未配置时直接提示并返回，不进入标签区 loading
+        if (interactive) {
+            try {
+                await checkAPIKeyValid('chat');
+            } catch (error) {
+                this.showStatus(`${error.message}`, 'error');
+                return;
+            }
+        } else {
+            try {
+                await checkAPIKeyValid('chat');
+            } catch {
+                this.renderTags([unclassifiedTag]);
+                return;
+            }
+        }
+
+        this.showTagsLoading();
+        this.setGenerateTagsButtonLoading(true);
+
+        try {
+            this.tagRequest = requestManager.create('generate_tags');
+            const tags = await generateTags(this.pageContent, this.currentTab, this.tagRequest.signal);
+            logger.debug('生成标签:', tags);
+
+            if (tags && tags.length > 0) {
+                this.renderTags(tags);
+                await LocalStorageMgr.setTags(this.currentTab.url, tags);
+                logger.debug('缓存标签:', tags);
+            } else {
+                this.renderTags([unclassifiedTag]);
+            }
+        } catch (error) {
+            logger.error('生成标签失败:', error);
+            if (isUserCanceledError(error)) {
+                this.showStatus(i18n.getMessage('quicksave_status_generate_canceled'), 'success');
+                this.renderTags(previousTags);
+                return;
+            }
+            if (interactive) {
+                this.showStatus(`${error.message}`, 'error');
+            }
+            this.renderTags([unclassifiedTag]);
+        } finally {
+            this.setGenerateTagsButtonLoading(false);
+            if (this.tagRequest) {
+                this.tagRequest.done();
+                this.tagRequest = null;
+            }
+        }
+    }
+
     async setupPageContentAndTags() {
         try {
             if (this.currentTab.status !== 'complete') {
@@ -199,49 +410,16 @@ class QuickSaveManager {
                 this.renderPageExcerpt(this.pageContent.excerpt?.trim());
             }
 
-            // 如果有关键词，显示为推荐标签
-            this.elements.recommendedTags.style.display = 'none';
-            if (this.pageContent.metadata?.keywords) {
-                this.showRecommendedTags(this.pageContent.metadata.keywords);
-            }
-
             // 如果不是编辑模式，生成并显示标签
-            const unclassifiedTag = i18n.M('ui_tag_unclassified');
             if (this.isEditMode) {
                 this.renderTags(this.editingBookmark?.tags);
             } else {
-                this.showTagsLoading();
-                try {
-                    // 检查缓存中是否已有标签
-                    const cachedTags = await LocalStorageMgr.getTags(this.currentTab.url);
-                    if (cachedTags) {
-                        logger.debug('使用缓存的标签:', cachedTags);
-                        this.hideTagsLoading();
-                        this.renderTags(cachedTags);
-                    } else {
-                        const tags = await generateTags(this.pageContent, this.currentTab);
-                        logger.debug('生成标签:', tags);
-                        this.hideTagsLoading();
-                        if (tags && tags.length > 0) {
-                            this.renderTags(tags);
-                            // 缓存生成的标签
-                            await LocalStorageMgr.setTags(this.currentTab.url, tags);
-                            logger.debug('缓存标签:', tags);
-                        } else {
-                            this.renderTags([unclassifiedTag]);
-                        }
-                    }
-                } catch (error) {
-                    logger.error('生成标签失败:', error);
-                    this.hideTagsLoading();
-                    this.renderTags([unclassifiedTag]);
-                }
+                await this.generateTagsForCurrentPage({ useCache: true });
             }
         } catch (error) {
             logger.error('获取页面内容失败:', error);
             if (!this.isEditMode) {
-                this.hideTagsLoading();
-                this.renderTags([unclassifiedTag]);
+                this.renderTags([i18n.M('ui_tag_unclassified')]);
             }
         }
     }
@@ -249,24 +427,33 @@ class QuickSaveManager {
     async checkSavedState() {
         const isSaved = await checkIfPageSaved(this.currentTab.url);
         if (isSaved) {
-            const bookmark = await LocalStorageMgr.getBookmark(this.currentTab.url, true);
+            const bookmarks = await getAllBookmarks(false);
+            const bookmark = bookmarks[this.currentTab.url] || Object.values(bookmarks).find(b => b.url === this.currentTab.url);
             if (bookmark) {
                 this.isEditMode = true;
                 this.editingBookmark = bookmark;
+                this.originalTitle = bookmark.title;
+                this.hasTranslated = false;
                 this.elements.pageTitle.textContent = bookmark.title;
                 this.elements.pageUrl.contentEditable = "true";
                 this.elements.pageUrl.classList.add("editable");
                 this.elements.deleteBookmarkBtn.style.display = 'flex';
+                await this.syncBrowserBookmarkSelectorState();
+                return;
             }
-        } else {
-            this.elements.pageUrl.contentEditable = "true";
-            this.elements.pageUrl.classList.add("editable");
-            this.elements.deleteBookmarkBtn.style.display = 'none';
         }
+        this.elements.pageUrl.contentEditable = "true";
+        this.elements.pageUrl.classList.add("editable");
+        this.elements.deleteBookmarkBtn.style.display = 'none';
+        await this.syncBrowserBookmarkSelectorState();
     }
 
     setupEventListeners() {
-        const { pageTitle, pageUrl, tagsList, newTagInput, saveTagsBtn, cancelTagsBtn, deleteBookmarkBtn, recommendedTagsList, pageExcerpt, generateExcerptBtn } = this.elements;
+        const { pageTitle, pageUrl, tagsList, newTagInput, saveTagsBtn, cancelTagsBtn, deleteBookmarkBtn, pageExcerpt, generateTagsBtn, generateExcerptBtn, translateTitleBtn } = this.elements;
+
+        document.addEventListener('keydown', (e) => {
+            this.handleDocumentEscape(e);
+        }, true);
 
         pageTitle.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -274,6 +461,91 @@ class QuickSaveManager {
                 pageTitle.blur();
             }
         });
+
+        // 监听撤销快捷键（只在翻译后支持）
+        pageTitle.addEventListener('keydown', (e) => {
+            // Escape 键：还原标题并失去焦点
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                e.stopPropagation();
+                pageTitle.textContent = pageTitle.dataset.originalTitle;
+                pageTitle.blur();
+            }
+            // Ctrl+Z 或 Cmd+Z（Mac）
+            else if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+                // 只在已翻译且未修改的情况下支持撤销
+                if (this.hasTranslated && this.originalTitle) {
+                    const currentText = pageTitle.textContent.trim();
+                    // 如果当前内容不等于原始标题，说明可以撤销
+                    if (currentText !== this.originalTitle) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        // 恢复原始标题
+                        pageTitle.textContent = this.originalTitle;
+                        pageTitle.title = this.originalTitle;
+                        this.hasTranslated = false; // 清除翻译标记
+                        return false;
+                    }
+                }
+            }
+        });
+
+        // 监听用户输入，如果用户手动编辑了，清除翻译标记
+        pageTitle.addEventListener('input', () => {
+            // 用户手动编辑时，清除翻译标记，不再支持撤销
+            if (this.hasTranslated) {
+                const currentText = pageTitle.textContent.trim();
+                // 如果内容与原始标题不同，说明用户编辑了
+                if (currentText !== this.originalTitle) {
+                    this.hasTranslated = false;
+                }
+            }
+        });
+
+        // 监听标题编辑状态，控制翻译按钮显示
+        pageTitle.addEventListener('focus', () => {
+            // 保存聚焦时的内容，用于失去焦点时还原
+            pageTitle.dataset.originalTitle = pageTitle.textContent;
+            if (translateTitleBtn) {
+                translateTitleBtn.style.display = 'flex';
+            }
+        });
+
+        pageTitle.addEventListener('blur', (e) => {
+            logger.debug('标题失去焦点', e);
+            const newTitle = pageTitle.textContent.trim();
+            // 如果内容为空，还原到聚焦时的内容
+            if (!newTitle) {
+                pageTitle.textContent = pageTitle.dataset.originalTitle;
+            }
+            // 如果失去焦点是因为点击了翻译按钮，则保持焦点
+            if (translateTitleBtn && e.relatedTarget === translateTitleBtn) {
+                // 延迟恢复焦点，避免与按钮点击冲突
+                setTimeout(() => {
+                    if (document.activeElement !== pageTitle) {
+                        pageTitle.focus();
+                    }
+                }, 0);
+                return;
+            }
+            // 延迟隐藏，给按钮点击事件时间执行
+            setTimeout(() => {
+                if (document.activeElement !== pageTitle && document.activeElement !== translateTitleBtn) {
+                    if (translateTitleBtn) {
+                        translateTitleBtn.style.display = 'none';
+                    }
+                }
+            }, 100);
+        });
+
+        // 翻译按钮点击事件 - 使用 mousedown 避免失去焦点
+        if (translateTitleBtn) {
+            translateTitleBtn.addEventListener('mousedown', (e) => {
+                e.preventDefault(); // 阻止默认行为，避免失去焦点
+                e.stopPropagation(); // 阻止事件冒泡
+                this.translateTitle();
+            });
+        }
 
         pageUrl.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -286,13 +558,16 @@ class QuickSaveManager {
             this.validateUrl();
         });
 
-        // 标签列表点击事件（删除标签）
         tagsList.addEventListener('click', (e) => {
-            if (e.target.classList.contains('remove-tag-btn')) {
+            if (e.target.closest('.clear-all-tags-btn')) {
+                this.renderTags([]);
+            } else if (e.target.classList.contains('remove-tag-btn')) {
                 const tagElement = e.target.parentElement;
                 tagElement.remove();
-            }  else if (e.target.classList.contains('tag-text')) {
-                // 点击标签本身，将标签内容设置到输入框中
+                if (this.getCurrentTags().length === 0) {
+                    this.renderTags([]);
+                }
+            } else if (e.target.classList.contains('tag-text')) {
                 const tagText = e.target.textContent.trim();
                 if (newTagInput && tagText) {
                     newTagInput.value = tagText;
@@ -308,13 +583,18 @@ class QuickSaveManager {
             }
         });
 
-        // 推荐标签点击事件
-        recommendedTagsList.addEventListener('click', (e) => {
-            const tagElement = e.target.closest('.tag');
-            if (tagElement) {
-                this.addNewTag(tagElement.textContent.trim());
-            }
-        });
+        if (generateTagsBtn) {
+            generateTagsBtn.addEventListener('click', async () => {
+                if (generateTagsBtn.classList.contains('loading')) {
+                    if (this.tagRequest) {
+                        this.tagRequest.abort();
+                        this.tagRequest = null;
+                    }
+                    return;
+                }
+                await this.generateTagsForCurrentPage({ useCache: false, interactive: true });
+            });
+        }
 
         // 取消按钮点击事件
         cancelTagsBtn.addEventListener('click', () => window.close());
@@ -340,8 +620,13 @@ class QuickSaveManager {
         }
     }
 
+    handleDocumentEscape(event) {
+        return Boolean(this.browserBookmarkSelector?.consumeEscapeKey?.(event));
+    }
+
     renderTags(tags) {
         const { tagsList } = this.elements;
+        tagsList.classList.remove('loading');
         tagsList.innerHTML = '';
         tags.forEach(tag => {
             const tagElement = document.createElement('span');
@@ -352,6 +637,14 @@ class QuickSaveManager {
             `;
             tagsList.appendChild(tagElement);
         });
+
+        if (tags.length > 0) {
+            const clearBtn = document.createElement('button');
+            clearBtn.className = 'clear-all-tags-btn';
+            clearBtn.title = i18n.getMessage('ui_tags_clear_all_title');
+            clearBtn.innerHTML = `<svg viewBox="0 0 24 24" width="12" height="12"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>${i18n.getMessage('ui_tags_clear_all')}`;
+            tagsList.appendChild(clearBtn);
+        }
     }
 
     renderPageExcerpt(excerpt) {
@@ -359,7 +652,7 @@ class QuickSaveManager {
             this.elements.pageExcerpt.value = excerpt;
         } else {
             this.elements.pageExcerpt.value = '';
-            this.elements.pageExcerpt.placeholder = '添加或编辑书签摘要...';
+            this.elements.pageExcerpt.placeholder = i18n.getMessage('quicksave_excerpt_placeholder');
         }
         requestAnimationFrame(() => {
             this.adjustTextareaHeight(this.elements.pageExcerpt);
@@ -380,35 +673,8 @@ class QuickSaveManager {
             this.renderTags([...currentTags, tag]);
             this.elements.newTagInput.value = '';
         } else {
-            this.showStatus('标签已存在', 'error');
+            this.showStatus(i18n.getMessage('quicksave_error_tag_exists'), 'error');
         }
-    }
-
-    showRecommendedTags(keywords) {
-        if (!keywords) return;
-
-        const tags = keywords
-            .split(/[,，;；]/)
-            .map(tag => tag.trim())
-            .filter(tag => tag.length > 0 && tag.length <= 20)
-            .slice(0, 10);
-
-        // 获取推荐标签容器
-        const recommendedTags = this.elements.recommendedTags;
-        
-        if (tags.length === 0) {
-            return;
-        }
-
-        // 显示推荐标签区域
-        if (recommendedTags) {
-            recommendedTags.style.display = 'block';
-        }
-
-        // 渲染标签
-        this.elements.recommendedTagsList.innerHTML = tags
-            .map(tag => `<span class="tag">${tag}</span>`)
-            .join('');
     }
 
     // 验证URL格式
@@ -422,7 +688,7 @@ class QuickSaveManager {
             // URL有效，不需要更改
         } catch (error) {
             // URL无效，恢复原始URL
-            this.showStatus('URL格式错误', 'error');
+            this.showStatus(i18n.getMessage('quicksave_error_url_invalid'), 'error');
             pageUrl.textContent = this.originalUrl;
         }
     }
@@ -457,35 +723,49 @@ class QuickSaveManager {
             try {
                 new URL(url);
             } catch (error) {
-                throw new Error('URL格式错误');
+                throw new Error(i18n.getMessage('quicksave_error_url_invalid'));
             }
             
-            const pageInfo = {
-                url: url, 
-                title: title,
-                tags: tags,
-                excerpt: excerpt,
-                savedAt: this.isEditMode ? this.editingBookmark.savedAt : Date.now(),
-                useCount: this.isEditMode ? this.editingBookmark.useCount : 1,
-                lastUsed: Date.now(),
-            };
+            const savedAt = this.isEditMode && this.editingBookmark ? this.editingBookmark.savedAt : Date.now();
+            const useCount = this.isEditMode && this.editingBookmark ? this.editingBookmark.useCount : 1;
+            const lastUsed = this.isEditMode && this.editingBookmark ? this.editingBookmark.lastUsed : Date.now();
+            const updates = { url, title, tags, excerpt, savedAt, useCount, lastUsed };
 
             // 打印书签编辑信息
             logger.debug('书签编辑信息:', {
                 isEditMode: this.isEditMode,
-                before: this.isEditMode ? this.editingBookmark : null,
-                after: pageInfo
+                before: this.editingBookmark || null,
+                after: updates
             });
+
+            // 编辑改 URL 冲突：新 URL 已存在时提示合并确认（与 popup 一致）
+            if (this.isEditMode && this.editingBookmark?.url !== url) {
+                const existing = await LocalStorageMgr.getBookmark(url, true);
+                if (existing) {
+                    const confirmed = confirm(i18n.getMessage('popup_url_merge_confirm'));
+                    if (!confirmed) {
+                        saveTagsBtn.disabled = false;
+                        return;
+                    }
+                }
+            }
 
             this.showStatus(i18n.M('msg_status_saving_bookmark'), 'success');
             
-            // 如果编辑模式下URL发生变化，则先删除旧书签
-            if (this.isEditMode && this.editingBookmark.url !== url) {
-                await LocalStorageMgr.removeBookmark(this.editingBookmark.url);
+            // 统一使用 bookmarkOps 更新（extension + Chrome）
+            const bookmarkToUpdate = this.isEditMode ? this.editingBookmark : { url, title, tags, excerpt, savedAt, useCount, lastUsed, _presence: 'extension_only' };
+            const oldUrl = this.isEditMode && this.editingBookmark?.url !== url ? this.editingBookmark.url : null;
+            const browserSave = await this.resolveBrowserBookmarkSaveForSubmit();
+            if (this.browserBookmarkSelector) {
+                this.browserBookmarkSelector.setValue(browserSave);
             }
-            
-            // 保存新书签
-            await updateBookmarksAndEmbedding(pageInfo);
+            const bookmarkOperationResult = await bookmarkOps.updateBookmark(bookmarkToUpdate, updates, oldUrl, { browserSave });
+            if (BrowserBookmarkSelector.shouldPersistPreferenceAfterBookmarkSave({
+                isEditMode: this.isEditMode,
+                bookmarkOperationResult
+            })) {
+                await this.persistBrowserBookmarkPreference(browserSave);
+            }
             await updateExtensionIcon(this.currentTab.id, true);
 
             sendMessageSafely({
@@ -508,9 +788,10 @@ class QuickSaveManager {
         const confirmation = confirm(i18n.M('msg_confirm_delete_bookmark'));
         if (confirmation) {
             try {
-                const bookmark = await LocalStorageMgr.getBookmark(this.currentTab.url, true);
+                const bookmarks = await getAllBookmarks(false);
+                let bookmark = bookmarks[this.currentTab.url] || Object.values(bookmarks).find(b => b.url === this.currentTab.url);
                 if (bookmark) {
-                    await LocalStorageMgr.removeBookmark(this.currentTab.url);
+                    await bookmarkOps.deleteBookmark(bookmark);
                     await updateExtensionIcon(this.currentTab.id, false);
 
                     sendMessageSafely({
@@ -585,7 +866,7 @@ class QuickSaveManager {
         try {
             // 显示加载状态
             generateExcerptBtn.classList.add('loading');
-            generateExcerptBtn.title = "取消生成";
+            generateExcerptBtn.title = i18n.getMessage('quicksave_cancel_generate');
 
             await checkAPIKeyValid('chat');
 
@@ -602,18 +883,18 @@ class QuickSaveManager {
                 this.adjustTextareaHeight(pageExcerpt);
                 this.updateCharCount(pageExcerpt);
             } else {
-                throw new Error('摘要生成失败');
+                throw new Error(i18n.getMessage('quicksave_error_generate_excerpt_failed'));
             }
         } catch (error) {
-            if (error.message.includes('UserCanceled')) {
-                this.showStatus('已取消生成摘要', 'success');
+            if (isUserCanceledError(error)) {
+                this.showStatus(i18n.getMessage('quicksave_status_generate_canceled'), 'success');
             } else {
                 this.showStatus(`${error.message}`, 'error');
             }
         } finally {
             // 移除loading状态
             generateExcerptBtn.classList.remove('loading');
-            generateExcerptBtn.title = "AI生成摘要";
+            generateExcerptBtn.title = i18n.getMessage('quicksave_generate_excerpt_title');
             
             // 清理请求
             if (this.excerptRequest) {
@@ -622,9 +903,77 @@ class QuickSaveManager {
             }
         }
     }
+
+    async translateTitle() {
+        const { pageTitle, translateTitleBtn } = this.elements;
+        if (!pageTitle || !translateTitleBtn) return;
+        
+        // 如果已经在loading状态，尝试取消请求
+        if (translateTitleBtn.classList.contains('loading')) {
+            if (this.translateRequest) {
+                this.translateRequest.abort();
+                this.translateRequest = null;
+            }
+            return;
+        }
+                
+        try {
+            // 显示加载状态
+            translateTitleBtn.classList.add('loading');
+            translateTitleBtn.title = i18n.getMessage('ui_button_cancel_translate');
+
+            await checkAPIKeyValid('chat');
+
+            // 使用原始标题进行翻译，而不是当前标题
+            const textToTranslate = this.originalTitle || pageTitle.textContent.trim();
+            if (!textToTranslate) {
+                throw new Error(i18n.getMessage('quicksave_error_title_empty'));
+            }
+
+            // 创建可取消的请求
+            this.translateRequest = requestManager.create();
+
+            // 调用API进行翻译（使用原始标题）
+            const translatedText = await translateText(textToTranslate, this.translateRequest.signal);
+            
+            if (translatedText) {
+                // 保存原始标题（如果还没有保存）
+                if (!this.originalTitle) {
+                    this.originalTitle = pageTitle.textContent.trim();
+                }
+                
+                // 替换标题内容
+                pageTitle.textContent = translatedText;
+                pageTitle.title = translatedText;
+                
+                // 标记已翻译，支持撤销
+                this.hasTranslated = true;
+            } else {
+                throw new Error(i18n.getMessage('quicksave_error_translate_failed'));
+            }
+        } catch (error) {
+            if (isUserCanceledError(error)) {
+                this.showStatus(i18n.getMessage('quicksave_status_translate_canceled'), 'success');
+            } else {
+                this.showStatus(error.message || i18n.getMessage('quicksave_error_translate_failed'), 'error');
+            }
+        } finally {
+            // 移除loading状态
+            translateTitleBtn.classList.remove('loading');
+            translateTitleBtn.title = i18n.getMessage('ui_button_translate_title');
+            
+            // 清理请求
+            if (this.translateRequest) {
+                this.translateRequest.done();
+                this.translateRequest = null;
+            }
+        }
+    }
 }
 
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
+    i18n.initializeI18n();
+    // 更新页面文本
     new QuickSaveManager();
 }); 
