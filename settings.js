@@ -1365,6 +1365,15 @@ class ServicesSettingsTab extends BaseSettingsTab {
         const chatModelChanged = oldConfig?.chatModel !== config.chatModel;
         const embedModelChanged = oldConfig?.embedModel !== config.embedModel;
         const baseInfoChanged = oldConfig?.baseUrl !== config.baseUrl || oldConfig?.apiKey !== config.apiKey;
+
+        if (!config.chatModel) {
+            config.supportsThinkingParam = false;
+        } else if (oldConfig && !chatModelChanged && !baseInfoChanged) {
+            config.supportsThinkingParam = oldConfig.supportsThinkingParam || false;
+            if (config.supportsThinkingParam && oldConfig.thinkingParam) {
+                config.thinkingParam = oldConfig.thinkingParam;
+            }
+        }
         
         try {
             // 先测试 Chat 接口
@@ -1374,12 +1383,20 @@ class ServicesSettingsTab extends BaseSettingsTab {
                 chatStatus.className = 'test-status testing';
                 
                 try {
-                    const thinkingParam = config.thinkingParam || DEFAULT_THINKING_PARAM;
+                    const thinkingParamCandidates = mergeThinkingParamCandidates(
+                        oldConfig?.supportsThinkingParam ? oldConfig.thinkingParam : null,
+                        getThinkingParamCandidatesForServiceConfig(config)
+                    );
                     const chatResult = await ConfigManager.testChatAPI(
                         config.baseUrl, config.apiKey, config.chatModel,
-                        this.testAbortController?.signal, thinkingParam
+                        this.testAbortController?.signal, thinkingParamCandidates
                     );
                     config.supportsThinkingParam = chatResult.supportsThinkingParam;
+                    if (chatResult.thinkingParam) {
+                        config.thinkingParam = chatResult.thinkingParam;
+                    } else {
+                        delete config.thinkingParam;
+                    }
                     chatStatus.textContent = i18n.getMessage('settings_services_test_success');
                     chatStatus.className = 'test-status success';
                 } catch (error) {
@@ -1481,7 +1498,10 @@ class ServicesSettingsTab extends BaseSettingsTab {
 
         try {
             if (type === 'chat') {
-                await ConfigManager.testChatAPI(config.baseUrl, config.apiKey, config.chatModel, this.testAbortController?.signal);
+                await ConfigManager.testChatAPI(
+                    config.baseUrl, config.apiKey, config.chatModel,
+                    this.testAbortController?.signal, getThinkingParamCandidatesForServiceConfig(config)
+                );
             } else {
                 await ConfigManager.testEmbeddingAPI(config.baseUrl, config.apiKey, config.embedModel, this.testAbortController?.signal);
             }

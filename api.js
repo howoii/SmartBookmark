@@ -44,6 +44,124 @@ async function fetchApi(url, options = {}) {
     return data;
 }
 
+const DEFAULT_CHAT_API_TEST_TIMEOUT_MS = 10000;
+const CHAT_API_TEST_ALLOWED_TAGS = ['Bookmark', '浏览器扩展', '书签管理', 'API', '智能标签'];
+const CHAT_API_TEST_SYSTEM_PROMPT = '你是一个严格的网页标签生成器，只能按要求输出标签列表。';
+const CHAT_API_TEST_USER_PROMPT = `请为下面网页内容生成1-5个标签。
+要求：
+1. 只能从以下候选标签中选择：Bookmark、浏览器扩展、书签管理、API、智能标签。
+2. 只输出标签，用竖线"|"分隔，不要解释，不要编号，不要 Markdown，标签不能重复。
+输出示例：Bookmark|书签管理
+网页内容如下：
+标题：Smart Bookmark API 服务配置
+内容：Smart Bookmark 是一个 Chrome 浏览器扩展，可以保存和管理网页书签，并配置 AI 服务自动生成智能标签。`;
+
+function createAbortSignalWithTimeout(signal, timeoutMs = DEFAULT_CHAT_API_TEST_TIMEOUT_MS) {
+    const controller = new AbortController();
+    let timedOut = false;
+    let timeoutId = null;
+
+    const abortFromParent = () => controller.abort(USER_CANCELED);
+    if (signal?.aborted) {
+        abortFromParent();
+    } else if (signal) {
+        signal.addEventListener('abort', abortFromParent, { once: true });
+    }
+
+    if (Number.isFinite(timeoutMs) && timeoutMs > 0) {
+        timeoutId = setTimeout(() => {
+            timedOut = true;
+            controller.abort();
+        }, timeoutMs);
+    }
+
+    return {
+        signal: controller.signal,
+        isTimedOut: () => timedOut,
+        cleanup: () => {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+            if (signal) {
+                signal.removeEventListener('abort', abortFromParent);
+            }
+        }
+    };
+}
+
+function buildChatApiTestBody(chatModel) {
+    return {
+        model: chatModel,
+        messages: [{
+            role: 'system',
+            content: CHAT_API_TEST_SYSTEM_PROMPT
+        }, {
+            role: 'user',
+            content: CHAT_API_TEST_USER_PROMPT
+        }],
+        temperature: 0.2,
+        max_tokens: 80
+    };
+}
+
+function parseChatApiTestTags(content) {
+    const normalized = (content || '').trim();
+    if (!normalized || /[`{}\[\]\n\r]/.test(normalized)) {
+        return [];
+    }
+
+    const tags = normalized
+        .split('|')
+        .map(tag => tag.trim())
+        .filter(Boolean);
+
+    const uniqueTags = new Set(tags);
+    if (tags.length < 1 || tags.length > 5 || uniqueTags.size !== tags.length) {
+        return [];
+    }
+    if (!tags.every(tag => CHAT_API_TEST_ALLOWED_TAGS.includes(tag))) {
+        return [];
+    }
+    return tags;
+}
+
+function assertValidChatApiTestResponse(data) {
+    const content = data.choices?.[0]?.message?.content?.trim();
+    if (!content) {
+        logger.debug('Chat接口数据格式错误:', { data });
+        throw new Error(i18n.getMessage('config_error_api_data_format'));
+    }
+
+    const tags = parseChatApiTestTags(content);
+    if (tags.length === 0) {
+        logger.debug('Chat接口标签生成验收失败:', { content });
+        throw new Error(i18n.getMessage('config_error_chat_test_invalid_tags'));
+    }
+    return tags;
+}
+
+async function fetchChatApiTest(url, apiKey, requestBody, signal, timeoutMs) {
+    const request = createAbortSignalWithTimeout(signal, timeoutMs);
+    try {
+        const data = await fetchApi(url, {
+            method: 'POST',
+            headers: getHeaders(apiKey),
+            body: JSON.stringify(requestBody),
+            signal: request.signal
+        });
+        assertValidChatApiTestResponse(data);
+        return data;
+    } catch (error) {
+        if (request.isTimedOut()) {
+            const seconds = Math.ceil(timeoutMs / 1000).toString();
+            throw new Error(i18n.getMessage('config_error_chat_test_timeout', [seconds]));
+        }
+        throw error;
+    } finally {
+        request.cleanup();
+    }
+}
+
 function makeEmbeddingText(bookmarkInfo) {
     if (!bookmarkInfo) {
         return '';
@@ -304,7 +422,7 @@ async function getChatCompletion(systemPrompt, userPrompt, signal = null, maxTok
             throw new Error(i18n.getMessage('api_error_chat_model_not_configured'));
         }   
         // 构建请求体
-        const requestBody = {
+        let requestBody = {
             model: apiService.chatModel,
             messages: [{
                 role: "system",
@@ -318,7 +436,7 @@ async function getChatCompletion(systemPrompt, userPrompt, signal = null, maxTok
 
         // 如果平台支持且当前模型经探测确认支持关闭推理，添加对应参数
         if (apiService.supportsThinkingParam && apiService.thinkingParam) {
-            requestBody[apiService.thinkingParam.key] = apiService.thinkingParam.disabledValue;
+            requestBody = applyThinkingParamToRequestBody(requestBody, apiService.thinkingParam);
         }
         
         // 只有当 maxTokens 有值时才设置 max_tokens

@@ -269,13 +269,45 @@ const ChromeBookmarkSync = (() => {
     }
 
     async function persistBootstrapBookmarks(bookmarksToImport) {
+        let importedCount = 0;
+        let skippedExistingCount = 0;
+
         for (let i = 0; i < bookmarksToImport.length; i += BOOTSTRAP_BATCH_SIZE) {
             const batch = bookmarksToImport.slice(i, i + BOOTSTRAP_BATCH_SIZE);
-            await LocalStorageMgr.setBookmarks(batch, {
+            const existingBookmarks = await LocalStorageMgr.batchGetBookmarks(
+                batch.map(bookmark => bookmark.url),
+                true
+            );
+            const existingUrls = new Set(existingBookmarks.map(bookmark => bookmark.url));
+            const newBookmarks = batch.filter(bookmark => {
+                if (existingUrls.has(bookmark.url)) {
+                    skippedExistingCount++;
+                    return false;
+                }
+                return true;
+            });
+
+            if (newBookmarks.length === 0) {
+                continue;
+            }
+
+            await LocalStorageMgr.setBookmarks(newBookmarks, {
                 noSync: true,
                 noUpdateEmbedding: true,
             });
+            importedCount += newBookmarks.length;
         }
+
+        if (skippedExistingCount > 0) {
+            logger.info('[bookmark-sync] 安装期导入落库前跳过已存在书签', {
+                skippedExistingCount,
+            });
+        }
+
+        return {
+            importedCount,
+            skippedExistingCount,
+        };
     }
 
     async function runBootstrapSync({ reason, previousVersion = null, currentVersion = null } = {}) {
@@ -301,18 +333,25 @@ const ChromeBookmarkSync = (() => {
                     skippedInvalidCount,
                 } = await buildBootstrapImportPayload();
 
+                let persistResult = {
+                    importedCount: 0,
+                    skippedExistingCount: 0,
+                };
+
                 if (bookmarksToImport.length > 0) {
-                    await persistBootstrapBookmarks(bookmarksToImport);
-                    await LocalStorageMgr.notifyBookmarkSync();
-                    try {
-                        const embeddingService = await ConfigManager.getEmbeddingService();
-                        if (embeddingService?.apiKey && embeddingService?.embedModel) {
-                            LocalStorageMgr.scheduleUpdateEmbedding();
+                    persistResult = await persistBootstrapBookmarks(bookmarksToImport);
+                    if (persistResult.importedCount > 0) {
+                        await LocalStorageMgr.notifyBookmarkSync();
+                        try {
+                            const embeddingService = await ConfigManager.getEmbeddingService();
+                            if (embeddingService?.apiKey && embeddingService?.embedModel) {
+                                LocalStorageMgr.scheduleUpdateEmbedding();
+                            }
+                        } catch (error) {
+                            logger.warn('[bookmark-sync] 检查 embedding 配置失败，跳过自动补向量', { error: error.message });
                         }
-                    } catch (error) {
-                        logger.warn('[bookmark-sync] 检查 embedding 配置失败，跳过自动补向量', { error: error.message });
+                        _notifyRefresh();
                     }
-                    _notifyRefresh();
                 }
 
                 const result = createBootstrapState({
@@ -321,8 +360,8 @@ const ChromeBookmarkSync = (() => {
                     lastRunReason: reason || null,
                     lastRunVersion: currentVersion || null,
                     previousVersion,
-                    importedCount: bookmarksToImport.length,
-                    skippedExistingCount,
+                    importedCount: persistResult.importedCount,
+                    skippedExistingCount: skippedExistingCount + persistResult.skippedExistingCount,
                     skippedDuplicateCount,
                     skippedInvalidCount,
                 });

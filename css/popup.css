@@ -874,9 +874,9 @@ mark {
     transition: opacity 0.2s ease;
 }
 
-.bookmark-actions .edit-btn {
+.bookmark-actions .edit-btn,
+.bookmark-actions .delete-btn {
     padding: 4px;
-    margin-right: 4px;
     background: none;
     border: none;
     cursor: pointer;
@@ -885,7 +885,14 @@ mark {
     transition: opacity 0.2s;
 }
 
-.bookmark-item:hover .edit-btn {
+.bookmark-actions .edit-btn {
+    margin-right: 4px;
+}
+
+.bookmark-item:hover .edit-btn,
+.bookmark-item:focus-within .edit-btn,
+.bookmark-item:hover .delete-btn,
+.bookmark-item:focus-within .delete-btn {
     display: flex;
 }
 
@@ -893,14 +900,6 @@ mark {
     color: var(--action-color);
     background-color: var(--action-light-hover);
     border-radius: 4px;
-}
-
-.bookmark-actions .delete-btn {
-    opacity: 0.3;
-}
-
-.bookmark-item:hover .delete-btn {
-    opacity: 1;
 }
 
 .delete-btn {
@@ -2569,6 +2568,153 @@ input[type="checkbox"] {
 
 .search-results:hover {
     scrollbar-color: var(--bg-scrollbar-thumb-hover) transparent;
+}
+
+.search-results.suggestion-mode {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 4px 0;
+    margin-top: 2px;
+    background: var(--bg-primary);
+    scrollbar-gutter: stable;
+}
+
+.popup-presearch-section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 24px;
+    padding: 6px 10px 4px;
+    color: var(--text-tertiary);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0;
+    list-style: none;
+}
+
+.popup-presearch-section-count {
+    flex-shrink: 0;
+    color: var(--text-quaternary);
+    font-weight: 500;
+}
+
+.popup-search-suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 34px;
+    padding: 4px 10px;
+    color: var(--text-primary);
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+    list-style: none;
+    box-sizing: border-box;
+    transition: background-color 0.12s ease;
+}
+
+.popup-search-suggestion-item:hover,
+.popup-search-suggestion-item.focused {
+    background: var(--bg-tertiary);
+}
+
+.popup-suggestion-icon,
+.popup-suggestion-favicon {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    color: var(--text-tertiary);
+}
+
+.popup-suggestion-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.popup-suggestion-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.popup-suggestion-favicon {
+    border-radius: 4px;
+    object-fit: contain;
+}
+
+.popup-suggestion-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+    line-height: 1.35;
+}
+
+.popup-delete-history-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    color: var(--text-tertiary);
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    opacity: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: opacity 0.12s ease, background-color 0.12s ease, color 0.12s ease;
+}
+
+.popup-search-suggestion-item:hover .popup-delete-history-btn,
+.popup-search-suggestion-item.focused .popup-delete-history-btn {
+    opacity: 0.75;
+}
+
+.popup-delete-history-btn:hover {
+    opacity: 1;
+    color: var(--danger-color);
+    background: var(--bg-tertiary-hover);
+}
+
+.popup-delete-history-btn svg {
+    width: 15px;
+    height: 15px;
+}
+
+.popup-presearch-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 88px;
+    padding: 16px;
+    color: var(--text-tertiary);
+    font-size: 13px;
+    text-align: center;
+    list-style: none;
+}
+
+.popup-presearch-hint {
+    display: none;
+    flex-shrink: 0;
+    padding: 3px 8px 0;
+    color: var(--text-tertiary);
+    font-size: 12px;
+    line-height: 1.35;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.popup-presearch-hint.show {
+    display: block;
 }
 
 /* 最近搜索记录容器 */
@@ -4258,7 +4404,10 @@ input[type="checkbox"] {
 }
 
 .sync-services-container {
-    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px;
     overflow-y: auto;
     max-height: 400px;
 }
@@ -4271,7 +4420,9 @@ input[type="checkbox"] {
     padding: 20px 16px;
     text-align: center;
     max-width: 280px;
-    margin-bottom: 12px;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
     background-color: var(--bg-secondary);
     border-radius: 8px;
     box-shadow: var(--shadow-md);
@@ -4325,37 +4476,53 @@ input[type="checkbox"] {
 
 /* 同步服务项样式 */
 .sync-service-item {
-    box-shadow: var(--shadow-flow);
-    border: 1px solid var(--bg-border-light);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
-    margin-bottom: 16px;
-    padding: 16px;
+    padding: 14px;
     background-color: var(--bg-primary);
-    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 }
 
-.sync-service-item:last-child {
-    margin-bottom: 0;
+.sync-service-item:hover {
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+.sync-service-item.auto-sync-disabled {
+    background-color: var(--bg-secondary);
 }
 
 .sync-service-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 10px;
 }
 
 .sync-service-name {
-    font-weight: 500;
-    font-size: 16px;
+    min-width: 0;
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 1.35;
     color: var(--text-primary);
+    overflow-wrap: anywhere;
 }
 
 .sync-service-status {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
     font-size: 12px;
-    padding: 4px 8px;
+    line-height: 1;
+    padding: 0 9px;
     border-radius: 12px;
     background-color: var(--action-light);
+    color: var(--action-color);
+    white-space: nowrap;
 }
 
 .sync-service-status.success {
@@ -4373,32 +4540,72 @@ input[type="checkbox"] {
     color: var(--action-color);
 }
 
+.sync-service-status.not-synced {
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
 .sync-service-details {
-    margin-bottom: 16px;
-    padding: 8px 0;
-    border-top: 1px solid var(--border-color);
-    border-bottom: 1px solid var(--border-color);
-}
-
-.sync-time-container, .sync-result-container {
     display: flex;
-    flex-wrap: wrap;
-    padding: 4px 0;
-    gap: 2px;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+    padding: 10px;
+    border: 1px solid var(--bg-secondary-border);
+    border-radius: 6px;
+    background-color: var(--bg-secondary);
 }
 
-.sync-time-container.success-text .sync-label,
-.sync-time-container.success-text .sync-time {
-    color: var(--success-text);
+.sync-meta-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    min-height: 20px;
+    gap: 4px;
 }
 
 .sync-time, .sync-result, .sync-label {
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.sync-time,
+.sync-result {
     color: var(--text-primary);
-    font-size: 14px;
+}
+
+.sync-auto-container {
+    color: var(--text-secondary);
+}
+
+.sync-auto-indicator {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: var(--text-tertiary);
+    box-shadow: 0 0 0 3px var(--bg-tertiary);
+}
+
+.sync-auto-container.enabled .sync-auto-indicator {
+    background-color: var(--success-text);
+    box-shadow: 0 0 0 3px var(--success-bg);
+}
+
+.sync-auto-container.disabled .sync-auto-indicator {
+    background-color: var(--warning-text);
+    box-shadow: 0 0 0 3px var(--warning-bg);
+}
+
+.sync-auto-text {
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--text-secondary);
 }
 
 .sync-result.error-text {
     color: var(--error-text);
+    overflow-wrap: anywhere;
 }
 
 .sync-actions {
@@ -4410,11 +4617,13 @@ input[type="checkbox"] {
 .icon-button.sync-settings-button {
     background-color: var(--bg-tertiary);
     color: var(--text-primary);
-    border: none;
-    border-radius: 4px;
-    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -4426,24 +4635,29 @@ input[type="checkbox"] {
 }
 
 .sync-now-button {
-    display: flex;
+    min-height: 36px;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 8px 16px;
+    padding: 8px 14px;
     background-color: var(--action-color);
     color: var(--text-fifth);
     border: none;
-    border-radius: 4px;
-    font-size: 14px;
+    border-radius: 6px;
+    font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.1s ease;
+    transition: background-color 0.18s ease, transform 0.12s ease, opacity 0.18s ease;
     box-shadow: var(--shadow-sm);
 }
 
 .sync-now-button:hover {
     background-color: var(--action-hover);
+}
+
+.sync-now-button:active {
+    transform: translateY(1px);
 }
 
 .sync-now-button svg {
@@ -4459,8 +4673,30 @@ input[type="checkbox"] {
     animation: gentle-pulse 2s infinite;
 }
 
+.sync-now-button:disabled {
+    pointer-events: none;
+}
+
 .sync-now-button.syncing svg {
     animation: rotate 1.0s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sync-service-item,
+    .sync-now-button,
+    .icon-button.sync-settings-button {
+        transition: none;
+    }
+
+    .sync-service-item:hover,
+    .sync-now-button:active {
+        transform: none;
+    }
+
+    .sync-now-button.syncing,
+    .sync-now-button.syncing svg {
+        animation: none;
+    }
 }
 
 /* 为旋转动画添加关键帧 */

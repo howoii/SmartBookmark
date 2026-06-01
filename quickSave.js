@@ -59,6 +59,7 @@ class QuickSaveManager {
                     this.hideMainContent();
                     return;
                 }
+                this.showStatus(i18n.getMessage('msg_status_tags_page_loading'), 'warning');
             }
 
             // 检查是否是不可标记的URL
@@ -391,7 +392,8 @@ class QuickSaveManager {
     async setupPageContentAndTags() {
         try {
             if (this.currentTab.status !== 'complete') {
-                this.pageContent = {};  
+                this.pageContent = {};
+                this.showStatus(i18n.getMessage('msg_status_tags_page_loading'), 'warning');
                 logger.debug('页面正在加载中，不访问页面内容', this.currentTab);
             } else {
                 // 使用 getPageContent 获取页面内容
@@ -577,8 +579,9 @@ class QuickSaveManager {
         });
 
         // 新标签输入事件
-        newTagInput.addEventListener('keypress', (e) => {
+        newTagInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
+                e.preventDefault();
                 this.addNewTag(newTagInput.value.trim());
             }
         });

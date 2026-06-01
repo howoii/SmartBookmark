@@ -77,6 +77,9 @@
     "msg_status_page_loading": {
         "message": "页面正在加载中，请等待加载完成后再试"
     },
+    "msg_status_tags_page_loading": {
+        "message": "页面仍在加载中，生成的标签可能不准确。"
+    },
     "msg_status_page_unsupported": {
         "message": "基于浏览器安全策略，不支持保存此页面"
     },
@@ -224,6 +227,22 @@
     "quicksearch_delete_history_title": {
         "message": "删除此搜索记录",
         "description": "删除搜索历史按钮标题"
+    },
+    "quicksearch_presearch_hint": {
+        "message": "预搜索结果，按 Enter 完整搜索",
+        "description": "预搜索列表顶部提示"
+    },
+    "quicksearch_presearch_history_title": {
+        "message": "搜索历史",
+        "description": "预搜索历史分组标题"
+    },
+    "quicksearch_presearch_bookmarks_title": {
+        "message": "书签",
+        "description": "预搜索书签分组标题"
+    },
+    "quicksearch_presearch_empty": {
+        "message": "没有匹配的预搜索结果，按 Enter 继续完整搜索。",
+        "description": "预搜索无匹配提示"
     },
     "quicksearch_searching": {
         "message": "正在搜索书签...",
@@ -696,6 +715,22 @@
     "popup_search_input_placeholder": {
         "message": "搜索书签...",
         "description": "搜索输入框占位符"
+    },
+    "popup_presearch_hint": {
+        "message": "预搜索结果，按 Enter 完整搜索",
+        "description": "popup 预搜索列表底部提示"
+    },
+    "popup_presearch_history_title": {
+        "message": "搜索历史",
+        "description": "popup 预搜索历史分组标题"
+    },
+    "popup_presearch_bookmarks_title": {
+        "message": "书签",
+        "description": "popup 预搜索书签分组标题"
+    },
+    "popup_presearch_empty": {
+        "message": "没有匹配的预搜索结果，按 Enter 继续完整搜索。",
+        "description": "popup 预搜索无匹配提示"
     },
     "popup_toolbar_button_close_search_title": {
         "message": "关闭搜索",
@@ -2123,6 +2158,20 @@
         "message": "API 返回数据格式错误",
         "description": "API数据格式错误"
     },
+    "config_error_chat_test_invalid_tags": {
+        "message": "Chat 验证失败：模型没有返回符合要求的标签列表",
+        "description": "Chat验证标签格式错误"
+    },
+    "config_error_chat_test_timeout": {
+        "message": "Chat 验证超过 $1 秒未响应",
+        "description": "Chat验证超时错误",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "10"
+            }
+        }
+    },
     "config_error_verify_failed": {
         "message": "验证失败: $1",
         "description": "验证失败错误",
@@ -2336,7 +2385,7 @@
         "description": "自定义服务文本模型标签"
     },
     "settings_services_dialog_custom_chat_tooltip": {
-        "message": "请配置你的API服务支持的对话模型，暂不支持推理模型",
+        "message": "请配置你的 API 服务支持的对话模型。支持的推理模型会在保存时自动探测关闭思考参数",
         "description": "自定义服务文本模型提示"
     },
     "settings_services_dialog_custom_embed_label": {

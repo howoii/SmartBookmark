@@ -59,6 +59,9 @@
     "msg_status_page_loading": {
         "message": "The page is loading. Please try again once it has loaded."
     },
+    "msg_status_tags_page_loading": {
+        "message": "The page is still loading. Generated tags may be inaccurate."
+    },
     "msg_status_page_unsupported": {
         "message": "Saving this page is not supported due to privacy and security restrictions."
     },
@@ -173,6 +176,18 @@
     },
     "quicksearch_delete_history_title": {
         "message": "Delete this search record"
+    },
+    "quicksearch_presearch_hint": {
+        "message": "Preview results, press Enter for full search"
+    },
+    "quicksearch_presearch_history_title": {
+        "message": "Search history"
+    },
+    "quicksearch_presearch_bookmarks_title": {
+        "message": "Bookmarks"
+    },
+    "quicksearch_presearch_empty": {
+        "message": "No preview matches. Press Enter to run full search."
     },
     "quicksearch_searching": {
         "message": "Searching bookmarks..."
@@ -527,6 +542,18 @@
     },
     "popup_search_input_placeholder": {
         "message": "Search bookmarks..."
+    },
+    "popup_presearch_hint": {
+        "message": "Preview results, press Enter for full search"
+    },
+    "popup_presearch_history_title": {
+        "message": "Search history"
+    },
+    "popup_presearch_bookmarks_title": {
+        "message": "Bookmarks"
+    },
+    "popup_presearch_empty": {
+        "message": "No preview matches. Press Enter to run full search."
     },
     "popup_toolbar_button_close_search_title": {
         "message": "Close Search"
@@ -1601,6 +1628,18 @@
     "config_error_api_data_format": {
         "message": "API returned data format error"
     },
+    "config_error_chat_test_invalid_tags": {
+        "message": "Chat verification failed: the model did not return a valid tag list"
+    },
+    "config_error_chat_test_timeout": {
+        "message": "Chat verification timed out after $1 seconds",
+        "placeholders": {
+            "1": {
+                "content": "$1",
+                "example": "10"
+            }
+        }
+    },
     "config_error_verify_failed": {
         "message": "Verification failed: $1",
         "placeholders": {
@@ -1760,7 +1799,7 @@
         "message": "Text Model (Optional)"
     },
     "settings_services_dialog_custom_chat_tooltip": {
-        "message": "Configure the conversation model supported by your API service. Reasoning models are not currently supported"
+        "message": "Configure the conversation model supported by your API service. Supported reasoning models will automatically probe the thinking-off parameter when saved"
     },
     "settings_services_dialog_custom_embed_label": {
         "message": "Embedding Model (Optional)"

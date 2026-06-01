@@ -14,7 +14,7 @@
                 console.log('%c[Content Script]', 'color: blue; font-weight: bold;', ...args);
             }
         },
-        error: (...args) => {l
+        error: (...args) => {
             if (SB_DEBUG) {
                 console.log('%c[Content Script]', 'color: red; font-weight: bold;', ...args);
             }

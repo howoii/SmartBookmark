@@ -11,6 +11,7 @@ class LocalStorageMgr {
     static _bookmarkCacheUpdateTimer = null;
     static _updateEmbeddingTimer = null;
     static _isUpdatingEmbedding = false; // 标记是否正在更新向量，避免重复触发
+    static _needsEmbeddingRescan = false; // 向量更新期间收到的新调度，当前轮结束后补扫
     static _commonCache = {};
     static DEBOUNCE_DELAY = 2000; // 2000毫秒的防抖延迟
     static BOOKMARK_CACHE_UPDATE_DELAY = 4000; // 4000毫秒的更新间隔
@@ -357,7 +358,8 @@ class LocalStorageMgr {
         
         // 如果正在更新向量，则跳过本次调度
         if (this._isUpdatingEmbedding) {
-            logger.debug('向量更新正在进行中，跳过本次调度');
+            this._needsEmbeddingRescan = true;
+            logger.debug('向量更新正在进行中，记录待补偿扫描');
             return;
         }
         
@@ -433,6 +435,11 @@ class LocalStorageMgr {
                 timestamp: Date.now()
             });
             logger.debug('向量更新标志已清除');
+            if (this._needsEmbeddingRescan) {
+                this._needsEmbeddingRescan = false;
+                logger.debug('检测到向量更新期间有新的更新请求，计划补偿扫描');
+                this.scheduleUpdateEmbedding();
+            }
         }
     }
     
@@ -450,13 +457,16 @@ class LocalStorageMgr {
         
         // 准备文本数据和书签映射
         const textsToEmbed = [];
-        const bookmarkMapping = []; // 存储文本索引到书签的映射
+        const bookmarkMapping = []; // 存储文本索引到书签和原始索引文本的映射
         
         for (const bookmark of bookmarks) {
             const text = makeEmbeddingText(bookmark);
             if (text) {
                 textsToEmbed.push(text);
-                bookmarkMapping.push(bookmark);
+                bookmarkMapping.push({
+                    bookmark,
+                    embeddingText: text,
+                });
             }
         }
         
@@ -470,12 +480,14 @@ class LocalStorageMgr {
         const totalBatches = Math.ceil(textsToEmbed.length / batchSize);
         let successCount = 0;
         let failCount = 0;
+        let skippedStaleCount = 0;
+        let skippedMissingCount = 0;
         
         for (let i = 0; i < totalBatches; i++) {
             const startIdx = i * batchSize;
             const endIdx = Math.min(startIdx + batchSize, textsToEmbed.length);
             const batchTexts = textsToEmbed.slice(startIdx, endIdx);
-            const batchBookmarks = bookmarkMapping.slice(startIdx, endIdx);
+            const batchBookmarkEntries = bookmarkMapping.slice(startIdx, endIdx);
             
             logger.debug(`处理第 ${i + 1}/${totalBatches} 批，包含 ${batchTexts.length} 个书签`);
             
@@ -485,15 +497,35 @@ class LocalStorageMgr {
                 
                 // 处理结果并更新书签
                 const updatedBookmarks = [];
+                const currentBookmarks = await this.batchGetBookmarks(
+                    batchBookmarkEntries.map(entry => entry.bookmark.url),
+                    true
+                );
+                const currentBookmarksByUrl = new Map(
+                    currentBookmarks.map(bookmark => [bookmark.url, bookmark])
+                );
                 for (let j = 0; j < results.length; j++) {
                     const result = results[j];
-                    const bookmark = batchBookmarks[j];
+                    const { bookmark, embeddingText } = batchBookmarkEntries[j];
                     
                     if (result.embedding) {
-                        // 更新书签的 embedding 信息，移除临时标记
-                        const { _embeddingPendingRefresh, ...restBookmark } = bookmark;
+                        const currentBookmark = currentBookmarksByUrl.get(bookmark.url);
+                        if (!currentBookmark) {
+                            skippedMissingCount++;
+                            continue;
+                        }
+
+                        const currentEmbeddingText = makeEmbeddingText(currentBookmark);
+                        if (currentEmbeddingText !== embeddingText) {
+                            skippedStaleCount++;
+                            this._needsEmbeddingRescan = true;
+                            continue;
+                        }
+
+                        // 只把 embedding 结果合并到当前最新书签对象，避免旧快照覆盖 WebDAV 同步结果。
+                        const { _embeddingPendingRefresh, ...currentBookmarkWithoutPending } = currentBookmark;
                         const updatedBookmark = {
-                            ...restBookmark,
+                            ...currentBookmarkWithoutPending,
                             embedding: result.embedding,
                             apiService: embeddingService.id,
                             embedModel: embeddingService.embedModel
@@ -532,7 +564,13 @@ class LocalStorageMgr {
             }
         }
         
-        logger.info(`批量更新向量完成: 成功 ${successCount}/${textsToEmbed.length}, 失败 ${failCount}`);
+        logger.info('批量更新向量完成', {
+            total: textsToEmbed.length,
+            successCount,
+            failCount,
+            skippedStaleCount,
+            skippedMissingCount,
+        });
     }
 
     // ----------------------------------- 书签部分结束 分割线 -----------------------------------

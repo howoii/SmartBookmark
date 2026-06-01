@@ -108,6 +108,7 @@ class SearchManager {
         });
 
         // 计算单个书签的分数
+        const keywordQuery = buildKeywordMatchQuery(searchInput);
         const calculateBookmarkScore = (item) => {
             // 计算向量相似度
             let similarity = 0;
@@ -117,12 +118,11 @@ class SearchManager {
             similarity = Math.min(1, Math.max(0, similarity));
             
             // 检查关键词匹配
-            const searchInputLower = searchInput.toLowerCase();
             const keywordMatch = {
-                title: item.title?.toLowerCase().includes(searchInputLower) || false,
-                tags: item.tags?.some(tag => tag.toLowerCase().includes(searchInputLower)) || false,
-                excerpt: item.excerpt?.toLowerCase().includes(searchInputLower) || false,
-                url: includeUrl ? item.url?.toLowerCase().includes(searchInputLower) : false
+                title: matchesKeywordQuery(item.title, keywordQuery),
+                tags: item.tags?.some(tag => matchesKeywordQuery(tag, keywordQuery)) || false,
+                excerpt: matchesKeywordQuery(item.excerpt, keywordQuery),
+                url: includeUrl ? matchesKeywordQuery(item.url, keywordQuery) : false
             };
             
             const hasKeywordMatch = Object.values(keywordMatch).some(match => match);
@@ -323,4 +323,4 @@ class SearchHistoryManager {
 }
 
 // 导出搜索管理器实例
-const searchManager = new SearchManager(); 
+const searchManager = new SearchManager();

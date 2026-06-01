@@ -314,6 +314,210 @@ function calculateWeightedScore(useCount, lastUsed) {
     return Math.round(weightedScore);
 }
 
+function buildKeywordMatchQuery(query) {
+    const raw = String(query || '').trim().toLowerCase();
+    const compact = raw.replace(/\s+/g, '');
+    const parts = raw.split(/\s+/).filter(Boolean);
+    return {
+        raw,
+        compact,
+        parts
+    };
+}
+
+function containsKeywordPartsInOrder(valueLower, parts) {
+    if (!valueLower || !Array.isArray(parts) || parts.length < 2) {
+        return false;
+    }
+
+    let searchFrom = 0;
+    for (const part of parts) {
+        const foundIndex = valueLower.indexOf(part, searchFrom);
+        if (foundIndex === -1) {
+            return false;
+        }
+        searchFrom = foundIndex + part.length;
+    }
+    return true;
+}
+
+function getKeywordMatchType(text, query, { allowPinyin = false } = {}) {
+    const value = String(text || '').trim();
+    const matchQuery = typeof query === 'string' ? buildKeywordMatchQuery(query) : query;
+    if (!value || !matchQuery?.raw) return null;
+
+    const valueLower = value.toLowerCase();
+    if (valueLower === matchQuery.raw) return 'exact';
+    if (valueLower.startsWith(matchQuery.raw)) return 'prefix';
+    if (valueLower.includes(matchQuery.raw)) return 'contains';
+
+    const shouldCheckCompact = matchQuery.compact && matchQuery.compact !== matchQuery.raw;
+    if (shouldCheckCompact) {
+        const valueCompact = valueLower.replace(/\s+/g, '');
+        if (valueCompact === matchQuery.compact) return 'compactExact';
+        if (valueCompact.startsWith(matchQuery.compact)) return 'compactPrefix';
+        if (valueCompact.includes(matchQuery.compact)) return 'compactContains';
+    }
+
+    if (containsKeywordPartsInOrder(valueLower, matchQuery.parts)) {
+        return 'orderedParts';
+    }
+
+    if (
+        allowPinyin &&
+        typeof PinyinMatch !== 'undefined' &&
+        (PinyinMatch.match(value, matchQuery.raw) || PinyinMatch.match(value, matchQuery.compact))
+    ) {
+        return 'pinyin';
+    }
+
+    return null;
+}
+
+function matchesKeywordQuery(text, query, options = {}) {
+    return Boolean(getKeywordMatchType(text, query, options));
+}
+
+const PRESEARCH_CONFIG = Object.freeze({
+    debounceDelayMs: 50,
+    historyLimit: 6,
+    bookmarkLimit: 100
+});
+
+const PRESEARCH_TITLE_MATCH_SCORE = Object.freeze({
+    exact: 10000,
+    compactExact: 9800,
+    prefix: 9000,
+    compactPrefix: 8800,
+    contains: 8000,
+    compactContains: 7900,
+    orderedParts: 7700,
+    pinyin: 7600
+});
+
+const PRESEARCH_SECONDARY_MATCH_SCORE = Object.freeze({
+    exact: 6500,
+    compactExact: 6450,
+    prefix: 6300,
+    compactPrefix: 6250,
+    contains: 6100,
+    compactContains: 6050,
+    orderedParts: 6025,
+    pinyin: 6000
+});
+
+function matchesPresearchText(text, keywordQuery, allowPinyin = true) {
+    return Boolean(getKeywordMatchType(text, keywordQuery, { allowPinyin }));
+}
+
+function getPresearchHostname(url) {
+    try {
+        return new URL(url).hostname || '';
+    } catch (error) {
+        return '';
+    }
+}
+
+function scorePresearchBookmark(bookmark, keywordQuery) {
+    if (!bookmark?.url || !keywordQuery?.raw) return null;
+
+    const title = String(bookmark.title || bookmark.url);
+    const tags = Array.isArray(bookmark.tags) ? bookmark.tags : [];
+    const url = String(bookmark.url || '');
+    const hostname = getPresearchHostname(url);
+
+    let score = 0;
+    const titleMatch = getKeywordMatchType(title, keywordQuery, { allowPinyin: true });
+    if (titleMatch) {
+        score = Math.max(score, PRESEARCH_TITLE_MATCH_SCORE[titleMatch] || 0);
+    }
+
+    for (const tag of tags) {
+        const tagMatch = getKeywordMatchType(tag, keywordQuery, { allowPinyin: true });
+        if (tagMatch) {
+            score = Math.max(score, PRESEARCH_SECONDARY_MATCH_SCORE[tagMatch] || 0);
+        }
+    }
+
+    if (
+        getKeywordMatchType(url, keywordQuery, { allowPinyin: false }) ||
+        getKeywordMatchType(hostname, keywordQuery, { allowPinyin: false })
+    ) {
+        score = Math.max(score, 3000);
+    }
+
+    if (score <= 0) return null;
+
+    const usageScore = Math.min(99, calculateWeightedScore(bookmark.useCount, bookmark.lastUsed));
+    const recentTime = Math.max(
+        getDateTimestamp(bookmark.lastUsed) || 0,
+        getDateTimestamp(bookmark.savedAt) || 0
+    );
+
+    return {
+        bookmark,
+        title,
+        url,
+        score: score + usageScore,
+        usageScore,
+        recentTime
+    };
+}
+
+function buildPresearchSuggestions(query, {
+    historyItems = [],
+    bookmarks = [],
+    includeHistory = true,
+    config = PRESEARCH_CONFIG
+} = {}) {
+    const keywordQuery = buildKeywordMatchQuery(query);
+    const historyLimit = config.historyLimit ?? PRESEARCH_CONFIG.historyLimit;
+    const bookmarkLimit = config.bookmarkLimit ?? PRESEARCH_CONFIG.bookmarkLimit;
+    const normalizedHistoryItems = Array.isArray(historyItems) ? historyItems : [];
+    const normalizedBookmarks = Array.isArray(bookmarks) ? bookmarks : [];
+
+    const history = includeHistory
+        ? normalizedHistoryItems
+            .filter(item => {
+                if (!item?.query) return false;
+                return !keywordQuery.raw || matchesPresearchText(item.query, keywordQuery, true);
+            })
+            .slice(0, historyLimit)
+            .map(item => ({
+                type: 'history',
+                query: item.query,
+                historyItem: item
+            }))
+        : [];
+
+    const bookmarkSuggestions = keywordQuery.raw
+        ? normalizedBookmarks
+            .map(bookmark => scorePresearchBookmark(bookmark, keywordQuery))
+            .filter(Boolean)
+            .sort((a, b) => {
+                return b.score - a.score ||
+                    b.usageScore - a.usageScore ||
+                    b.recentTime - a.recentTime ||
+                    (a.title || '').localeCompare(b.title || '');
+            })
+            .slice(0, bookmarkLimit)
+            .map(item => ({
+                type: 'bookmark',
+                bookmark: item.bookmark,
+                title: item.title,
+                url: item.url,
+                score: item.score,
+                usageScore: item.usageScore,
+                recentTime: item.recentTime
+            }))
+        : [];
+
+    return {
+        history,
+        bookmarks: bookmarkSuggestions
+    };
+}
+
 /**
  * 获取全部书签（扩展 + Chrome），both 时合并，chrome_only 时单独展示
  * @param {boolean} withEmbedding - 是否加载 embedding

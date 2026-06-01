@@ -10,6 +10,7 @@ class QuickSearchManager {
             clearSearchBtn: document.getElementById('clear-search-btn'),
             resultsCount: document.getElementById('results-count'),
             searchTime: document.getElementById('search-time'),
+            presearchHint: document.getElementById('presearch-hint'),
             status: document.getElementById('status'),
             dialogContent: document.querySelector('.dialog-content'),
             pinnedSites: document.getElementById('pinned-sites'),
@@ -46,6 +47,11 @@ class QuickSearchManager {
         this.sitesDisplayCount = 10;
         this.showSearchHistory = true;
         this.isMouseInSearchHistory = false;
+        this.viewMode = 'empty';
+        this.presearchTimer = null;
+        this.presearchRequestSeq = 0;
+        this.presearchBookmarksCache = null;
+        this.presearchSuggestions = [];
         
         // 重命名相关状态
         this.renamingBookmark = null;
@@ -124,6 +130,8 @@ class QuickSearchManager {
             if (query) {
                 this.elements.searchInput.value = query;
                 this.performSearch(query);
+            } else {
+                this.schedulePresearch('', { immediate: true });
             }
         } catch (error) {
             logger.error('初始化失败:', error);
@@ -591,8 +599,14 @@ class QuickSearchManager {
             
             // 清除选中状态
             this.clearSelected();
-            // 显示并过滤搜索历史
-            this.renderSearchHistory(query.toLowerCase());
+            this.hideSearchHistory();
+            this.schedulePresearch(query);
+        });
+
+        searchInput.addEventListener('focus', () => {
+            if (!searchInput.value.trim()) {
+                this.schedulePresearch('', { immediate: true });
+            }
         });
 
         // 搜索框失去焦点事件
@@ -629,7 +643,7 @@ class QuickSearchManager {
         clearSearchBtn.addEventListener('click', () => {
             searchInput.value = '';
             clearSearchBtn.style.display = 'none';
-            this.clearResults();
+            this.schedulePresearch('', { immediate: true });
             searchInput.focus();
         });
 
@@ -641,13 +655,11 @@ class QuickSearchManager {
                 case 'ArrowDown':
                     e.preventDefault();
                     this.moveSelection(1);
-                    this.hideSearchHistory();
                     break;
 
                 case 'ArrowUp':
                     e.preventDefault();
                     this.moveSelection(-1);
-                    this.hideSearchHistory();
                     break;
 
                 case 'Escape':
@@ -663,7 +675,7 @@ class QuickSearchManager {
                         // 如果有搜索词，先清空搜索
                         searchInput.value = '';
                         clearSearchBtn.style.display = 'none';
-                        this.clearResults();
+                        this.schedulePresearch('', { immediate: true });
                         this.hideSearchHistory();
                     } else {
                         window.close();
@@ -680,15 +692,7 @@ class QuickSearchManager {
                 logger.debug('检测到回车键', {
                     query: query,
                 });
-                if (this.selectedIndex >= 0 && this.resultItems[this.selectedIndex]) {
-                    // 如果有选中的结果，打开该结果
-                    const url = this.resultItems[this.selectedIndex].dataset.url;
-                    await this.openResult(url);
-                } else if (query) {
-                    // 否则执行搜索
-                    this.hideSearchHistory();
-                    this.performSearch(query);
-                }
+                await this.activateCurrentItem();
             }
         });
 
@@ -805,10 +809,10 @@ class QuickSearchManager {
 
         // 如果有搜索内容，则过滤历史记录
         if (query) {
+            const keywordQuery = buildKeywordMatchQuery(query);
             history = history.filter(item => {
                 // 同时匹配原文和拼音
-                return item.query.toLowerCase().includes(query) || 
-                       PinyinMatch.match(item.query, query);
+                return matchesKeywordQuery(item.query, keywordQuery, { allowPinyin: true });
             });
         }
         
@@ -854,6 +858,231 @@ class QuickSearchManager {
         });
         
         recentSearches.classList.add('show');
+    }
+
+    setQuickSearchViewMode(mode) {
+        this.viewMode = mode;
+        const { searchInput, searchResults, pinnedSites, dropZone, presearchHint } = this.elements;
+        const sitesContainer = pinnedSites?.parentElement;
+        searchResults.classList.toggle('suggestion-mode', mode === 'suggestions');
+        searchResults.classList.toggle('has-results', mode === 'suggestions' || mode === 'results');
+        presearchHint?.classList.toggle('show', mode === 'suggestions' && Boolean(searchInput.value.trim()));
+
+        if (sitesContainer) {
+            const shouldShowSites = this.sitesDisplayType !== 'none' && pinnedSites.children.length > 0;
+            sitesContainer.style.display = shouldShowSites ? 'flex' : 'none';
+            if (dropZone) {
+                dropZone.style.display = this.sitesDisplayType === 'pinned' ? 'flex' : 'none';
+            }
+        }
+    }
+
+    schedulePresearch(query, { immediate = false } = {}) {
+        if (this.presearchTimer) {
+            clearTimeout(this.presearchTimer);
+            this.presearchTimer = null;
+        }
+
+        const normalizedQuery = (query || '').trim();
+        this.presearchRequestSeq += 1;
+        const requestSeq = this.presearchRequestSeq;
+
+        this.editManager.exitEditMode();
+        this.lastQueryResult = [];
+        if (!normalizedQuery) {
+            this.lastQuery = '';
+        }
+        this.viewMode = 'suggestions';
+        this.selectedIndex = -1;
+
+        const render = () => {
+            this.presearchTimer = null;
+            this.renderPresearch(normalizedQuery, requestSeq);
+        };
+
+        if (immediate) {
+            render();
+        } else {
+            this.presearchTimer = setTimeout(render, PRESEARCH_CONFIG.debounceDelayMs);
+        }
+    }
+
+    async renderPresearch(query, requestSeq = this.presearchRequestSeq) {
+        const { searchInput, searchResults } = this.elements;
+        if (requestSeq !== this.presearchRequestSeq || query !== searchInput.value.trim()) {
+            return;
+        }
+
+        try {
+            const suggestions = await this.getPresearchSuggestions(query);
+            if (requestSeq !== this.presearchRequestSeq || query !== searchInput.value.trim()) {
+                return;
+            }
+
+            this.presearchSuggestions = suggestions;
+            this.selectedIndex = -1;
+
+            const panel = document.createElement('div');
+            panel.className = 'presearch-panel';
+
+            const { history, bookmarks } = suggestions;
+            if (!query && history.length === 0 && bookmarks.length === 0) {
+                searchResults.replaceChildren();
+                this.setQuickSearchViewMode('empty');
+                this.resultItems = [];
+                return;
+            }
+
+            if (history.length === 0 && bookmarks.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'presearch-empty';
+                empty.textContent = i18n.getMessage('quicksearch_presearch_empty');
+                panel.appendChild(empty);
+            } else {
+                if (history.length > 0) {
+                    const historyItems = await Promise.all(history.map(item => this.createPresearchItem(item)));
+                    panel.appendChild(this.createPresearchSection(
+                        'quicksearch_presearch_history_title',
+                        history.length,
+                        historyItems
+                    ));
+                }
+
+                if (bookmarks.length > 0) {
+                    const bookmarkItems = await Promise.all(bookmarks.map(item => this.createPresearchItem(item)));
+                    panel.appendChild(this.createPresearchSection(
+                        'quicksearch_presearch_bookmarks_title',
+                        bookmarks.length,
+                        bookmarkItems
+                    ));
+                }
+            }
+
+            if (requestSeq !== this.presearchRequestSeq || query !== searchInput.value.trim()) {
+                return;
+            }
+            searchResults.replaceChildren(panel);
+            this.setQuickSearchViewMode('suggestions');
+            this.resultItems = Array.from(searchResults.querySelectorAll('.search-suggestion-item'));
+        } catch (error) {
+            logger.error('渲染预搜索失败:', error);
+            if (requestSeq !== this.presearchRequestSeq) return;
+            searchResults.innerHTML = this.getEmptyResultsHTML({
+                message: i18n.getMessage('quicksearch_error_search_error'),
+                description: i18n.getMessage('quicksearch_error_search_error_desc'),
+                type: 'error'
+            });
+        }
+    }
+
+    createPresearchSection(messageKey, count, items) {
+        const section = document.createElement('section');
+        section.className = 'presearch-section';
+        section.appendChild(this.createPresearchSectionTitle(messageKey, count));
+        items.forEach(itemElement => section.appendChild(itemElement));
+        return section;
+    }
+
+    createPresearchSectionTitle(messageKey, count) {
+        const title = document.createElement('div');
+        title.className = 'presearch-section-title';
+        title.innerHTML = `
+            <span class="presearch-section-label"></span>
+            <span class="presearch-section-count"></span>
+        `;
+        title.querySelector('.presearch-section-label').textContent = i18n.getMessage(messageKey);
+        title.querySelector('.presearch-section-count').textContent = String(count);
+        return title;
+    }
+
+    async getPresearchSuggestions(query) {
+        const normalizedQuery = query.trim();
+        let historyItems = [];
+        if (this.showSearchHistory) {
+            historyItems = await searchManager.searchHistoryManager.getHistory();
+        }
+
+        if (normalizedQuery && !this.presearchBookmarksCache) {
+            const bookmarkMap = await getDisplayedBookmarks();
+            this.presearchBookmarksCache = Object.values(bookmarkMap || {});
+        }
+
+        return buildPresearchSuggestions(query, {
+            historyItems,
+            bookmarks: normalizedQuery ? this.presearchBookmarksCache : [],
+            includeHistory: this.showSearchHistory
+        });
+    }
+
+    async createPresearchItem(item) {
+        const itemElement = document.createElement('div');
+        itemElement.className = `search-suggestion-item ${item.type}-suggestion`;
+        itemElement.dataset.type = item.type;
+
+        if (item.type === 'history') {
+            itemElement.dataset.query = item.query;
+            itemElement.title = item.query;
+            itemElement.innerHTML = `
+                <svg class="suggestion-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill="currentColor" d="M13,3A9,9 0 0,0 4,12H1L4.89,15.89L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3Z"></path>
+                </svg>
+                <span class="suggestion-title"></span>
+                <button type="button" class="delete-history-btn" title="${i18n.getMessage('quicksearch_delete_history_title')}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"></path>
+                    </svg>
+                </button>
+            `;
+            itemElement.querySelector('.suggestion-title').textContent = item.query;
+
+            itemElement.querySelector('.delete-history-btn')?.addEventListener('click', async (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                await searchManager.searchHistoryManager.removeSearch(item.query);
+                this.schedulePresearch(this.elements.searchInput.value.trim());
+            });
+        } else {
+            itemElement.dataset.url = item.url;
+            itemElement.title = item.title;
+            const faviconUrl = await getFaviconUrl(item.url);
+            itemElement.innerHTML = `
+                <img class="suggestion-favicon" src="${faviconUrl}" alt="">
+                <span class="suggestion-title"></span>
+            `;
+            itemElement.querySelector('.suggestion-title').textContent = item.title;
+            itemElement.querySelector('.suggestion-favicon')?.addEventListener('error', function() {
+                this.src = 'icons/default_favicon.png';
+            });
+        }
+
+        itemElement.addEventListener('click', async () => {
+            await this.activateSuggestionItem(itemElement);
+        });
+
+        return itemElement;
+    }
+
+    async activateSuggestionItem(itemElement) {
+        if (!itemElement) return false;
+
+        const { searchInput, clearSearchBtn } = this.elements;
+        const type = itemElement.dataset.type;
+
+        if (type === 'history') {
+            const query = itemElement.dataset.query || '';
+            if (!query) return false;
+            searchInput.value = query;
+            clearSearchBtn.style.display = 'flex';
+            await this.performSearch(query);
+            return true;
+        }
+
+        if (type === 'bookmark') {
+            await this.openBookmarkUrl(itemElement.dataset.url);
+            return true;
+        }
+
+        return false;
     }
 
     showStatus(message, type = 'error', showClose = false) {
@@ -926,12 +1155,19 @@ class QuickSearchManager {
 
     clearResults() {
         const { searchResults, resultsCount, searchTime } = this.elements;
+        if (this.presearchTimer) {
+            clearTimeout(this.presearchTimer);
+            this.presearchTimer = null;
+        }
+        this.presearchRequestSeq += 1;
         searchResults.innerHTML = '';
-        searchResults.classList.remove('has-results');
+        this.setQuickSearchViewMode('empty');
+        this.hideSearchHistory();
         resultsCount.textContent = i18n.getMessage('quicksearch_results_count', ['0']);
         searchTime.textContent = '0ms';
         this.lastQuery = '';
         this.lastQueryResult = [];
+        this.presearchSuggestions = [];
         // 重置选中状态
         this.selectedIndex = -1;
         this.resultItems = [];
@@ -943,13 +1179,18 @@ class QuickSearchManager {
         if (this.lastQuery) {
             await this.performSearch(this.lastQuery);
         } else {
-            this.clearResults();
+            this.schedulePresearch('', { immediate: true });
         }
     }
 
     async performSearch(query) {
         if (this.isSearching) return;
         
+        if (this.presearchTimer) {
+            clearTimeout(this.presearchTimer);
+            this.presearchTimer = null;
+        }
+        this.presearchRequestSeq += 1;
         this.lastQuery = query;
         if (!query) {
             this.clearResults();
@@ -962,7 +1203,7 @@ class QuickSearchManager {
         
         try {
             this.isSearching = true;
-            searchResults.classList.add('has-results');  // 添加类名以显示加载状态
+            this.setQuickSearchViewMode('results');
             this.showLoading();
 
             const startTime = performance.now();
@@ -976,7 +1217,7 @@ class QuickSearchManager {
             const endTime = performance.now();
             const timeSpent = Math.round(endTime - startTime);
 
-            if (query !== this.lastQuery) {
+            if (query !== this.lastQuery || this.viewMode !== 'results') {
                 return; // 如果查询已更改，放弃这个结果
             }
             this.lastQueryResult = results;
@@ -1256,18 +1497,7 @@ class QuickSearchManager {
         const link = resultItem.querySelector('.result-link');
         link.addEventListener('click', async (e) => {
             e.preventDefault();
-            // 非编辑模式下的正常处理
-            if (isNonMarkableUrl(result.url)) {
-                e.preventDefault();
-                // 显示提示并提供复制链接选项
-                const copyConfirm = confirm(i18n.getMessage('quicksearch_confirm_copy_link'));
-                if (copyConfirm) {
-                    await navigator.clipboard.writeText(result.url);
-                    updateStatus(i18n.getMessage('quicksearch_status_link_copied'));
-                }
-            } else {
-                await this.openResult(result.url);
-            }
+            await this.openBookmarkUrl(result.url);
         });
         
         // 为favicon图片添加错误处理
@@ -1445,7 +1675,8 @@ class QuickSearchManager {
 
     // 移动选择
     moveSelection(direction) {
-        this.resultItems = Array.from(this.elements.searchResults.querySelectorAll('.search-result-item'));
+        const selector = this.viewMode === 'suggestions' ? '.search-suggestion-item' : '.search-result-item';
+        this.resultItems = Array.from(this.elements.searchResults.querySelectorAll(selector));
         if (this.resultItems.length === 0) return;
 
         // 移除当前选中项的样式
@@ -1465,6 +1696,43 @@ class QuickSearchManager {
         const selectedItem = this.resultItems[this.selectedIndex];
         selectedItem.classList.add('focused');
         selectedItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+
+    async activateCurrentItem() {
+        const query = this.elements.searchInput.value.trim();
+        const selectedItem = this.selectedIndex >= 0 ? this.resultItems[this.selectedIndex] : null;
+
+        if (selectedItem) {
+            if (this.viewMode === 'suggestions') {
+                const activated = await this.activateSuggestionItem(selectedItem);
+                if (activated) return;
+            } else {
+                const url = selectedItem.dataset.url;
+                if (url) {
+                    await this.openBookmarkUrl(url);
+                    return;
+                }
+            }
+        }
+
+        if (query) {
+            await this.performSearch(query);
+        }
+    }
+
+    async openBookmarkUrl(url) {
+        if (!url) return;
+
+        if (isNonMarkableUrl(url)) {
+            const copyConfirm = confirm(i18n.getMessage('quicksearch_confirm_copy_link'));
+            if (copyConfirm) {
+                await navigator.clipboard.writeText(url);
+                this.showStatus(i18n.getMessage('quicksearch_status_link_copied'), 'success');
+            }
+            return;
+        }
+
+        await this.openResult(url);
     }
 
     // 打开结果
@@ -1502,6 +1770,7 @@ class QuickSearchManager {
             }
 
             await bookmarkOps.deleteBookmark(bookmark);
+            this.presearchBookmarksCache = null;
 
             sendMessageSafely({
                 type: MessageType.BOOKMARKS_UPDATED,
@@ -1595,6 +1864,7 @@ class QuickSearchManager {
             
             // 统一使用 bookmarkOps 更新标题（extension + Chrome）
             await bookmarkOps.updateBookmarkTitle(bookmark, newTitle);
+            this.presearchBookmarksCache = null;
 
             // 更新SearchResult
             const index = this.lastQueryResult.findIndex(item => item.url === url);
@@ -1737,6 +2007,7 @@ class QuickSearchManager {
             
             // 使用统一模块更新：chrome_only 会保存到插件（转为 both），extension_only 和 both 会更新插件存储
             await bookmarkOps.updateBookmark(bookmark, { tags: this.currentTags });
+            this.presearchBookmarksCache = null;
             
             // 更新搜索结果中的标签
             const index = this.lastQueryResult.findIndex(item => item.url === url);

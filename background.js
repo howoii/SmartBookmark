@@ -25,6 +25,13 @@ async function updatePageState() {
 
 let _updatePageStateTimer = null;
 const UPDATE_PAGE_STATE_DEBOUNCE_MS = 80;
+const EMBEDDING_CONFIG_STORAGE_KEYS = [
+    ConfigManager.STORAGE_KEYS.ACTIVE_SERVICE,
+    ConfigManager.STORAGE_KEYS.API_KEYS,
+    ConfigManager.STORAGE_KEYS.BUILTIN_SERVICES_SETTINGS,
+    ConfigManager.STORAGE_KEYS.CUSTOM_SERVICES,
+    ConfigManager.STORAGE_KEYS.SERVICE_TYPES,
+];
 
 function scheduleUpdatePageState() {
     if (_updatePageStateTimer) clearTimeout(_updatePageStateTimer);
@@ -32,6 +39,124 @@ function scheduleUpdatePageState() {
         _updatePageStateTimer = null;
         updatePageState();
     }, UPDATE_PAGE_STATE_DEBOUNCE_MS);
+}
+
+function findBuiltinServiceForStorageSnapshot(serviceId, storageData) {
+    const builtinService = Object.values(API_SERVICES).find(service => service.id === serviceId);
+    if (!builtinService) {
+        return null;
+    }
+
+    const apiKeys = storageData[ConfigManager.STORAGE_KEYS.API_KEYS] || {};
+    const serviceSettings = storageData[ConfigManager.STORAGE_KEYS.BUILTIN_SERVICES_SETTINGS] || {};
+    const setting = serviceSettings[serviceId] || {};
+
+    return {
+        ...builtinService,
+        apiKey: apiKeys[serviceId] || null,
+        chatModel: setting.chatModel || builtinService.defaultChatModel,
+        embedModel: setting.embedModel || builtinService.embedModel || builtinService.defaultEmbedModel,
+        supportsThinkingParam: setting.supportsThinkingParam || false,
+    };
+}
+
+function findServiceForStorageSnapshot(serviceId, storageData) {
+    if (!serviceId) {
+        return null;
+    }
+
+    const builtinService = findBuiltinServiceForStorageSnapshot(serviceId, storageData);
+    if (builtinService) {
+        return builtinService;
+    }
+
+    const customServices = storageData[ConfigManager.STORAGE_KEYS.CUSTOM_SERVICES] || {};
+    const customService = customServices[serviceId];
+    if (!customService) {
+        return null;
+    }
+
+    return {
+        ...customService,
+        isCustom: true,
+    };
+}
+
+function getEmbeddingServiceFromStorageSnapshot(storageData) {
+    const serviceTypes = storageData[ConfigManager.STORAGE_KEYS.SERVICE_TYPES] || {
+        chat: null,
+        embedding: null,
+    };
+    const activeServiceId = storageData[ConfigManager.STORAGE_KEYS.ACTIVE_SERVICE] || API_SERVICES.OPENAI.id;
+    const explicitEmbeddingServiceId = serviceTypes.embedding;
+    const preferredServiceId = explicitEmbeddingServiceId === null || explicitEmbeddingServiceId === undefined
+        ? activeServiceId
+        : explicitEmbeddingServiceId;
+
+    return findServiceForStorageSnapshot(preferredServiceId, storageData)
+        || findServiceForStorageSnapshot(activeServiceId, storageData)
+        || findServiceForStorageSnapshot(API_SERVICES.OPENAI.id, storageData);
+}
+
+function getValueFingerprint(value) {
+    const text = value ? String(value) : '';
+    let hash = 2166136261;
+    for (let i = 0; i < text.length; i++) {
+        hash ^= text.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
+    }
+    return `${text.length}:${hash >>> 0}`;
+}
+
+function getEmbeddingServiceSignature(storageData) {
+    const service = getEmbeddingServiceFromStorageSnapshot(storageData);
+    if (!service?.apiKey || !service?.embedModel) {
+        return null;
+    }
+
+    return JSON.stringify({
+        id: service.id,
+        baseUrl: service.baseUrl || '',
+        embedModel: service.embedModel,
+        apiKeyFingerprint: getValueFingerprint(service.apiKey),
+    });
+}
+
+function getPreviousStorageSnapshot(currentData, changes) {
+    const previousData = { ...currentData };
+    for (const key of EMBEDDING_CONFIG_STORAGE_KEYS) {
+        if (!changes[key]) {
+            continue;
+        }
+        if (Object.prototype.hasOwnProperty.call(changes[key], 'oldValue')) {
+            previousData[key] = changes[key].oldValue;
+        } else {
+            delete previousData[key];
+        }
+    }
+    return previousData;
+}
+
+async function scheduleEmbeddingUpdateIfConfigChanged(changes) {
+    if (!EMBEDDING_CONFIG_STORAGE_KEYS.some(key => changes[key])) {
+        return;
+    }
+
+    try {
+        const currentData = await ConfigManager.STORAGE.get(EMBEDDING_CONFIG_STORAGE_KEYS);
+        const previousData = getPreviousStorageSnapshot(currentData, changes);
+        const previousSignature = getEmbeddingServiceSignature(previousData);
+        const currentSignature = getEmbeddingServiceSignature(currentData);
+
+        if (!currentSignature || currentSignature === previousSignature) {
+            return;
+        }
+
+        logger.info('检测到 embedding 服务配置变化，计划更新向量索引');
+        LocalStorageMgr.scheduleUpdateEmbedding();
+    } catch (error) {
+        logger.error('检查 embedding 服务配置变化失败:', error);
+    }
 }
 
 // 创建初始化函数
@@ -312,6 +437,8 @@ chrome.storage.onChanged.addListener(async (changes, areaName) => {
                 await syncManager.cleanup();
             }
         }
+    } else if (areaName === 'sync') {
+        await scheduleEmbeddingUpdateIfConfigChanged(changes);
     }
 });
 

@@ -102,6 +102,183 @@ body {
     display: block;
 }
 
+.search-results.suggestion-mode {
+    border-radius: 8px;
+    background: var(--bg-primary);
+    padding: 3px;
+    max-height: 360px;
+    scrollbar-gutter: stable;
+}
+
+.presearch-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.presearch-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    min-width: 0;
+}
+
+.presearch-section + .presearch-section {
+    padding-top: 2px;
+    border-top: 1px solid color-mix(in srgb, var(--bg-border-light) 72%, transparent);
+}
+
+.presearch-section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 18px;
+    padding: 0 4px 1px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.15;
+    color: var(--text-tertiary);
+}
+
+.presearch-section-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.presearch-section-count {
+    min-width: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--bg-tertiary);
+    color: var(--text-sixth);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.35;
+    text-align: center;
+}
+
+.search-suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    min-height: 28px;
+    padding: 2px 5px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.search-suggestion-item:hover,
+.search-suggestion-item.focused {
+    background: var(--bg-secondary);
+}
+
+.search-suggestion-item .suggestion-icon,
+.search-suggestion-item .suggestion-favicon {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    border-radius: 6px;
+    background: var(--bg-secondary);
+    box-sizing: border-box;
+}
+
+.search-suggestion-item .suggestion-icon {
+    padding: 3px;
+    color: var(--text-tertiary);
+}
+
+.search-suggestion-item .suggestion-favicon {
+    padding: 3px;
+    object-fit: contain;
+}
+
+.search-suggestion-item.focused {
+    background: var(--primary-hover-bg);
+}
+
+.search-suggestion-item:hover .suggestion-icon,
+.search-suggestion-item:hover .suggestion-favicon,
+.search-suggestion-item.focused .suggestion-icon,
+.search-suggestion-item.focused .suggestion-favicon {
+    background: var(--bg-primary);
+}
+
+.history-suggestion .suggestion-icon {
+    color: var(--text-sixth);
+}
+
+.bookmark-suggestion .suggestion-favicon[src$="default_favicon.png"] {
+    opacity: 0.72;
+}
+
+.search-suggestion-item .suggestion-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.history-suggestion .delete-history-btn {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.history-suggestion:hover .delete-history-btn,
+.history-suggestion.focused .delete-history-btn {
+    opacity: 1;
+}
+
+.history-suggestion .delete-history-btn:hover {
+    background: var(--bg-tertiary);
+    color: var(--danger-color);
+}
+
+.history-suggestion .delete-history-btn:focus-visible {
+    opacity: 1;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.16);
+}
+
+.history-suggestion .delete-history-btn:active {
+    transform: scale(0.94);
+}
+
+.history-suggestion .delete-history-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.presearch-empty {
+    padding: 14px 10px;
+    border-radius: 6px;
+    background: var(--bg-secondary);
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--text-tertiary);
+}
+
 /* 空搜索结果样式 */
 .empty-search-results {
     display: flex;
@@ -389,8 +566,29 @@ mark {
     padding: 8px 0;
 }
 
+.presearch-footer-hint {
+    display: none;
+    flex-shrink: 0;
+    padding: 6px 0 0;
+    font-size: 12px;
+    line-height: 1.3;
+    color: var(--text-tertiary);
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.presearch-footer-hint.show {
+    display: block;
+}
+
 .search-results.has-results ~ .search-stats {
     display: flex;
+}
+
+.search-results.suggestion-mode ~ .search-stats {
+    display: none;
 }
 
 /* 状态提示 */

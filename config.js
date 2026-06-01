@@ -40,7 +40,7 @@ const API_SERVICES = {
         getKeyUrl: 'https://openrouter.ai/keys',
         pricingUrl: 'https://openrouter.ai/models',
         recommendTags: [i18n.getMessage('config_services_tag_rich_models')],
-        thinkingParam: { key: 'reasoning_effort', disabledValue: 'none' }
+        thinkingParam: { key: 'reasoning', disabledValue: { effort: 'none' } }
     },
     DASHSCOPE: {
         id: 'dashscope',
@@ -127,8 +127,125 @@ const API_SERVICES = {
     }
 };
 
-// 自定义服务默认使用 OpenAI 兼容的 reasoning_effort 参数探测推理模型
+// 自定义服务优先使用 OpenAI 兼容参数，再兼容 DeepSeek 和 DashScope 的思考开关格式
 const DEFAULT_THINKING_PARAM = { key: 'reasoning_effort', disabledValue: 'none' };
+const DEFAULT_THINKING_PARAM_CANDIDATES = [
+    DEFAULT_THINKING_PARAM,
+    { key: 'reasoning', disabledValue: { effort: 'none' } },
+    { key: 'thinking', disabledValue: { type: 'disabled' } },
+    { key: 'enable_thinking', disabledValue: false },
+    { key: 'chat_template_kwargs', disabledValue: { enable_thinking: false } }
+];
+const DEFAULT_CHAT_API_TEST_RETRY_DELAY_MS = 1000;
+
+const KNOWN_PROVIDER_THINKING_PARAM_RULES = [
+    {
+        id: 'openai',
+        baseUrlIncludes: ['api.openai.com'],
+        thinkingParams: [DEFAULT_THINKING_PARAM]
+    },
+    {
+        id: 'openrouter',
+        baseUrlIncludes: ['openrouter.ai'],
+        thinkingParams: [{ key: 'reasoning', disabledValue: { effort: 'none' } }]
+    },
+    {
+        id: 'gemini-openai',
+        baseUrlIncludes: ['generativelanguage.googleapis.com'],
+        thinkingParams: [DEFAULT_THINKING_PARAM]
+    },
+    {
+        id: 'deepseek',
+        baseUrlIncludes: ['api.deepseek.com'],
+        thinkingParams: [{ key: 'thinking', disabledValue: { type: 'disabled' } }]
+    },
+    {
+        id: 'dashscope',
+        baseUrlIncludes: ['dashscope.aliyuncs.com'],
+        thinkingParams: [{ key: 'enable_thinking', disabledValue: false }]
+    },
+    {
+        id: 'siliconflow',
+        baseUrlIncludes: ['api.siliconflow.cn', 'api.siliconflow.com'],
+        thinkingParams: [{ key: 'enable_thinking', disabledValue: false }]
+    },
+    {
+        id: 'glm',
+        baseUrlIncludes: ['open.bigmodel.cn', 'api.z.ai'],
+        thinkingParams: [{ key: 'thinking', disabledValue: { type: 'disabled' } }]
+    },
+    {
+        id: 'ollama',
+        baseUrlIncludes: ['localhost:11434', '127.0.0.1:11434'],
+        thinkingParams: [DEFAULT_THINKING_PARAM]
+    }
+];
+
+function normalizeThinkingParamCandidates(thinkingParam) {
+    if (!thinkingParam) {
+        return [];
+    }
+    const candidates = Array.isArray(thinkingParam) ? thinkingParam : [thinkingParam];
+    return candidates.filter(param => param?.key);
+}
+
+function getThinkingParamSignature(thinkingParam) {
+    return JSON.stringify({
+        key: thinkingParam.key,
+        disabledValue: thinkingParam.disabledValue
+    });
+}
+
+function mergeThinkingParamCandidates(...sources) {
+    const candidates = [];
+    const seen = new Set();
+    for (const source of sources) {
+        for (const candidate of normalizeThinkingParamCandidates(source)) {
+            const signature = getThinkingParamSignature(candidate);
+            if (seen.has(signature)) {
+                continue;
+            }
+            seen.add(signature);
+            candidates.push(candidate);
+        }
+    }
+    return candidates;
+}
+
+function getKnownProviderThinkingParamCandidates({ baseUrl } = {}) {
+    const normalizedBaseUrl = (baseUrl || '').toLowerCase();
+    const matchedParams = [];
+
+    for (const rule of KNOWN_PROVIDER_THINKING_PARAM_RULES) {
+        const baseUrlMatches = rule.baseUrlIncludes?.some(pattern => normalizedBaseUrl.includes(pattern));
+        if (baseUrlMatches) {
+            matchedParams.push(rule.thinkingParams);
+        }
+    }
+
+    return mergeThinkingParamCandidates(...matchedParams);
+}
+
+function getThinkingParamCandidatesForServiceConfig(serviceConfig = {}) {
+    const knownProviderParams = getKnownProviderThinkingParamCandidates(serviceConfig);
+    if (knownProviderParams.length > 0) {
+        return knownProviderParams;
+    }
+    return mergeThinkingParamCandidates(
+        serviceConfig.supportsThinkingParam ? serviceConfig.thinkingParam : null,
+        DEFAULT_THINKING_PARAM_CANDIDATES
+    );
+}
+
+function applyThinkingParamToRequestBody(requestBody, thinkingParam) {
+    if (!thinkingParam?.key) {
+        return requestBody;
+    }
+    return {
+        ...requestBody,
+        [thinkingParam.key]: thinkingParam.disabledValue
+    };
+}
 
 function getHeaders(key) {
     return {
@@ -213,7 +330,10 @@ class ConfigManager {
         const customServices = await this.getCustomServices();
         const customService = customServices[serviceId] || null;
         if (customService) {
-            customService.thinkingParam = customService.thinkingParam || DEFAULT_THINKING_PARAM;
+            const knownProviderParams = getKnownProviderThinkingParamCandidates(customService);
+            if (!customService.thinkingParam && knownProviderParams.length > 0) {
+                customService.thinkingParam = knownProviderParams[0];
+            }
         }
         return customService;
     }
@@ -414,8 +534,14 @@ class ConfigManager {
         }
 
         try {
+            const thinkingParamCandidates = getThinkingParamCandidatesForServiceConfig({
+                id: serviceId,
+                baseUrl: service.baseUrl,
+                chatModel,
+                thinkingParam: service.thinkingParam
+            });
             const chatResult = await this.testChatAPI(
-                service.baseUrl, apiKey, chatModel, signal, service.thinkingParam || null
+                service.baseUrl, apiKey, chatModel, signal, thinkingParamCandidates
             );
             await this.testEmbeddingAPI(service.baseUrl, apiKey, service.embedModel, signal);
             return { supportsThinkingParam: chatResult.supportsThinkingParam };
@@ -497,9 +623,10 @@ class ConfigManager {
 
     // 测试自定义服务的chat接口
     // @param {AbortSignal} signal - 可选的取消信号，用于中断 HTTP 请求
-    // @param {Object} thinkingParam - 可选的推理参数配置，用于探测模型是否支持关闭推理
-    // @returns {{ success: boolean, supportsThinkingParam: boolean }}
-    static async testChatAPI(baseUrl, apiKey, chatModel, signal = null, thinkingParam = null) {
+    // @param {Object|Object[]} thinkingParam - 可选的推理参数配置，用于探测模型是否支持关闭推理
+    // @param {Object} options - 可选配置，如 timeoutMs 控制单次测试请求超时时间
+    // @returns {{ success: boolean, supportsThinkingParam: boolean, thinkingParam?: Object }}
+    static async testChatAPI(baseUrl, apiKey, chatModel, signal = null, thinkingParam = null, options = {}) {
         try {
             try {
                 new URL(baseUrl);
@@ -513,51 +640,40 @@ class ConfigManager {
                 throw new Error(i18n.getMessage('config_error_chat_model_empty'));
             }
 
-            const baseBody = {
-                model: chatModel,
-                messages: [{ role: "user", content: "Hello" }]
-            };
+            const baseBody = buildChatApiTestBody(chatModel);
             const url = joinUrl(baseUrl, 'chat/completions');
+            const thinkingParamCandidates = normalizeThinkingParamCandidates(thinkingParam);
+            const timeoutMs = options.timeoutMs ?? DEFAULT_CHAT_API_TEST_TIMEOUT_MS;
+            const retryDelayMs = options.retryDelayMs ?? DEFAULT_CHAT_API_TEST_RETRY_DELAY_MS;
+            logger.debug('Chat接口关闭推理参数候选:', {
+                chatModel,
+                thinkingParamCandidates
+            });
 
-            if (thinkingParam) {
-                const bodyWithThinking = { ...baseBody, [thinkingParam.key]: thinkingParam.disabledValue };
-                const fetchOptions = {
-                    method: 'POST',
-                    headers: getHeaders(apiKey),
-                    body: JSON.stringify(bodyWithThinking)
-                };
-                if (signal) fetchOptions.signal = signal;
+            for (let i = 0; i < thinkingParamCandidates.length; i++) {
+                const candidate = thinkingParamCandidates[i];
+                const bodyWithThinking = applyThinkingParamToRequestBody(baseBody, candidate);
 
                 try {
-                    const data = await fetchApi(url, fetchOptions);
-                    if (!data.choices?.[0]?.message?.content) {
-                        logger.debug('Chat接口数据格式错误:', { data });
-                        throw new Error(i18n.getMessage('config_error_api_data_format'));
-                    }
-                    logger.debug('Chat模型支持关闭推理参数:', { chatModel, thinkingParam: thinkingParam.key });
-                    return { success: true, supportsThinkingParam: true };
+                    await fetchChatApiTest(url, apiKey, bodyWithThinking, signal, timeoutMs);
+                    logger.debug('Chat模型支持关闭推理参数:', { chatModel, thinkingParam: candidate.key });
+                    return { success: true, supportsThinkingParam: true, thinkingParam: candidate };
                 } catch (error) {
                     if (isAbortError(error)) {
                         logger.debug('[取消功能] Chat 接口测试请求已被用户取消');
                         throw new Error(USER_CANCELED);
                     }
-                    // 带推理参数失败，去掉参数重试
-                    logger.debug('带推理参数请求失败，尝试不带参数:', error.message);
+                    logger.debug('带推理参数请求失败，尝试下一个参数或不带参数:', {
+                        thinkingParam: candidate.key,
+                        error: error.message
+                    });
+                    if (retryDelayMs > 0 && i < thinkingParamCandidates.length - 1) {
+                        await sleep(retryDelayMs);
+                    }
                 }
             }
 
-            const fetchOptions = {
-                method: 'POST',
-                headers: getHeaders(apiKey),
-                body: JSON.stringify(baseBody)
-            };
-            if (signal) fetchOptions.signal = signal;
-
-            const data = await fetchApi(url, fetchOptions);
-            if (!data.choices?.[0]?.message?.content) {
-                logger.debug('Chat接口数据格式错误:', { data });
-                throw new Error(i18n.getMessage('config_error_api_data_format'));
-            }
+            await fetchChatApiTest(url, apiKey, baseBody, signal, timeoutMs);
             return { success: true, supportsThinkingParam: false };
         } catch (error) {
             if (isAbortError(error)) {

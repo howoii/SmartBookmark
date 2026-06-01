@@ -2,6 +2,8 @@ EnvIdentifier = 'popup';
 
 let quickSaveKey = 'Ctrl+B';
 let quickSearchKey = 'Ctrl+K';
+let popupPresearchController = null;
+
 async function initShortcutKey() {
     const commands = await chrome.commands.getAll();
     commands.forEach((command) => {
@@ -175,6 +177,38 @@ function getBookmarkManager() {
     return window.bookmarkManagerInstance;
 }
 
+async function getConfiguredSyncServices(config, status = {}, isSyncing = false, syncProcess = {}) {
+    const services = [];
+
+    if (FEATURE_FLAGS.ENABLE_CLOUD_SYNC && config.cloud) {
+        const { valid } = await validateToken();
+        if (valid) {
+            services.push({
+                id: 'cloud',
+                name: i18n.getMessage('popup_sync_service_cloud'),
+                status: status.cloud || {},
+                isSyncing: isSyncing && syncProcess.service === 'cloud',
+                autoSyncEnabled: Boolean(config.cloud.autoSync),
+            });
+        }
+    }
+
+    if (config.webdav) {
+        const valid = SyncSettingsManager.validateWebDAVConfig(config.webdav);
+        if (valid) {
+            services.push({
+                id: 'webdav',
+                name: i18n.getMessage('popup_sync_service_webdav'),
+                status: status.webdav || {},
+                isSyncing: isSyncing && syncProcess.service === 'webdav',
+                autoSyncEnabled: Boolean(config.webdav.syncStrategy?.autoSync),
+            });
+        }
+    }
+
+    return services;
+}
+
 /**
  * 同步状态弹窗类
  * 负责显示和管理同步状态弹窗
@@ -267,40 +301,13 @@ class SyncStatusDialog {
             const isSyncing = await SyncStatusManager.isSyncing();
             const syncProcess = await SyncStatusManager.getSyncProcess();
             
-            // 检查是否有开启的同步服务
-            const enabledServices = [];
-
-            // 检查云同步是否开启
-            if (FEATURE_FLAGS.ENABLE_CLOUD_SYNC && config.cloud && config.cloud.autoSync) {
-                const {valid} = await validateToken();
-                if (valid) {
-                    enabledServices.push({
-                        id: 'cloud',
-                        name: i18n.getMessage('popup_sync_service_cloud'),
-                        status: status.cloud || {},
-                        isSyncing: isSyncing && syncProcess.service === 'cloud'
-                    });
-                }
-            }
-            
-            // 检查WebDAV同步是否开启
-            if (config.webdav && config.webdav.syncStrategy.autoSync) {
-                const valid = SyncSettingsManager.validateWebDAVConfig(config.webdav)
-                if (valid) {
-                    enabledServices.push({
-                        id: 'webdav',
-                        name: i18n.getMessage('popup_sync_service_webdav'),
-                        status: status.webdav || {},
-                        isSyncing: isSyncing && syncProcess.service === 'webdav'
-                    });
-                }
-            }
+            const configuredServices = await getConfiguredSyncServices(config, status, isSyncing, syncProcess);
 
             // 移除加载状态
             this.servicesContainer.innerHTML = '';
             
-            // 如果没有开启的同步服务，显示提示信息
-            if (enabledServices.length === 0) {
+            // 如果没有配置可用的同步服务，显示提示信息
+            if (configuredServices.length === 0) {
                 this.servicesContainer.innerHTML = `
                     <div class="no-services-message">
                         <p data-i18n="popup_sync_no_services"></p>
@@ -326,8 +333,8 @@ class SyncStatusDialog {
                 return;
             }
             
-            // 渲染每个开启的同步服务
-            for (const service of enabledServices) {
+            // 渲染每个已配置的同步服务
+            for (const service of configuredServices) {
                 const serviceElement = this.createServiceElement(service);
                 this.servicesContainer.appendChild(serviceElement);
             }
@@ -351,6 +358,9 @@ class SyncStatusDialog {
         // 克隆模板
         const template = this.syncServiceTemplate.content.cloneNode(true);
         const serviceItem = template.querySelector('.sync-service-item');
+        if (!service.autoSyncEnabled) {
+            serviceItem.classList.add('auto-sync-disabled');
+        }
         
         // 设置服务名称
         const nameElement = serviceItem.querySelector('.sync-service-name');
@@ -370,11 +380,19 @@ class SyncStatusDialog {
             statusElement.classList.add('success');
         } else {
             statusKey = 'popup_status_not_synced';
+            statusElement.classList.add('not-synced');
         }
         statusElement.setAttribute('data-i18n', statusKey);
+
+        const autoSyncContainer = serviceItem.querySelector('.sync-auto-container');
+        const autoSyncText = serviceItem.querySelector('.sync-auto-text');
+        autoSyncContainer.classList.add(service.autoSyncEnabled ? 'enabled' : 'disabled');
+        autoSyncText.setAttribute(
+            'data-i18n',
+            service.autoSyncEnabled ? 'sync_auto_sync_enabled' : 'sync_auto_sync_disabled'
+        );
         
         // 设置上次同步时间
-        const timeContainer = serviceItem.querySelector('.sync-time-container');
         const timeElement = serviceItem.querySelector('.sync-time');
         
         // 设置同步结果
@@ -382,29 +400,19 @@ class SyncStatusDialog {
         const resultElement = serviceItem.querySelector('.sync-result');
         
         const isError = service.status.lastSyncResult && service.status.lastSyncResult !== 'success';
-        const hasSuccessfulSync = service.status.lastSync && !isError;
         
-        // 根据同步状态决定显示内容
-        if (hasSuccessfulSync) {
-            // 成功同步 - 显示时间，隐藏结果
-            timeContainer.classList.add('success-text');
+        if (service.status.lastSync) {
             const date = new Date(service.status.lastSync);
-            // 移除data-i18n属性，因为我们要显示动态时间
             timeElement.removeAttribute('data-i18n');
             timeElement.textContent = date.toLocaleString();
-            timeContainer.style.display = 'flex';
-            resultContainer.style.display = 'none';
-        } else if (isError) {
-            // 同步失败 - 显示错误信息，隐藏时间
+        } else {
+            timeElement.setAttribute('data-i18n', 'popup_sync_never');
+        }
+
+        resultContainer.hidden = !isError;
+        if (isError) {
             resultElement.textContent = service.status.lastSyncResult;
             resultElement.classList.add('error-text');
-            timeContainer.style.display = 'none';
-            resultContainer.style.display = 'flex';
-        } else {
-            // 未同步过 - 显示默认提示
-            timeElement.setAttribute('data-i18n', 'popup_sync_never');
-            timeContainer.style.display = 'flex';
-            resultContainer.style.display = 'none';
         }
         
         // 设置设置按钮
@@ -419,6 +427,7 @@ class SyncStatusDialog {
         const buttonText = syncButton.querySelector('span');
         if (service.isSyncing) {
             syncButton.classList.add('syncing');
+            syncButton.disabled = true;
             buttonText.setAttribute('data-i18n', 'popup_sync_syncing');
         } else {
             // 确保按钮文本使用国际化
@@ -1051,23 +1060,11 @@ class BookmarkManager {
     async hasSyncError() {
         const config = await SyncSettingsManager.getConfig();
         const status = await SyncStatusManager.getStatus();
-        
-        // 检查云同步是否开启
-        if (FEATURE_FLAGS.ENABLE_CLOUD_SYNC && config.cloud && config.cloud.autoSync) {
-            const {valid} = await validateToken();
-            if (valid && status.cloud && status.cloud.lastSyncResult && status.cloud.lastSyncResult !== 'success') {
-                return true;
-            }
-        }
-        
-        // 检查WebDAV同步是否开启
-        if (config.webdav && config.webdav.syncStrategy.autoSync) {
-            const valid = SyncSettingsManager.validateWebDAVConfig(config.webdav)
-            if (valid && status.webdav && status.webdav.lastSyncResult && status.webdav.lastSyncResult !== 'success') {
-                return true;
-            }
-        }
-        return false;
+        const services = await getConfiguredSyncServices(config, status);
+        return services.some(service =>
+            service.status.lastSyncResult &&
+            service.status.lastSyncResult !== 'success'
+        );
     }
 
     async updateSyncButtonState() {
@@ -1187,8 +1184,9 @@ class BookmarkManager {
 
         if (newTagInput) {
             // 回车键提交新标签
-            newTagInput.addEventListener('keypress', (e) => {
+            newTagInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
+                    e.preventDefault();
                     const newTag = newTagInput.value.trim();
                     if (newTag) {
                         const currentTags = this.getCurrentTags();
@@ -1901,6 +1899,7 @@ class BookmarkManager {
         if (tab.status !== 'complete') {
             if (tab.title && tab.url) {
                 this.pageContent = {};
+                updateStatus(i18n.getMessage('msg_status_tags_page_loading'), true);
                 logger.debug('页面正在加载中，不访问页面内容', tab);
             } else {
                 updateStatus(i18n.getMessage('msg_status_page_loading'), true);
@@ -2179,9 +2178,351 @@ async function updateSearchResults() {
     }
 }
 
+class PopupPresearchController {
+    constructor() {
+        this.viewMode = 'empty';
+        this.timer = null;
+        this.requestSeq = 0;
+        this.bookmarksCache = null;
+        this.selectedIndex = -1;
+        this.suggestions = { history: [], bookmarks: [] };
+        this.items = [];
+    }
+
+    isSearching() {
+        return Boolean(document.querySelector('.toolbar')?.classList.contains('searching'));
+    }
+
+    invalidateCache() {
+        this.bookmarksCache = null;
+    }
+
+    setViewMode(mode) {
+        this.viewMode = mode;
+        const searchInput = document.getElementById('search-input');
+        const searchResults = document.getElementById('search-results');
+        const hint = document.getElementById('popup-presearch-hint');
+        const recentSearches = document.getElementById('recent-searches');
+
+        searchResults?.classList.toggle('suggestion-mode', mode === 'suggestions');
+        searchResults?.classList.toggle('has-results', mode === 'suggestions' || mode === 'results');
+        hint?.classList.toggle('show', mode === 'suggestions' && Boolean(searchInput?.value.trim()));
+        recentSearches?.classList.remove('show');
+    }
+
+    cancel() {
+        if (this.timer) {
+            clearTimeout(this.timer);
+            this.timer = null;
+        }
+        this.requestSeq += 1;
+        this.selectedIndex = -1;
+        this.items = [];
+    }
+
+    reset() {
+        this.cancel();
+        this.suggestions = { history: [], bookmarks: [] };
+        this.viewMode = 'empty';
+        this.invalidateCache();
+    }
+
+    updateItems() {
+        const searchResults = document.getElementById('search-results');
+        this.items = Array.from(searchResults?.querySelectorAll('.popup-search-suggestion-item') || []);
+        this.selectedIndex = -1;
+    }
+
+    clearSelection() {
+        if (this.selectedIndex >= 0) {
+            this.items[this.selectedIndex]?.classList.remove('focused');
+        }
+        this.selectedIndex = -1;
+    }
+
+    moveSelection(direction) {
+        if (this.viewMode !== 'suggestions' || this.items.length === 0) {
+            return false;
+        }
+
+        if (this.selectedIndex >= 0) {
+            this.items[this.selectedIndex]?.classList.remove('focused');
+        }
+
+        this.selectedIndex += direction;
+        if (this.selectedIndex < 0) {
+            this.selectedIndex = this.items.length - 1;
+        } else if (this.selectedIndex >= this.items.length) {
+            this.selectedIndex = 0;
+        }
+
+        const item = this.items[this.selectedIndex];
+        item?.classList.add('focused');
+        item?.scrollIntoView({ block: 'nearest' });
+        return true;
+    }
+
+    schedule(query, { immediate = false } = {}) {
+        if (this.timer) {
+            clearTimeout(this.timer);
+            this.timer = null;
+        }
+
+        if (!this.isSearching()) return;
+
+        const normalizedQuery = (query || '').trim();
+        getBookmarkManager()?.searchEditManager?.exitEditMode();
+        this.requestSeq += 1;
+        const requestSeq = this.requestSeq;
+        this.clearSelection();
+
+        const render = () => {
+            this.timer = null;
+            this.render(normalizedQuery, requestSeq);
+        };
+
+        if (immediate) {
+            render();
+        } else {
+            this.timer = setTimeout(render, PRESEARCH_CONFIG.debounceDelayMs);
+        }
+    }
+
+    async getSuggestions(query) {
+        const showHistory = await SettingsManager.get('search.showSearchHistory');
+        const historyItems = showHistory
+            ? await searchManager.searchHistoryManager.getHistory()
+            : [];
+        const normalizedQuery = (query || '').trim();
+
+        if (normalizedQuery && !this.bookmarksCache) {
+            const bookmarkMap = await getDisplayedBookmarks();
+            this.bookmarksCache = Object.values(bookmarkMap || {});
+        }
+
+        return buildPresearchSuggestions(normalizedQuery, {
+            historyItems,
+            bookmarks: normalizedQuery ? this.bookmarksCache : [],
+            includeHistory: Boolean(showHistory)
+        });
+    }
+
+    async render(query, requestSeq = this.requestSeq) {
+        const searchInput = document.getElementById('search-input');
+        const searchResults = document.getElementById('search-results');
+        if (!searchInput || !searchResults) return;
+
+        const currentQuery = searchInput.value.trim();
+        if (requestSeq !== this.requestSeq || query !== currentQuery) {
+            return;
+        }
+
+        try {
+            const suggestions = await this.getSuggestions(query);
+            if (requestSeq !== this.requestSeq || query !== searchInput.value.trim()) {
+                return;
+            }
+
+            this.suggestions = suggestions;
+            const fragment = document.createDocumentFragment();
+            const { history, bookmarks } = suggestions;
+            const hasSuggestions = history.length > 0 || bookmarks.length > 0;
+
+            if (!hasSuggestions && !query) {
+                searchResults.replaceChildren();
+                this.setViewMode('empty');
+                this.updateItems();
+                return;
+            }
+
+            if (!hasSuggestions) {
+                const empty = document.createElement('li');
+                empty.className = 'popup-presearch-empty';
+                empty.textContent = i18n.getMessage('popup_presearch_empty');
+                fragment.appendChild(empty);
+            } else {
+                if (history.length > 0) {
+                    fragment.appendChild(this.createSectionTitle('popup_presearch_history_title', history.length));
+                    for (const item of history) {
+                        fragment.appendChild(await this.createItem(item));
+                    }
+                }
+
+                if (bookmarks.length > 0) {
+                    fragment.appendChild(this.createSectionTitle('popup_presearch_bookmarks_title', bookmarks.length));
+                    const bookmarkItems = await Promise.all(bookmarks.map(item => this.createItem(item)));
+                    bookmarkItems.forEach(item => fragment.appendChild(item));
+                }
+            }
+
+            if (requestSeq !== this.requestSeq || query !== searchInput.value.trim()) {
+                return;
+            }
+            searchResults.replaceChildren(fragment);
+            this.setViewMode('suggestions');
+            this.updateItems();
+        } catch (error) {
+            logger.error('渲染 popup 预搜索失败:', error);
+            if (requestSeq !== this.requestSeq) return;
+            searchResults.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-message">
+                        <div class="empty-title">${i18n.getMessage('popup_search_failed', [error.message])}</div>
+                    </div>
+                </div>
+            `;
+            this.setViewMode('empty');
+        }
+    }
+
+    createSectionTitle(messageKey, count) {
+        const title = document.createElement('li');
+        title.className = 'popup-presearch-section-title';
+
+        const label = document.createElement('span');
+        label.className = 'popup-presearch-section-label';
+        label.textContent = i18n.getMessage(messageKey);
+
+        const countNode = document.createElement('span');
+        countNode.className = 'popup-presearch-section-count';
+        countNode.textContent = String(count);
+
+        title.append(label, countNode);
+        return title;
+    }
+
+    async createItem(item) {
+        const itemElement = document.createElement('li');
+        itemElement.className = `popup-search-suggestion-item ${item.type}-suggestion`;
+        itemElement.dataset.type = item.type;
+
+        if (item.type === 'history') {
+            itemElement.dataset.query = item.query;
+            itemElement.title = item.query;
+
+            const icon = document.createElement('span');
+            icon.className = 'popup-suggestion-icon';
+            icon.innerHTML = `
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill="currentColor" d="M13,3A9,9 0 0,0 4,12H1L4.89,15.89L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3Z"></path>
+                </svg>
+            `;
+
+            const title = document.createElement('span');
+            title.className = 'popup-suggestion-title';
+            title.textContent = item.query;
+
+            const deleteButton = document.createElement('button');
+            deleteButton.type = 'button';
+            deleteButton.className = 'popup-delete-history-btn';
+            deleteButton.title = i18n.getMessage('quicksearch_delete_history_title');
+            deleteButton.innerHTML = `
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"></path>
+                </svg>
+            `;
+            deleteButton.addEventListener('click', async (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                await searchManager.searchHistoryManager.removeSearch(item.query);
+                this.schedule(document.getElementById('search-input')?.value.trim() || '', { immediate: true });
+            });
+
+            itemElement.append(icon, title, deleteButton);
+        } else {
+            itemElement.dataset.url = item.url;
+            itemElement.title = item.title;
+
+            const favicon = document.createElement('img');
+            favicon.className = 'popup-suggestion-favicon';
+            favicon.src = await getFaviconUrl(item.url);
+            favicon.alt = '';
+            favicon.addEventListener('error', function() {
+                this.src = 'icons/default_favicon.png';
+            });
+
+            const title = document.createElement('span');
+            title.className = 'popup-suggestion-title';
+            title.textContent = item.title;
+
+            itemElement.append(favicon, title);
+        }
+
+        itemElement.addEventListener('click', async () => {
+            await this.activateItem(itemElement);
+        });
+
+        return itemElement;
+    }
+
+    async activateCurrent() {
+        if (this.selectedIndex < 0) return false;
+        return this.activateItem(this.items[this.selectedIndex]);
+    }
+
+    async activateItem(itemElement) {
+        if (!itemElement) return false;
+
+        const searchInput = document.getElementById('search-input');
+        const type = itemElement.dataset.type;
+        if (type === 'history') {
+            const query = itemElement.dataset.query || '';
+            if (!query || !searchInput) return false;
+            searchInput.value = query;
+            await handleSearch();
+            return true;
+        }
+
+        if (type === 'bookmark') {
+            const bookmark = this.suggestions.bookmarks
+                .find(item => item.url === itemElement.dataset.url)?.bookmark;
+            return this.openBookmark(bookmark || { url: itemElement.dataset.url });
+        }
+
+        return false;
+    }
+
+    async openBookmark(bookmark) {
+        if (!bookmark?.url) return false;
+
+        if (isNonMarkableUrl(bookmark.url)) {
+            const copyConfirm = confirm(i18n.getMessage('popup_copy_link_confirm'));
+            if (copyConfirm) {
+                await navigator.clipboard.writeText(bookmark.url);
+                updateStatus(i18n.getMessage('popup_link_copied'), false);
+            }
+            return true;
+        }
+
+        const openInNewTab = await SettingsManager.get('display.openInNewTab');
+        if (openInNewTab) {
+            await chrome.tabs.create({ url: bookmark.url });
+        } else {
+            await chrome.tabs.update({ url: bookmark.url });
+        }
+
+        if (bookmark.source === BookmarkSource.EXTENSION) {
+            await updateBookmarkUsage(bookmark.url);
+        }
+        return true;
+    }
+
+    isSuggestionsWithQuery() {
+        return this.viewMode === 'suggestions' && Boolean(document.getElementById('search-input')?.value.trim());
+    }
+}
+
+function getPopupPresearchController() {
+    if (!popupPresearchController) {
+        popupPresearchController = new PopupPresearchController();
+    }
+    return popupPresearchController;
+}
+
 function displaySearchResults(results, query) {
     const resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = '';
+    getPopupPresearchController().setViewMode('results');
 
     const bookmarkManager = getBookmarkManager();
     if (bookmarkManager) {
@@ -2681,11 +3022,12 @@ function openSearching(skipAnimation = false) {
         requestAnimationFrame(() => {
             toolbar.classList.remove('no-transition');
         });
-        renderSearchHistory();
+        getPopupPresearchController().schedule(searchInput.value.trim(), { immediate: true });
     } else {
         toolbar.classList.add('searching');
         setTimeout(() => {
             searchInput.focus();
+            getPopupPresearchController().schedule(searchInput.value.trim(), { immediate: true });
         }, 300);
     }
 }
@@ -2698,6 +3040,7 @@ function closeSearching() {
 
     toolbar.classList.remove('searching');
     searchInput.value = ''; // 清空搜索框
+    getPopupPresearchController().reset();
     
     // 退出搜索结果编辑模式
     const bookmarkManager = getBookmarkManager();
@@ -2709,7 +3052,9 @@ function closeSearching() {
     const searchResults = document.getElementById('search-results');
     if (searchResults) {
         searchResults.innerHTML = '';
+        searchResults.classList.remove('suggestion-mode', 'has-results');
     }
+    document.getElementById('popup-presearch-hint')?.classList.remove('show');
     const recentSearches = document.getElementById('recent-searches');
     if (recentSearches) {
         recentSearches.classList.remove('show');
@@ -2882,6 +3227,7 @@ async function renderBookmarksList() {
 }
 
 async function refreshBookmarksInfo() {
+    getPopupPresearchController().invalidateCache();
     await Promise.all([
         updateBookmarkCount(),
         updateTabState(),
@@ -5034,9 +5380,11 @@ async function handleSearch() {
     const searchInput = document.getElementById('search-input');
     const searchResults = document.getElementById('search-results');
     const query = searchInput.value.trim();
+    getPopupPresearchController().cancel();
     
     if (!query) {
         searchResults.innerHTML = '';
+        getPopupPresearchController().setViewMode('empty');
         return;
     }
 
@@ -5046,6 +5394,7 @@ async function handleSearch() {
     }
 
     try {
+        getPopupPresearchController().setViewMode('results');
         // 显示加载状态
         searchResults.innerHTML = `
             <div class="loading-state">
@@ -5067,65 +5416,7 @@ async function handleSearch() {
 }
 
 async function renderSearchHistory(query) {
-    const container = document.getElementById('recent-searches');
-    const showHistory = await SettingsManager.get('search.showSearchHistory');
-    if (!showHistory) {
-        container.classList.remove('show');
-        return;
-    }
-    
-    const wrapper = container.querySelector('.recent-searches-wrapper');
-    let history = await searchManager.searchHistoryManager.getHistory();
-
-    // 如果有搜索内容，则过滤历史记录与搜索内容不匹配的
-    if (query) {
-        history = history.filter(item => {
-            // 同时匹配原文和拼音
-            return item.query.toLowerCase().includes(query) || 
-                    PinyinMatch.match(item.query, query);
-        });
-    }
-    
-    // 如果历史记录为空，则不显示
-    if (history.length === 0) {
-        container.classList.remove('show');
-        return;
-    }
-
-    // 如果历史记录超过最大显示数量，则截断
-    if (history.length > searchManager.searchHistoryManager.MAX_HISTORY_SHOW) {
-        history = history.slice(0, searchManager.searchHistoryManager.MAX_HISTORY_SHOW);
-    }
-
-    // 清空容器
-    wrapper.innerHTML = history.map(item => `
-        <div class="recent-search-item" data-query="${item.query}" title="${item.query}">
-            <svg viewBox="0 0 24 24">
-                <path fill="currentColor" d="M13,3A9,9 0 0,0 4,12H1L4.89,15.89L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3Z" />
-            </svg>
-            <span>${item.query}</span>
-            <svg class="delete-history-btn" viewBox="0 0 24 24" title="删除此搜索记录">
-                <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"></path>
-            </svg>
-        </div>
-    `).join('');
-    
-    // 添加删除按钮点击事件
-    wrapper.querySelectorAll('.delete-history-btn').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            e.stopPropagation(); // 阻止冒泡，防止触发搜索项点击事件
-            const item = e.target.closest('.recent-search-item');
-            const itemQuery = item.dataset.query;
-            
-            // 删除此搜索历史
-            await searchManager.searchHistoryManager.removeSearch(itemQuery);
-            
-            // 重新渲染搜索历史
-            renderSearchHistory(query);
-        });
-    });
-    
-    container.classList.add('show');
+    getPopupPresearchController().schedule(query || '', { immediate: true });
 }
 
 
@@ -5214,7 +5505,6 @@ async function initializeSearch() {
     const toggleSearch = document.getElementById('toggle-search');
     const closeSearch = document.getElementById('close-search');
     const searchInput = document.getElementById('search-input');
-    const recentSearches = document.getElementById('recent-searches');
 
     // 检查是否需要自动聚焦搜索框
     const autoFocusSearch = await SettingsManager.get('display.autoFocusSearch');
@@ -5232,39 +5522,40 @@ async function initializeSearch() {
     toggleSearch.title = `${searchTitle} ${quickSearchKey}`;
     searchInput.setAttribute('data-i18n', 'popup_search_input_placeholder');
     searchInput.placeholder = `${searchPlaceholder} ${quickSearchKey}`;
-    
-    let isMouseInSearchHistory = false;
-    
+
     // 搜索框焦点事件
     searchInput?.addEventListener('focus', async () => {
-        await renderSearchHistory();
-    });
-
-    // 跟踪鼠标是否在搜索历史区域内
-    recentSearches?.addEventListener('mouseenter', () => {
-        isMouseInSearchHistory = true;
-    });
-
-    recentSearches?.addEventListener('mouseleave', () => {
-        isMouseInSearchHistory = false;
-    });
-
-    // 搜索框失去焦点事件
-    searchInput?.addEventListener('blur', () => {
-        logger.debug('搜索框失去焦点', {
-            isMouseInSearchHistory: isMouseInSearchHistory
-        });
-        // 只有当鼠标不在搜索历史区域内时才隐藏
-        if (!isMouseInSearchHistory) {
-            recentSearches.classList.remove('show');
-        }
+        getPopupPresearchController().schedule(searchInput.value.trim(), { immediate: true });
     });
 
     // 添加输入框内容变化事件
     searchInput?.addEventListener('input', () => {
         logger.debug('搜索框内容变化', searchInput.value);
-        const query = searchInput.value.trim().toLowerCase();
-        renderSearchHistory(query);
+        getPopupPresearchController().schedule(searchInput.value.trim());
+    });
+
+    searchInput?.addEventListener('keydown', async (event) => {
+        if (event.key === 'ArrowDown') {
+            if (getPopupPresearchController().moveSelection(1)) {
+                event.preventDefault();
+            }
+            return;
+        }
+
+        if (event.key === 'ArrowUp') {
+            if (getPopupPresearchController().moveSelection(-1)) {
+                event.preventDefault();
+            }
+            return;
+        }
+
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            const activated = await getPopupPresearchController().activateCurrent();
+            if (!activated) {
+                await handleSearch();
+            }
+        }
     });
 
     // ESC 键关闭搜索
@@ -5275,6 +5566,12 @@ async function initializeSearch() {
         }
 
         if (e.key === 'Escape' && toolbar?.classList.contains('searching')) {
+            if (getPopupPresearchController().isSuggestionsWithQuery()) {
+                e.preventDefault();
+                searchInput.value = '';
+                getPopupPresearchController().schedule('', { immediate: true });
+                return;
+            }
             closeSearching();
         }
     });
@@ -5292,24 +5589,6 @@ async function initializeSearch() {
         });
     });
 
-    // 搜索输入框回车事件
-    searchInput?.addEventListener('keypress', async (event) => {
-        if (event.key === 'Enter') {
-            await handleSearch();
-            recentSearches.classList.remove('show');
-        }
-    });
-
-    // 最近搜索项点击事件
-    recentSearches?.addEventListener('click', async (e) => {
-        const item = e.target.closest('.recent-search-item');
-        if (item) {
-            const query = item.dataset.query;
-            searchInput.value = query;
-            recentSearches.classList.remove('show');
-            await handleSearch();
-        }
-    });
 }
 
 function initializeGlobalTooltip() {

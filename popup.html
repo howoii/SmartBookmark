@@ -272,6 +272,7 @@
                 
                 <!-- 搜索结果列表 -->
                 <ul id="search-results" class="search-results"></ul>
+                <div id="popup-presearch-hint" class="popup-presearch-hint" data-i18n="popup_presearch_hint"></div>
             </div>
         </div>
         
@@ -596,11 +597,15 @@
                 <div class="sync-service-status"></div>
             </div>
             <div class="sync-service-details">
-                <div class="sync-time-container">
+                <div class="sync-meta-row sync-auto-container">
+                    <span class="sync-auto-indicator" aria-hidden="true"></span>
+                    <span class="sync-auto-text" data-i18n="sync_auto_sync_disabled">已关闭自动同步</span>
+                </div>
+                <div class="sync-meta-row sync-time-container">
                     <span class="sync-label" data-i18n="popup_sync_last_sync_label">上次同步：</span>
                     <span class="sync-time" data-i18n="popup_sync_never">从未同步</span>
                 </div>
-                <div class="sync-result-container">
+                <div class="sync-meta-row sync-result-container" hidden>
                     <span class="sync-result">-</span>
                 </div>
             </div>

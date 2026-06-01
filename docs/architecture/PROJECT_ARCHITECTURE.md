@@ -587,6 +587,7 @@ Chrome 书签 `onChanged` / `onRemoved` 并不总能直接给出旧 URL，因此
 - embedding 缺失时的降级
 - token 统计
 - API 服务配置来源
+- 自定义 Chat 服务保存时先按已知 provider 规则表选择关闭思考参数，再用真实标签生成用例验收返回内容格式；未知 provider 只做业务连通性验证，不默认保存 `thinkingParam`
 
 ### 10.6 改目录推荐
 

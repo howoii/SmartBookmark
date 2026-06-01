@@ -415,6 +415,46 @@ class WebDAVSyncManager {
         }
     }
 
+    getBookmarkCollectionDiagnostics(bookmarks) {
+        const list = Array.isArray(bookmarks) ? bookmarks : [];
+        return {
+            count: list.length,
+            withTags: list.filter(bookmark => Array.isArray(bookmark?.tags) && bookmark.tags.length > 0).length,
+            withExcerpt: list.filter(bookmark => typeof bookmark?.excerpt === 'string' && bookmark.excerpt.trim().length > 0).length,
+            emptyMetadata: list.filter(bookmark => {
+                const hasTags = Array.isArray(bookmark?.tags) && bookmark.tags.length > 0;
+                const hasExcerpt = typeof bookmark?.excerpt === 'string' && bookmark.excerpt.trim().length > 0;
+                return !hasTags && !hasExcerpt;
+            }).length,
+        };
+    }
+
+    getBookmarkMetadataDiagnostics(metadata) {
+        return {
+            md5: metadata?.bookmarks?.md5 || null,
+            lastModified: metadata?.bookmarks?.lastModified || null,
+            syncAt: metadata?.syncAt || null,
+        };
+    }
+
+    isLogLevelEnabled(levelName) {
+        if (typeof LOG_LEVEL === 'undefined' || typeof LOG_LEVELS === 'undefined') {
+            return true;
+        }
+        const level = LOG_LEVELS[levelName];
+        return typeof level === 'number' && LOG_LEVEL <= level;
+    }
+
+    logInfoDiagnostic(message, buildPayload) {
+        if (!this.isLogLevelEnabled('INFO')) return;
+        logger.info(message, buildPayload());
+    }
+
+    logWarnDiagnostic(message, buildPayload) {
+        if (!this.isLogLevelEnabled('WARN')) return;
+        logger.warn(message, buildPayload());
+    }
+
     /**
      * 导入书签数据
      * @param {Array} bookmarks - 书签数据
@@ -430,7 +470,20 @@ class WebDAVSyncManager {
             const localBookmarks = await LocalStorageMgr.getBookmarksList();
             const diffResult = this.diffBookmarks(localBookmarks, bookmarks);
             const renamedBookmarks = detectLikelyRenamedBookmarks(localBookmarks, bookmarks, diffResult);
-            logger.debug('同步书签差异', diffResult);
+            const changedBookmarks = diffResult.added.concat(diffResult.updated);
+            this.logInfoDiagnostic('[webdav-sync] 导入书签诊断', () => ({
+                mode: overwrite ? 'overwrite' : 'merge',
+                local: this.getBookmarkCollectionDiagnostics(localBookmarks),
+                incoming: this.getBookmarkCollectionDiagnostics(bookmarks),
+                changedIncoming: this.getBookmarkCollectionDiagnostics(changedBookmarks),
+                diff: {
+                    added: diffResult.added.length,
+                    updated: diffResult.updated.length,
+                    removed: diffResult.removed.length,
+                    same: diffResult.same.length,
+                    renamed: renamedBookmarks.length,
+                },
+            }));
             
             if (overwrite) {
                 await syncExistingBrowserBookmarksForExtensionChanges({
@@ -644,12 +697,13 @@ class WebDAVSyncManager {
                 changed: false
             };
             
+            const syncMechanism = syncStrategy?.mechanism || 'merge';
             // 本地优先
-            const localFirst = syncStrategy.mechanism === 'local-first';
+            const localFirst = syncMechanism === 'local-first';
             // 远程优先
-            const remoteFirst = syncStrategy.mechanism === 'remote-first';
+            const remoteFirst = syncMechanism === 'remote-first';
             // 合并
-            const merge = syncStrategy.mechanism === 'merge';
+            const merge = syncMechanism === 'merge';
 
             const syncStatus = await SyncStatusManager.getServiceStatus('webdav');
             
@@ -667,16 +721,45 @@ class WebDAVSyncManager {
                 localMetadata,
                 remoteMetadata
             });
+            this.logInfoDiagnostic('[webdav-sync] 书签同步诊断', () => ({
+                mechanism: syncMechanism,
+                flags: {
+                    isLocalChange,
+                    isRemoteDifferent,
+                    isRemoteChange,
+                },
+                local: this.getBookmarkCollectionDiagnostics(localBookmarksData.data.bookmarks),
+                metadata: {
+                    lastSync: this.getBookmarkMetadataDiagnostics(lastSyncMetadata),
+                    local: this.getBookmarkMetadataDiagnostics(localMetadata),
+                    remote: this.getBookmarkMetadataDiagnostics(remoteMetadata),
+                },
+            }));
 
             if (!isRemoteDifferent) {
+                this.logInfoDiagnostic('[webdav-sync] 书签同步决策', () => ({
+                    action: 'noop',
+                    reason: 'local-and-remote-metadata-same',
+                    mechanism: syncMechanism,
+                }));
                 logger.info("本地书签与远程书签一致，无需同步");
                 return result;
             }
 
             if (isLocalChange && isRemoteChange) {
+                this.logInfoDiagnostic('[webdav-sync] 书签同步决策', () => ({
+                    action: 'resolve-conflict',
+                    mechanism: syncMechanism,
+                }));
                 logger.info("本地和远程书签都发生了变化，执行冲突解决策略");
 
                 if (localFirst) {
+                    this.logInfoDiagnostic('[webdav-sync] 书签同步决策', () => ({
+                        action: 'upload-local',
+                        reason: 'conflict-local-first',
+                        mechanism: syncMechanism,
+                        upload: this.getBookmarkCollectionDiagnostics(localBookmarksData.data.bookmarks),
+                    }));
                     // 本地优先策略 - 强制上传本地数据
                     const updatedMetadata = { ...remoteMetadata };
                     updatedMetadata.bookmarks = localMetadata.bookmarks;
@@ -692,6 +775,12 @@ class WebDAVSyncManager {
                 const remoteData = await this.getRemoteData(remoteMetadata);
     
                 if (!remoteData || !remoteData.data.bookmarks) {
+                    this.logWarnDiagnostic('[webdav-sync] 书签同步决策', () => ({
+                        action: 'upload-local',
+                        reason: 'conflict-remote-data-missing',
+                        mechanism: syncMechanism,
+                        upload: this.getBookmarkCollectionDiagnostics(localBookmarksData.data.bookmarks),
+                    }));
                     logger.warn("远程没有书签数据，执行上传");
                     const updatedMetadata = { ...remoteMetadata };
                     updatedMetadata.bookmarks = localMetadata.bookmarks;
@@ -704,6 +793,12 @@ class WebDAVSyncManager {
                 }
     
                 if (remoteFirst) {
+                    this.logInfoDiagnostic('[webdav-sync] 书签同步决策', () => ({
+                        action: 'import-remote-overwrite-local',
+                        reason: 'conflict-remote-first',
+                        mechanism: syncMechanism,
+                        remote: this.getBookmarkCollectionDiagnostics(remoteData.data.bookmarks),
+                    }));
                     // 导入远程书签，并强制覆盖本地数据
                     await this.importBookmarks(remoteData.data.bookmarks, true);
                     result.metadata = remoteMetadata;
@@ -713,6 +808,12 @@ class WebDAVSyncManager {
                 
                 // 合并策略
                 if (merge) {
+                    this.logInfoDiagnostic('[webdav-sync] 书签同步决策', () => ({
+                        action: 'merge-remote-then-upload',
+                        reason: 'conflict-merge',
+                        mechanism: syncMechanism,
+                        remote: this.getBookmarkCollectionDiagnostics(remoteData.data.bookmarks),
+                    }));
                     // 导入书签，并与本地书签合并
                     await this.importBookmarks(remoteData.data.bookmarks, false);
     
@@ -738,6 +839,12 @@ class WebDAVSyncManager {
             }
 
             if (isLocalChange) {
+                this.logInfoDiagnostic('[webdav-sync] 书签同步决策', () => ({
+                    action: 'upload-local',
+                    reason: 'local-change-only',
+                    mechanism: syncMechanism,
+                    upload: this.getBookmarkCollectionDiagnostics(localBookmarksData.data.bookmarks),
+                }));
                 logger.info("本地书签发生了变化，执行推送同步");
 
                 const updatedMetadata = { ...remoteMetadata };
@@ -757,6 +864,12 @@ class WebDAVSyncManager {
                 const remoteData = await this.getRemoteData(remoteMetadata);
     
                 if (!remoteData || !remoteData.data.bookmarks) {
+                    this.logWarnDiagnostic('[webdav-sync] 书签同步决策', () => ({
+                        action: 'upload-local',
+                        reason: 'remote-change-data-missing',
+                        mechanism: syncMechanism,
+                        upload: this.getBookmarkCollectionDiagnostics(localBookmarksData.data.bookmarks),
+                    }));
                     logger.warn("远程没有书签数据，执行上传");
                     const updatedMetadata = { ...remoteMetadata };
                     updatedMetadata.bookmarks = localMetadata.bookmarks;
@@ -769,12 +882,23 @@ class WebDAVSyncManager {
                 }
 
                 // 导入远程书签
+                this.logInfoDiagnostic('[webdav-sync] 书签同步决策', () => ({
+                    action: 'import-remote-overwrite-local',
+                    reason: 'remote-change-only',
+                    mechanism: syncMechanism,
+                    remote: this.getBookmarkCollectionDiagnostics(remoteData.data.bookmarks),
+                }));
                 await this.importBookmarks(remoteData.data.bookmarks, true);
                 result.metadata = remoteMetadata;
                 result.changed = true;
                 return result;
             }
 
+            this.logInfoDiagnostic('[webdav-sync] 书签同步决策', () => ({
+                action: 'noop',
+                reason: 'no-matching-change-branch',
+                mechanism: syncMechanism,
+            }));
             return result;
         } catch (error) {
             logger.error('同步书签数据失败:', error);

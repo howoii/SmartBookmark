@@ -37,7 +37,10 @@ docs/
 - [目录视图规范](./features/directory-view/SPEC.md)
 - [智能标签图标系统设计](./features/smart-tags/DESIGN.md)
 - [ESC 回归测试清单](./testing/ESC_REGRESSION_CHECKLIST.md)
+- [搜索匹配回归测试清单](./testing/SEARCH_MATCHING_REGRESSION_CHECKLIST.md)
+- [Popup 书签列表回归测试清单](./testing/POPUP_BOOKMARK_LIST_REGRESSION_CHECKLIST.md)
 - [浏览器书签目标回归测试清单](./testing/BROWSER_BOOKMARK_TARGET_REGRESSION_CHECKLIST.md)
+- [同步状态弹窗回归测试清单](./testing/SYNC_STATUS_DIALOG_REGRESSION_CHECKLIST.md)
 
 ## 新增文档时的放置规则
 
